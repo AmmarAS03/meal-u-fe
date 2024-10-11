@@ -33,13 +33,14 @@ import QRReader from "./pages/QR-Reader/QR-Reader";
 import User from "./pages/User";
 import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveries";
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
+import Warehouse from "./pages/Warehouse";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   const shouldShowTabs = () => {
-    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
+    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options', '/warehouse'];
     const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/'];
 
     if (noTabRoutes.includes(location.pathname)) {
@@ -87,6 +88,7 @@ const AppContent: React.FC = () => {
               <Route path="/qr-reader" component={QRReader} />
               <Route path="/courier/deliveries" component={CourierDeliveries} />
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />
+              <Route path="/warehouse" component={Warehouse} />
               <Route exact path="/">
                 <Redirect to="/home" />
               </Route>

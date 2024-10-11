@@ -11,21 +11,13 @@ import { useAuth } from "../../contexts/authContext";
 
 const Login: React.FC = () => {
   const router = useIonRouter();
-  const { login } = useAuth();
+  const { login, role } = useAuth();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
-  const navigateToSubPage = () => {
-    router.push("/tab1/subpage");
-  };
-
-  const navigateToOrderPage = () => {
-    router.push("/tab1/order");
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,7 +52,13 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password);
-      router.push("/home");
+      if (role==="courier"){
+        router.push("/home");
+      } else if (role==="warehouse"){
+        router.push("/warehouse")
+      } else if (role==="client"){
+        router.push("/home");
+      }
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
       console.error("Login error:", error);
