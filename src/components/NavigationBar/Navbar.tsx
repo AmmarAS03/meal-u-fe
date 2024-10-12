@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import { home, list, person } from 'ionicons/icons';
 
-// Import custom icons
 import RepeatIcon from '../../../public/icon/repeat-icon';
 import OrderIcon from '../../../public/icon/order-icon';
 import ReceiptIcon from '../../../public/icon/receipt-icon';
@@ -11,9 +10,15 @@ import StoreIcon from '../../../public/icon/store-icon';
 import UserIcon from '../../../public/icon/user-icon';
 import ScheduleIcon from '../../../public/icon/schedule-icon';
 import { useAuth } from '../../contexts/authContext';
+import WarehouseDesktopNavbar from '../Warehouse/DesktopNavbar/WarehouseDesktopNavbar';
 
 const Navbar: React.FC = () => {
   const { role } = useAuth();
+  const isMobile = window.innerWidth < 768;
+
+  if (role === 'warehouse' && !isMobile) {
+    return <WarehouseDesktopNavbar />;
+  }
 
   const courierNavItems = [
     { to: "/courier/home", icon: RepeatIcon, label: "Home" },

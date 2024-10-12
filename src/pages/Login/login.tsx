@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { IonContent, IonHeader, IonPage, useIonRouter } from "@ionic/react";
-import "./login.css";
 import IconInput from "../../components/icon-input";
 import IconButton from "../../components/icon-button";
 import EmailIcon from "../../../public/icon/email-icon";
@@ -11,21 +10,14 @@ import { useAuth } from "../../contexts/authContext";
 
 const Login: React.FC = () => {
   const router = useIonRouter();
-  const { login } = useAuth();
+  const { login, getRole } = useAuth();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
-  const navigateToSubPage = () => {
-    router.push("/tab1/subpage");
-  };
-
-  const navigateToOrderPage = () => {
-    router.push("/tab1/order");
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,82 +31,79 @@ const Login: React.FC = () => {
     };
   }, []);
 
-  const handleEmailChange = (event: {
-    target: { value: React.SetStateAction<string> };
-  }) => {
+  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
   };
 
-  const handlePasswordChange = (event: {
-    target: { value: React.SetStateAction<string> };
-  }) => {
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
       await login(email, password);
-      router.push("/home");
+      const role = getRole();
+      
+      if (role) {
+        switch (role) {
+          case 'warehouse':
+            router.push("/warehouse/dashboard");
+            break;
+          case 'courier':
+            router.push("/courier/home");
+            break;
+          case 'client':
+            router.push("/home");
+            break;
+          default:
+            setError("Unknown user role. Please contact support.");
+        }
+      } else {
+        setError("Login successful but role not set. Please try again.");
+      }
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
       console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
     console.log("Google login clicked");
+    // Implement Google login logic here
   };
 
   return (
     <IonPage>
-      <IonContent className="ion-padding">
-        <div
-          style={{
-            maxWidth: 1024,
-            margin: "auto",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            height: "85vh",
-            padding: "0 20px",
-          }}
-        >
+      <IonContent className="font-sans">
+        <div className="max-w-6xl mx-auto flex flex-row items-center px-5 h-fit p-4 mb-4">
           {!isMobile && (
-            <div style={{ flex: 1, maxWidth: "50%" }}>
+            <div className="flex-1 max-w-1/2 max-h-screen">
               <img
                 src="/img/login-image.png"
                 alt="login image"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  borderRadius: "20px",
-                }}
+                className="h-[85vh] rounded-2xl"
               />
             </div>
           )}
 
-          <div
-            style={{
-              flex: 1,
-              padding: "0 40px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-            }}
-          >
-            <h2 style={{ fontSize: "32px", marginBottom: "10px" }}>Sign in</h2>
+          <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
+            <h2 className="text-3xl mb-2.5 font-bold">Sign in</h2>
             {!isMobile && (
-              <p style={{ marginBottom: "20px" }}>Hi, let's jump in! 👋</p>
+              <p className="mb-5">Hi, let's jump in! 👋</p>
             )}
 
-            <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-              <div style={{ marginBottom: "20px" }}>
+            <form onSubmit={handleSubmit} className="w-full">
+              <div className="mb-5">
                 <IconInput
                   title="Email Address"
                   onInputHandleChange={handleEmailChange}
@@ -124,7 +113,7 @@ const Login: React.FC = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: "20px" }}>
+              <div className="mb-5">
                 <IconInput
                   title="Password"
                   onInputHandleChange={handlePasswordChange}
@@ -137,10 +126,10 @@ const Login: React.FC = () => {
                 />
               </div>
               {error && (
-                <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>
+                <p className="text-red-500 mb-2.5">{error}</p>
               )}
               <IconButton
-                text="Login"
+                text={isLoading ? "Logging in..." : "Login"}
                 textColor="white"
                 backgroundColor="#042628"
                 hoverColor="#314647"
@@ -149,13 +138,7 @@ const Login: React.FC = () => {
               />
             </form>
 
-            <p
-              style={{
-                marginTop: "20px",
-                alignSelf: "center",
-                color: "#97A2B0",
-              }}
-            >
+            <p className="mt-5 self-center text-gray-400">
               or continue with
             </p>
 
@@ -170,6 +153,11 @@ const Login: React.FC = () => {
             />
           </div>
         </div>
+        {!isMobile && (
+          <footer className="bottom-0 left-0 right-0 text-center text-sm bg-[#7862FC] text-white p-4">
+            Made with ❤️ by DECOBuilder
+          </footer>
+        )}
       </IonContent>
     </IonPage>
   );
