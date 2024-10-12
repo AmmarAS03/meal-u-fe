@@ -35,6 +35,7 @@ import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveri
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
+import AllOrders from "./pages/Warehouse/Orders";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -91,6 +92,7 @@ const AppContent: React.FC = () => {
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />
               <Route path="/warehouse/dashboard" component={Dashboard} />
               <Route path="/warehouse/order/:id" component={OrderDetail} />
+              <Route path="/warehouse/orders" component={AllOrders} />
               <Route exact path="/">
                 <Redirect to="/home" />
               </Route>
