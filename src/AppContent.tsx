@@ -27,6 +27,7 @@ import ConfirmPickup from "./pages/Courier/ConfirmPickUp/ConfirmPickUp";
 import ConfirmDelivery from "./pages/Courier/ConfirmDelivery/ConfirmDelivery";
 import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveries";
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
+import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -78,6 +79,7 @@ const AppContent: React.FC = () => {
               <Route path="/courier/confirm-delivery/:id" component={ConfirmDelivery} />
               <Route path="/courier/deliveries" component={CourierDeliveries} />
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />
+              <Route path="/warehouse/dashboard" component={Dashboard} />
               <Route exact path="/">
                 <Redirect to="/tab1" />
               </Route>

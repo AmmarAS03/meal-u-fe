@@ -35,7 +35,7 @@ const WarehouseDesktopNavbar: React.FC = () => {
       </div>
       <div className="p-4">
         <div className="flex items-center">
-          <img src="/path/to/profile-image.jpg" alt="Profile" className="w-10 h-10 rounded-full" />
+          <img src="/img/no-photo.png" alt="Profile" className="w-10 h-10 rounded-full" />
           <div className="ml-3 hidden group-hover:block">
             <p className="text-white font-semibold">Alex Turner</p>
             <p className="text-white text-sm opacity-70">Employee ID: W9ACB</p>
