@@ -61,7 +61,7 @@ const Login: React.FC = () => {
             router.push("/courier/home");
             break;
           case 'client':
-            router.push("/tab1");
+            router.push("/home");
             break;
           default:
             setError("Unknown user role. Please contact support.");
