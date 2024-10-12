@@ -2,15 +2,16 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext'; // Assuming you have an auth context
 
 interface UserProfile {
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-  is_staff: boolean;
-  role: string;
-  image: string | null;
-  voucher_credits: string;
-  profile: any; // Define this type based on actual data structure if needed
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_active: boolean;
+    is_staff: boolean;
+    role: string;
+    image: string | null;
+    voucher_credits: string;
+    profile: any; // Define this type based on actual data structure if needed
 }
 
 export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
