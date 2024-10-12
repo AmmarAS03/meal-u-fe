@@ -10,22 +10,27 @@ import {
     IonImg,
     IonText,
     IonChip,
+    IonToast,
 } from '@ionic/react';
 import { BsPencilSquare } from 'react-icons/bs';
 import { fetchProductDetails, ProductData } from '../../api/productApi';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import { useParams, useHistory } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext';
+import { useAddCartItem } from '../../api/cartApi';
 
 const ProductDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<ProductData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const history = useHistory();
 
     const { getToken } = useAuth();
     const token = getToken() || "";
+    const addCartItem = useAddCartItem();
 
     useEffect(() => {
         const loadProductDetails = async () => {
@@ -41,6 +46,27 @@ const ProductDetails: React.FC = () => {
 
         loadProductDetails();
     }, [id, token]);
+
+    const handleAddToCart = () => {
+        if (!product) return;
+
+        const payload = {
+            item_type: 'product' as const,
+            quantity: 1,
+            product_id: product.id,
+        };
+
+        addCartItem.mutate(payload, {
+            onSuccess: () => {
+                setToastMessage('Product added to cart successfully');
+                setShowToast(true);
+            },
+            onError: (error) => {
+                setToastMessage(`Failed to add product to cart: ${error.message}`);
+                setShowToast(true);
+            },
+        });
+    };
 
     if (loading) {
         return (
@@ -118,14 +144,25 @@ const ProductDetails: React.FC = () => {
                 </div>
 
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md z-10 flex items-center gap-3 rounded-t-3xl">
-                    <button className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans">
-                        Add to cart
+                    <button 
+                        className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans"
+                        onClick={handleAddToCart}
+                        disabled={addCartItem.isPending}
+                    >
+                        {addCartItem.isPending ? 'Adding...' : 'Add to cart'}
                     </button>
                     <div className="w-12 h-12 flex items-center justify-center font-sans">
                         <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
                     </div>
                 </div>
             </IonContent>
+            <IonToast
+                isOpen={showToast}
+                onDidDismiss={() => setShowToast(false)}
+                message={toastMessage}
+                duration={3000}
+                position="top"
+            />
         </IonPage>
     );
 };

@@ -1,6 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
-import { RecipeData } from './recipeApi';
 
 interface Creator {
   name: string;
@@ -16,8 +15,10 @@ interface NutritionDetails {
 
 interface Ingredient {
   ingredient: {
+    id: number;
     name: string;
     image: string | null;
+    product_id: number;
     unit_id: number;
     unit_size: string;
     price_per_unit: string;
@@ -26,6 +27,7 @@ interface Ingredient {
     id: number;
     name: string;
     additional_price: string;
+    category: number;
   } | null;
   price: number;
 }
@@ -59,7 +61,7 @@ export interface MealkitData {
   dietary_details: string[];
   total_price: number;
   quantity: number;
-  recipes: RecipeData[];
+  recipes: Recipe[];
 }
 
 export interface MealkitDetailsData {

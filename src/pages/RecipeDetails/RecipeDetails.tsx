@@ -18,23 +18,26 @@ import {
     IonLabel,
     IonAvatar,
     IonSkeletonText,
+    IonToast,
 } from '@ionic/react';
 import { heartOutline, chatbubbleOutline, shareOutline, bookmarkOutline, time, restaurant, flame, fastFood, pencil } from 'ionicons/icons';
 import LongIngredientCard from '../../components/LongIngredientCard/LongIngredientCard';
 import { fetchRecipeDetails, RecipeData } from '../../api/recipeApi';
 import { useAuth } from '../../contexts/authContext';
-import { BsPencilSquare } from 'react-icons/bs'
+import { BsPencilSquare } from 'react-icons/bs';
+import { useAddCartItem } from '../../api/cartApi';
 
 const RecipeDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [recipe, setRecipe] = useState<RecipeData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     const { getToken } = useAuth();
     const token = getToken();
-
-    
+    const addCartItem = useAddCartItem();
 
     useEffect(() => {
         const loadRecipe = async () => {
@@ -56,6 +59,32 @@ const RecipeDetails: React.FC = () => {
 
         loadRecipe();
     }, [id, token]);
+
+    const handleAddToCart = () => {
+        if (!recipe) return;
+
+        const payload = {
+            item_type: 'recipe' as const,
+            quantity: 1,
+            recipe_id: recipe.id,
+            recipe_ingredients: recipe.ingredients.map(ingredient => ({
+                ingredient_id: ingredient.ingredient.id,
+                preparation_type_id: ingredient.preparation_type?.id || null,
+                quantity: 1,
+            })),
+        };
+
+        addCartItem.mutate(payload, {
+            onSuccess: () => {
+                setToastMessage('Recipe added to cart successfully');
+                setShowToast(true);
+            },
+            onError: (error) => {
+                setToastMessage(`Failed to add recipe to cart: ${error.message}`);
+                setShowToast(true);
+            },
+        });
+    };
 
     if (loading) {
         return (
@@ -187,14 +216,25 @@ const RecipeDetails: React.FC = () => {
                 </div>
 
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md z-10 flex items-center gap-3 rounded-t-3xl">
-                    <button className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans">
-                        Add Mealkit to cart
+                    <button 
+                        className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans"
+                        onClick={handleAddToCart}
+                        disabled={addCartItem.isPending}
+                    >
+                        {addCartItem.isPending ? 'Adding...' : `Add Recipe to cart ($${recipe.total_price.toFixed(2)})`}
                     </button>
                     <div className="w-12 h-12 flex items-center justify-center font-sans">
                         <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
                     </div>
                 </div>
             </IonContent>
+            <IonToast
+                isOpen={showToast}
+                onDidDismiss={() => setShowToast(false)}
+                message={toastMessage}
+                duration={3000}
+                position="top"
+            />
         </IonPage>
     );
 };

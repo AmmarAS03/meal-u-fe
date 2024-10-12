@@ -20,12 +20,17 @@ import { BsPencilSquare } from 'react-icons/bs';
 import LongRecipeCard from '../../components/LongRecipeCard/LongRecipeCard';
 import { fetchMealkitDetails, MealkitDetailsData } from '../../api/mealkitApi';
 import { useAuth } from '../../contexts/authContext';
+import { useAddCartItem } from '../../api/cartApi';
+import { IonToast } from '@ionic/react';
 
 const MealkitDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [mealkit, setMealkit] = useState<MealkitDetailsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const addCartItem = useAddCartItem();
 
     const { getToken } = useAuth();
     const token = getToken();
@@ -70,6 +75,40 @@ const MealkitDetails: React.FC = () => {
             </IonPage>
         );
     }
+
+    const handleAddToCart = () => {
+        if (!mealkit) return;
+
+        const payload = {
+            item_type: 'mealkit' as const,
+            item_data: {
+                mealkit_id: parseInt(id, 10),
+                recipes: mealkit.recipes.map(recipe => ({
+                    recipe_id: recipe.id,
+                    quantity: 1,
+                    recipe_ingredients: recipe.ingredients.map(ingredient => ({
+                        ingredient_id: ingredient.ingredient.id,
+                        preparation_type_id: ingredient.preparation_type?.id || null,
+                        quantity: 1,
+                    })),
+                })),
+            },
+            quantity: 1,
+        };
+
+        console.log("Payload,", payload);
+
+        addCartItem.mutate(payload, {
+            onSuccess: () => {
+                setToastMessage('Mealkit added to cart successfully');
+                setShowToast(true);
+            },
+            onError: (error) => {
+                setToastMessage(`Failed to add mealkit to cart: ${error.message}`);
+                setShowToast(true);
+            },
+        });
+    };
 
     return (
         <IonPage>
@@ -145,13 +184,24 @@ const MealkitDetails: React.FC = () => {
                     <IonText className="px-4">No comments available.</IonText>
                 </div>
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md z-10 flex items-center gap-3 rounded-t-3xl">
-                    <button className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans">
-                        Add Mealkit to cart (${mealkit.total_price.toFixed(2)})
+                    <button 
+                        className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans"
+                        onClick={handleAddToCart}
+                        disabled={addCartItem.isPending}
+                    >
+                        {addCartItem.isPending ? 'Adding...' : `Add Mealkit to cart ($${mealkit.total_price.toFixed(2)})`}
                     </button>
                     <div className="w-12 h-12 flex items-center justify-center font-sans">
                         <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
                     </div>
                 </div>
+                <IonToast
+                    isOpen={showToast}
+                    onDidDismiss={() => setShowToast(false)}
+                    message={toastMessage}
+                    duration={3000}
+                    position="top"
+                />
             </IonContent>
         </IonPage>
     );

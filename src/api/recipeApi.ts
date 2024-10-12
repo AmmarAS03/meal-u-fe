@@ -7,11 +7,11 @@ interface Creator {
 }
 
 export interface Ingredient {
-  id: number;
   ingredient: {
-    product_id: number;
+    id: number;
     name: string;
     image: string | null;
+    product_id: number;
     unit_id: number;
     unit_size: string;
     price_per_unit: string;
@@ -20,8 +20,8 @@ export interface Ingredient {
     id: number;
     name: string;
     additional_price: string;
+    category: number;
   } | null;
-  quantity: number;
   price: number;
 }
 
@@ -49,7 +49,6 @@ export interface RecipeData {
   ingredients: Ingredient[];
   total_price: number;
   nutrition_details: NutritionDetails;
-  quantity: number;
 }
 
 export interface CommunityRecipeData {
@@ -257,27 +256,7 @@ export interface CreateRecipePayload {
 interface RecipeCreationResponse {
   success: boolean;
   message: string;
-  data: {
-    id: number;
-    creator: {
-      name: string;
-      profile_picture: string | null;
-    };
-    name: string;
-    description: string;
-    serving_size: number;
-    meal_type: string;
-    cooking_time: number;
-    instructions: string[];
-    created_at: string;
-    updated_at: string;
-    is_customized: boolean;
-    image: string | null;
-    dietary_details: string[];
-    ingredients: Ingredient[];
-    total_price: number;
-    nutrition_details: null | any;
-  };
+  data: RecipeData;
 }
 
 export const useCreateRecipe = (options?: {
