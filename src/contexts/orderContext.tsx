@@ -4,6 +4,13 @@ import { useCreateRecipe, CreateRecipePayload } from '../api/recipeApi';
 import { formatDate } from '../pages/MyCart/MyCart-Mobile';
 import { UnitData, useUnitList, ProductData, MealType, useMealTypeList } from '../api/productApi';
 
+interface Filters {
+  deliveryDate: string | null;
+  deliveryBatch: string | null;
+  deliveryLocation: number | null;
+  orderStatus: string | null;
+}
+
 // Define the shape of the order context
 interface OrderContextProps {
   handleOrderCreation: () => void;
@@ -30,6 +37,11 @@ interface OrderContextProps {
   getUnitId: (product: ProductData) => number;
   meal_types: MealType[] | undefined;
   getMealTypeFromId: (id: number) => string | undefined;
+  deliveryDateFilter: string | null;
+  setDeliveryDateFilter: (date: string | null) => void;
+  filters: Filters;
+  setFilter: (filterName: keyof Filters, value: string | number | null) => void;
+  clearFilters: () => void;
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
@@ -131,6 +143,34 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return data?.name;
   }
 
+  // New state for filter
+  const [deliveryDateFilter, setDeliveryDateFilter] = useState<string | null>(null);
+  // New state for filters
+  const [filters, setFilters] = useState<Filters>({
+    deliveryDate: null,
+    deliveryBatch: null,
+    deliveryLocation: null,
+    orderStatus: null,
+  });
+
+  // Function to set individual filters
+  const setFilter = (filterName: keyof Filters, value: string | number | null) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterName]: value,
+    }));
+  };
+
+  // Function to clear all filters
+  const clearFilters = () => {
+    setFilters({
+      deliveryDate: null,
+      deliveryBatch: null,
+      deliveryLocation: null,
+      orderStatus: null,
+    });
+  };
+
   return (
     <OrderContext.Provider
       value={{
@@ -150,6 +190,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         getUnitId,
         meal_types,
         getMealTypeFromId,
+        deliveryDateFilter,
+        setDeliveryDateFilter,
+        filters,
+        setFilter,
+        clearFilters,
       }
     }>
       {children}
