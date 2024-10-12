@@ -17,6 +17,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -45,27 +46,34 @@ const Login: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
       await login(email, password);
       const role = getRole();
       
-      switch (role) {
-        case 'warehouse':
-          router.push("/warehouse/dashboard");
-          break;
-        case 'courier':
-          router.push("/courier/home");
-          break;
-        case 'client':
-          router.push("/tab1");
-          break;
-        default:
-          setError("Unknown user role. Please contact support.");
+      if (role) {
+        switch (role) {
+          case 'warehouse':
+            router.push("/warehouse/dashboard");
+            break;
+          case 'courier':
+            router.push("/courier/home");
+            break;
+          case 'client':
+            router.push("/tab1");
+            break;
+          default:
+            setError("Unknown user role. Please contact support.");
+        }
+      } else {
+        setError("Login successful but role not set. Please try again.");
       }
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
       console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,7 +129,7 @@ const Login: React.FC = () => {
                 <p className="text-red-500 mb-2.5">{error}</p>
               )}
               <IconButton
-                text="Login"
+                text={isLoading ? "Logging in..." : "Login"}
                 textColor="white"
                 backgroundColor="#042628"
                 hoverColor="#314647"

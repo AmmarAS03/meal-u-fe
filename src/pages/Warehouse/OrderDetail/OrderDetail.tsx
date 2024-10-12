@@ -90,7 +90,7 @@ const OrderDetail: React.FC = () => {
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center">
+                <div className="flex flex-row justify-center items-center">
                     <button 
                       onClick={handleBackClick}
                       className="mr-4 text-gray-600 hover:text-gray-900"
