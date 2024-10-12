@@ -1,14 +1,12 @@
 import Cart from "../Cart";
 import Checkout from "../Checkout";
-import { IonButton, IonBackButton, IonButtons, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import React, { useState } from "react";
+import { IonButton, IonBackButton, IonButtons, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, useIonModal, IonItem, IonInput, IonLabel, IonSelect, IonSelectOption, IonDatetime } from '@ionic/react';
+import React, { useEffect, useState } from "react";
 import styles from './mobilecart.module.css';
-import DeliveryLocationPicker from "../Checkout/LocationPicker";
-import PaymentDetailsCard from "../Checkout/payment-details-card";
 import { cartContents } from "../Cart";
-import { useIonRouter } from "@ionic/react";
 import { useOrder } from '../../../contexts/orderContext';
 import { useHistory } from "react-router-dom";
+import PaymentSummaryCard from "../../../components/PaymentSummaryCard/PaymentSummaryCard";
 
 
 export const formatDate = (date: Date) => {
@@ -20,23 +18,48 @@ const MyCartMobile: React.FC = () => {
   const [total, setTotal] = useState(-1);
   const [deliveryFee, setDeliveryFee] = useState(-1);
   const [isDeliveryDetailsSet, setIsDeliveryDetailsSet] = useState(false);
-  const [isPickerShown, setIsPickerShown] = useState(false);
+
   const { cartNotEmpty } = cartContents();
-  const { handleOrderCreation } = useOrder();
-  //const router = useIonRouter();
-  //const navigate = useNavigate();
+  const { handleOrderCreation, deliveryDetails, deliveryLocationDetails } = useOrder();
+
   const history = useHistory();
-
-
-  const handleSetLocation = () => {
-    setIsPickerShown(!isPickerShown);
-  };
 
   const createOrderFromCart = async () => {
     const data = await handleOrderCreation()
     history.replace(`/payment-options/${data?.data.order_id}`)
   }
+
+  // make button not disable when delivery details is set
+  useEffect(() => {
+    if (deliveryDetails.deliveryLocation !== -1 && deliveryDetails.deliveryTime !== -1) {
+      setIsDeliveryDetailsSet(true);
+    } else {
+      setIsDeliveryDetailsSet(false);
+    }
+  }, [deliveryDetails.deliveryLocation, deliveryDetails.deliveryTime]);
+
+  // set delivery fee when location is set
+  useEffect(() => {
+    if (deliveryLocationDetails.id !== -1) {
+      setDeliveryFee(parseInt(deliveryLocationDetails.delivery_fee))
+      console.log("delivery fee set");
+    }
+  }, [deliveryDetails.deliveryLocation])
+
+  useEffect(() => {
+    console.log("delivery location: ", deliveryDetails.deliveryLocation)
+    console.log("delivery time: ", deliveryDetails.deliveryTime)
+    console.log("delivery date: ", deliveryDetails.deliveryDate)
+  }, [deliveryDetails])
   
+  useEffect(() => {
+    const calculateTotal = () => {
+        const newTotal = subTotal + 10;
+        setTotal(newTotal);
+    };
+    calculateTotal();
+  }, [subTotal, total]);
+
   return (
     <IonPage>
       <IonHeader>
@@ -50,47 +73,24 @@ const MyCartMobile: React.FC = () => {
       <IonContent className="ion-padding">
         <Cart subTotal={subTotal} setSubTotal={setSubTotal}/>
 
-        {isDeliveryDetailsSet ? 
-          <Checkout subTotal={subTotal} total={total} setTotal={setTotal} />
-          : null
-        }
-        {isPickerShown ?
-        <DeliveryLocationPicker
-          setIsDeliveryDetailsSet={setIsDeliveryDetailsSet}
-          setIsPickerShown={setIsPickerShown}
-          setDeliveryFee={setDeliveryFee}
-        />
-        : null}
-
         {cartNotEmpty ? (
-          // isDeliveryDetailsSet ? (
-          //   <div className={styles.subsection}>
-          //     <div className={styles.title}>Payment Summary</div>
-          //       <PaymentDetailsCard subTotal={subTotal} fee={deliveryFee} total={total}/>
-          //   </div>
-          // ) : (
-          //   <div className={styles.subsection}>
-          //     <div className={styles.title}>Payment Summary</div>
-          //       <PaymentDetailsCard subTotal={subTotal} fee={null} total={null}/>
-          //       </div>
-          // )
+          <>
+            <div className={styles.subsection}>
+              <Checkout/>
+            </div>
             <div className={styles.subsection}>
               <div className={styles.title}>Payment Summary</div>
-                <PaymentDetailsCard subTotal={subTotal} fee={deliveryFee} total={total}/>
-              </div>
+              <PaymentSummaryCard subTotal={subTotal} fee={deliveryFee} total={total}/>
+            </div>
+            <div className={styles.bottom_button}>
+              <IonButton expand="block" disabled={!isDeliveryDetailsSet} className={styles.checkout_button} onClick={createOrderFromCart}>
+                Proceed to Payment
+              </IonButton>
+            </div>
+          </>
         ) : null
         }
-
-        <div className={styles.bottom_button}>
-          {isDeliveryDetailsSet ? 
-          <IonButton expand="block" className={styles.checkout_button} onClick={createOrderFromCart}>
-          Proceed to Payment
-          </IonButton>
-          :
-          <IonButton expand="block" disabled={!cartNotEmpty} className={styles.checkout_button} onClick={handleSetLocation}>
-          Enter Delivery Details
-          </IonButton>}
-        </div>
+        
       </IonContent>
     </IonPage>
   )

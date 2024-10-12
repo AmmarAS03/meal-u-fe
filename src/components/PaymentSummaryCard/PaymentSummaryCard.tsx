@@ -1,12 +1,12 @@
-import styles from './checkout.module.css';
+import styles from './PaymentSummaryCard.module.css';
 
-interface PaymentDetailsCardProps {
+interface PaymentSummaryCardProps {
     subTotal: number;
     fee: number;
     total: number;
 }
 
-const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({subTotal, fee, total}) => {
+const PaymentSummaryCard: React.FC<PaymentSummaryCardProps> = ({subTotal, fee, total}) => {
     return (
         <div className={styles.card}>
                 <div className={styles.column}>
@@ -27,4 +27,4 @@ const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({subTotal, fee, t
     )
 }
 
-export default PaymentDetailsCard;
+export default PaymentSummaryCard;
