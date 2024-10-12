@@ -54,6 +54,63 @@ interface Order {
   user_id: User;
 }
 
+interface Product {
+  product: number;
+  product_name: string;
+  quantity: number;
+  total: string;
+}
+
+interface RecipeIngredient {
+  ingredient_name: string;
+  preparation_type?: string;
+  quantity: number;
+  unit_size: string;
+  unit_name: string;
+  total: string;
+}
+
+interface Recipe {
+  recipe: number;
+  recipe_name: string;
+  quantity: number;
+  total: string;
+  ingredients: RecipeIngredient[];
+}
+
+interface MealKit {
+  mealkit: number;
+  mealkit_name: string;
+  quantity: number;
+  total: string;
+}
+
+interface DeliveryDetailWithLocker extends DeliveryDetails {
+  locker_number: string;
+  qr_code: string;
+}
+
+interface DeliveryDetail {
+  delivery_location: DeliveryLocation;
+  delivery_time: DeliveryTime;
+  delivery_date: string;
+  locker_number: string | null;
+  qr_code: string | null;
+}
+
+export interface OrderDetailsData {
+  id: number;
+  user_id: User;
+  order_status: number;
+  created_at: string;
+  updated_at: string;
+  total: string;
+  products: Product[];
+  recipes: Recipe[];
+  meal_kits: MealKit[];
+  delivery_details: DeliveryDetail[];
+}
+
 export interface WarehouseOrdersData {
   [date: string]: {
     [time: string]: Order[];
@@ -88,5 +145,36 @@ export const useWarehouseOrders = (): UseQueryResult<WarehouseOrdersData, Error>
     queryKey: ['warehouse.orders'],
     queryFn: () => fetchWarehouseOrders(token),
     enabled: !!token,
+  });
+};
+
+const fetchOrderDetails = async (token: string, orderId: number): Promise<OrderDetailsData> => {
+  const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/order-details/${orderId}/`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch order details');
+  }
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch order details');
+  }
+
+  return data.data;
+};
+
+export const useOrderDetails = (orderId: number): UseQueryResult<OrderDetailsData, Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || '';
+
+  return useQuery<OrderDetailsData, Error>({
+    queryKey: ['order.details', orderId],
+    queryFn: () => fetchOrderDetails(token, orderId),
+    enabled: !!token && !!orderId,
   });
 };

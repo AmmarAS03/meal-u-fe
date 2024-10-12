@@ -11,7 +11,7 @@ import { useAuth } from "../../contexts/authContext";
 
 const Login: React.FC = () => {
   const router = useIonRouter();
-  const { login } = useAuth();
+  const { login, getRole } = useAuth();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
   const [email, setEmail] = useState("");
@@ -49,7 +49,21 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password);
-      router.push("/tab1");
+      const role = getRole();
+      
+      switch (role) {
+        case 'warehouse':
+          router.push("/warehouse/dashboard");
+          break;
+        case 'courier':
+          router.push("/courier/home");
+          break;
+        case 'client':
+          router.push("/tab1");
+          break;
+        default:
+          setError("Unknown user role. Please contact support.");
+      }
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
       console.error("Login error:", error);
@@ -58,6 +72,7 @@ const Login: React.FC = () => {
 
   const handleGoogleLogin = () => {
     console.log("Google login clicked");
+    // Implement Google login logic here
   };
 
   return (
@@ -74,7 +89,7 @@ const Login: React.FC = () => {
             </div>
           )}
 
-          <div className="flex-1 px-10 flex flex-col items-start">
+          <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
             <h2 className="text-3xl mb-2.5 font-bold">Sign in</h2>
             {!isMobile && (
               <p className="mb-5">Hi, let's jump in! 👋</p>
@@ -133,8 +148,8 @@ const Login: React.FC = () => {
         </div>
         {!isMobile && (
           <footer className="bottom-0 left-0 right-0 text-center text-sm bg-[#7862FC] text-white p-4">
-          Made with ❤️ by DECOBuilder
-        </footer>
+            Made with ❤️ by DECOBuilder
+          </footer>
         )}
       </IonContent>
     </IonPage>
