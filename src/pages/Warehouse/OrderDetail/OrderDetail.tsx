@@ -1,11 +1,12 @@
 import React from 'react';
-import { IonContent, IonPage } from '@ionic/react';
+import { IonContent, IonIcon, IonPage } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { useOrderDetails } from '../../../api/warehouseApi';
 import { format, parseISO } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
 import Receipt from '../../../components/Warehouse/Receipt/Receipt';
 import ReactDOMServer from 'react-dom/server';
+import { arrowBack } from 'ionicons/icons';
 
 const PreparationTypePill: React.FC<{ type: string }> = ({ type }) => (
   <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
@@ -16,7 +17,11 @@ const PreparationTypePill: React.FC<{ type: string }> = ({ type }) => (
 const OrderDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { data: orderDetails, isLoading, error } = useOrderDetails(parseInt(id));
-  
+    
+    const handleBackClick = () => {
+        history.back();
+      };
+
     const printReceipt = () => {
       if (!orderDetails) return;
   
@@ -81,11 +86,19 @@ const OrderDetail: React.FC = () => {
     return (
       <IonPage>
         <IonContent className="font-sans">
-          <div className="p-6 bg-gray-100 min-h-screen">
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-6 pl-24 bg-gray-100 min-h-screen">
+            <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">Order Details</h2>
+                <div className="flex items-center">
+                    <button 
+                      onClick={handleBackClick}
+                      className="mr-4 text-gray-600 hover:text-gray-900"
+                    >
+                      <IonIcon icon={arrowBack} className="w-6 h-6" />
+                    </button>
+                    <h2 className="text-2xl font-bold">Order Details</h2>
+                  </div>
                   <button 
                     className="bg-[#7862FC] text-white font-semibold py-2 px-4 rounded-2xl"
                     onClick={printReceipt}

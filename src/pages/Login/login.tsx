@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { IonContent, IonHeader, IonPage, useIonRouter } from "@ionic/react";
-import "./login.css";
 import IconInput from "../../components/icon-input";
 import IconButton from "../../components/icon-button";
 import EmailIcon from "../../../public/icon/email-icon";
