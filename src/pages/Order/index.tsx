@@ -1,18 +1,4 @@
-import React, { useState, useEffect } from "react";
-import {
-  IonBackButton,
-  IonButtons,
-  IonHeader,
-  IonContent,
-  IonToolbar,
-  IonTitle,
-  IonPage,
-  IonButton,
-  IonInput,
-  IonIcon,
-} from "@ionic/react";
-import LocationIcon from "../../../public/icon/location-icon";
-import { searchOutline } from "ionicons/icons";
+import { useState, useEffect } from "react";
 import OrderMobile from "./order-mobile/order-mobile";
 import OrderWeb from "./order-web/order-web";
 

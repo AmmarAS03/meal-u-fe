@@ -1,8 +1,7 @@
 import CheckoutDetailsCard from './checkout-details-card';
-import { deliveryDetails } from '../dummyData';
-import { Dispatch, useState, SetStateAction, useEffect } from 'react';
-import PaymentDetailsCard from './payment-details-card';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 import styles from './checkout.module.css';
+import { useOrder } from '../../../contexts/orderContext';
 
 interface CheckoutProps {
     subTotal: number;
@@ -11,40 +10,28 @@ interface CheckoutProps {
 }
 
 const Checkout: React.FC<CheckoutProps> = ({subTotal, total, setTotal}) => {
-    const [deliveryData, setDeliveryData] = useState(deliveryDetails);
+    const { deliveryLocationDetails, deliveryTimeSlotDetails } = useOrder();
 
+
+    // TODO: change with delivery fee from BE when ready
     useEffect(() => {
-      // TODO: change with API calls
-      const fetchData = async () => {
-        setDeliveryData(deliveryDetails);
+      const calculateTotal = () => {
+          const newTotal = subTotal + 10;
+          setTotal(newTotal);
       };
-      fetchData();
-    }, []);
-
-
-    useEffect(() => {
-        const calculateTotal = () => {
-            const newTotal = subTotal + deliveryData.fee;
-            setTotal(newTotal);
-        };
-        calculateTotal();
-    }, [subTotal, deliveryData, total]);
+      calculateTotal();
+    }, [subTotal, total]);
 
     return (
         <>
           <div className={styles.subsection}>
             <div className={styles.title}>Delivery to</div>
-            <CheckoutDetailsCard data1={deliveryData.university_name} data2={deliveryData.university_branch} button="Change Address" />
+            <CheckoutDetailsCard data1={deliveryLocationDetails.name} data2={deliveryLocationDetails.branch} button="Change Address" />
           </div>
 
           <div className={styles.subsection}>
             <div className={styles.title}>Set Time</div>
-            <CheckoutDetailsCard data1={deliveryData.delivery_date} data2={deliveryData.delivery_time} button="Change Time" />
-          </div>
-          
-          <div className={styles.subsection}>
-            <div className={styles.title}>Payment Summary</div>
-            <PaymentDetailsCard subTotal={subTotal} fee={deliveryData.fee} total={total} />
+            <CheckoutDetailsCard data1={deliveryTimeSlotDetails.name} data2={deliveryTimeSlotDetails.end_time} button="Change Time" />
           </div>
         </>
     )

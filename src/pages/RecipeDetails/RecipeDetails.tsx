@@ -34,6 +34,8 @@ const RecipeDetails: React.FC = () => {
     const { getToken } = useAuth();
     const token = getToken();
 
+    
+
     useEffect(() => {
         const loadRecipe = async () => {
             if (!token) {
@@ -133,21 +135,21 @@ const RecipeDetails: React.FC = () => {
                     <div className="flex justify-start p-4 gap-3">
                         <div className="flex items-center gap-3">
                             <IonIcon icon={fastFood} className="bg-[#E6EBF2] text-[#0A2533] p-2 rounded-lg text-2xl" />
-                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details.carbohydrate_per_serving}g carbs</IonText>
+                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details ? recipe.nutrition_details.carbohydrate_per_serving : "--" }g carbs</IonText>
                         </div>
                         <div className="flex items-center gap-3">
                             <IonIcon icon={restaurant} className="bg-[#E6EBF2] text-[#0A2533] p-2 rounded-lg text-2xl" />
-                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details.protein_per_serving}g proteins</IonText>
+                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details ? recipe.nutrition_details.protein_per_serving : "--" }g proteins</IonText>
                         </div>
                     </div>
                     <div className="flex justify-start p-4 gap-3">
                         <div className="flex items-center gap-3">
                             <IonIcon icon={flame} className="bg-[#E6EBF2] text-[#0A2533] p-2 rounded-lg text-2xl" />
-                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details.energy_per_serving} Kcal</IonText>
+                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details ? recipe.nutrition_details.energy_per_serving : "--" } Kcal</IonText>
                         </div>
                         <div className="flex items-center gap-3">
                             <IonIcon icon={fastFood} className="bg-[#E6EBF2] text-[#0A2533] p-2 rounded-lg text-2xl" />
-                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details.fat_total_per_serving}g fats</IonText>
+                            <IonText className="text-[#0A2533] font-normal text-base w-24">{recipe.nutrition_details ? recipe.nutrition_details.fat_total_per_serving : "--" }g fats</IonText>
                         </div>
                     </div>
                     <div className="px-4">
@@ -174,7 +176,7 @@ const RecipeDetails: React.FC = () => {
                             id={ingredient.ingredient.product_id}
                             name={ingredient.ingredient.name}
                             image={ingredient.ingredient.image || "/img/no-photo.png"}
-                            quantity={`${ingredient.ingredient.unit_size} ${ingredient.ingredient.unit_id === 2 ? 'g' : 'ml'}`}
+                            quantity={`${ingredient.ingredient.unit_size} ${ingredient.ingredient.unit_id}`}
                             price={`$${ingredient.price.toFixed(2)}`}
                         />
                     ))}

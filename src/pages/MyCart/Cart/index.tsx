@@ -10,28 +10,34 @@ interface CartProps {
   setSubTotal: Dispatch<SetStateAction<number>>;
 }
 
+export const cartContents = () => {
+  const { data: cartData } = useCart();
+
+  if (cartData?.mealkits.length || cartData?.recipes.length || cartData?.products.length) {
+    return ({
+      cartNotEmpty: true,
+      cartMealkits: cartData.mealkits,
+      cartRecipes: cartData.recipes,
+      cartProducts: cartData.products,
+    })
+  } 
+
+  return {
+    cartNotEmpty: false,
+    cartMealkits: [],
+    cartRecipes: [],
+    cartProducts: [],
+  };
+}
+
 const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {
   const { data: cartData } = useCart();
 
   useEffect(() => {
     if (cartData) {
-      // Calculate the subtotal based on the prices of meal kits, recipes, and ingredients
-      console.log("Calculating subtotal:", cartData); 
-      const calculateSubTotal = () => {
-        const mealkitTotal = cartData.cart_mealkits.reduce((acc, item) => acc + item.mealkit.total_price * item.quantity, 0);
-        console.log("mealkit total:", mealkitTotal)
-        const recipeTotal = cartData.cart_recipes.reduce((acc, item) => acc + item.recipe.total_price * item.quantity, 0);
-        console.log(recipeTotal);
-        const productTotal = cartData.cart_products.reduce((acc, item) => acc + parseFloat(item.product.price_per_unit) * item.quantity, 0);
-        console.log(productTotal);
-        
-        const newSubTotal = mealkitTotal + recipeTotal + productTotal;
-        setSubTotal(newSubTotal);
-      };
-      calculateSubTotal();
-    } else {
+      setSubTotal(cartData.total_price);
     }
-  }, [cartData, setSubTotal]);
+  }, [cartData]);
 
   if (!cartData) {
     return <div className={styles.empty_cart}>You have no items in your cart right now.</div>;
@@ -42,9 +48,9 @@ const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {
     	<div className={styles.subsection}>
 			<div className={styles.title}>Meal Kits</div>
     	  <div className={styles.cards}>
-          {cartData.cart_mealkits.length ? (
-    	    cartData.cart_mealkits.map((data, index) => (
-    	        <CollapsibleMealkitCard key={index} title={data.mealkit.name} dietaryDetails={data.mealkit.dietary_details} price={data.mealkit.total_price} child={data.recipes} />
+          {cartData.mealkits.length ? (
+    	    cartData.mealkits.map((data, index) => (
+    	        <CollapsibleMealkitCard key={index} data={data} />
     	    ))
           ) : <div className={styles.empty}>You have no mealkits in your cart.</div>
         }
@@ -53,9 +59,9 @@ const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {
     	<div className={styles.subsection}>
 			<div className={styles.title}>Recipe</div>
     	  <div className={styles.cards}>
-          {cartData.cart_recipes.length ? (
-            cartData.cart_recipes.map((data, index) => (
-    	        <CollapsibleRecipeCard key={index} id={data.id} title={data.recipe.name} dietaryDetails={data.recipe.dietary_details} price={data.recipe.total_price} quantity={data.quantity} child={data.recipe.ingredients || []}/>
+          {cartData.recipes.length ? (
+            cartData.recipes.map((data, index) => (
+    	        <CollapsibleRecipeCard key={index} data={data}/>
     	    ))
           ) : <div className={styles.empty}>You have no recipes in your cart.</div>
               }
@@ -64,10 +70,9 @@ const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {
     	<div className={styles.subsection}>
 			<div className={styles.title}>Products</div>
     	  <div className={styles.cards}>
-          {cartData.cart_products.length ? (
-            cartData.cart_products.map((data, index) => (
+          {cartData.products.length ? (
+            cartData.products.map((data, index) => (
     	        <IngredientRowCard key={index} data={data}/>
-              // <IngredientRowCard key={index} data={data} title={data.product.name} dietaryDetails={data.product.dietary_details} price={data.product.price_per_unit} quantity={data.quantity}/>
     	    ))
           ) : <div className={styles.empty}>You have no products in your cart.</div>
           }

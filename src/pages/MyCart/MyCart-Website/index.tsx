@@ -20,7 +20,7 @@ const MyCartWebsite: React.FC = () => {
               <div className={styles.checkoutSection}>
                 <div className={styles.checkoutContainer}>
                   <div className={styles.checkoutContainer2}>
-                    <Checkout subTotal={subTotal} total={total} setTotal={setTotal} />
+                    {/* <Checkout subTotal={subTotal} total={total} setTotal={setTotal} /> */}
                   </div>
                 </div>
               </div>

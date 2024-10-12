@@ -16,7 +16,7 @@ const Tab1: React.FC = () => {
   const router = useIonRouter();
 
   const navigateToSubPage = () => {
-    router.push('/tab1/subpage');
+    router.push('/qr-reader');
   };
 
 

@@ -20,11 +20,11 @@ import "./theme/variables.css";
 setupIonicReact();
 const App: React.FC = () => {
   return (
-    <IonApp>
-      <IonReactRouter>
-        <AppContent />
-      </IonReactRouter>
-    </IonApp>
+      <IonApp>
+        <IonReactRouter>
+          <AppContent />
+        </IonReactRouter>
+      </IonApp>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   IonBackButton,
   IonButtons,
@@ -22,21 +22,29 @@ import { useMealkitList, MealkitData } from "../../../api/mealkitApi";
 import { RecipeData, useRecipesList } from "../../../api/recipeApi";
 import { ProductData, useProductList } from "../../../api/productApi";
 import { LocationData, useLocationList } from "../../../api/locationApi";
-import { useCart, CartData } from "../../../api/cartApi";
+import {
+  useCart,
+  CartData,
+  useUpdateCartItem,
+  useDeleteCartItem,
+  useAddCartItem,
+} from "../../../api/cartApi";
 import { useParams } from "react-router-dom";
-import ItemCard from "../../../components/ItemCard";
+import ItemCard from "../../../components/ItemCard/ItemCard";
+import { useQueryClient } from "@tanstack/react-query";
+import SkeletonOrderCard from "../../../components/ItemCard/SkeletonItemCard";
+import SkeletonProductItem from "../../../components/ProductCard/SkeletonProductCard";
 
 function OrderMobile() {
+  const queryClient = useQueryClient();
   const { category } = useParams<{ category: string }>();
   const router = useIonRouter();
-  const [count, setCount] = useState(0);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<{
-    [key: number]: number;
-  }>({});
+  const [totalItem, setTotalItem] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
   const { data: mealkits = [], isFetching: isMealkitsFetching } =
     useMealkitList({
       search: selectedCategory,
@@ -52,27 +60,19 @@ function OrderMobile() {
     isFetching: boolean;
   };
 
-  console.log(cart);
+  const updateCartItem = useUpdateCartItem();
+  const deleteCartItem = useDeleteCartItem();
+  const addCartItem = useAddCartItem();
 
-  const totalCartItems = React.useMemo(() => {
-    if (!cart) return 0;
+  const refetchCart = () => {
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
+  };
 
-    const ingredientsCount =
-      cart.cart_ingredients?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-    const mealkitsCount =
-      cart.cart_mealkits?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-    const productsCount =
-      cart.cart_products?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-    const recipesCount =
-      cart.cart_recipes?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-
-    // console.log("Ingredients count", ingredientsCount);
-    // console.log("MealKit count", mealkitsCount);
-    // console.log("Products count", productsCount);
-    // console.log("Recipes count", recipesCount);
-
-    return ingredientsCount + mealkitsCount + productsCount + recipesCount;
-  }, [cart]);
+  const getCartItem = (productId: number) => {
+    return cart?.products?.find(
+      (item: { product: { id: number } }) => item.product.id === productId
+    );
+  };
 
   const { data: location = [], isFetching: isLocationFetching } =
     useLocationList();
@@ -82,29 +82,88 @@ function OrderMobile() {
     setCurrentLocation(firstLocation);
   }
 
+  const updateTotals = useCallback(() => {
+    if (cart) {
+      setTotalItem(cart.total_item);
+      setTotalPrice(cart.total_price);
+    }
+  }, [cart]);
+
+  useEffect(() => {
+    updateTotals();
+  }, [cart, updateTotals]);
+
   const handleFilter = () => {
     setIsFilterVisible(!isFilterVisible);
   };
 
   const increment = (productId: number) => {
-    setSelectedProducts((prev) => {
-      const newCount = (prev[productId] || 0) + 1;
-      const newSelected = { ...prev, [productId]: newCount };
-      console.log("Selected products:", newSelected);
-      return newSelected;
-    });
+    const cartItem = getCartItem(productId);
+    if (cartItem) {
+      const newQuantity = cartItem.quantity + 1;
+      updateCartItem.mutate(
+        {
+          item_type: "product",
+          item_id: cartItem.id,
+          quantity: newQuantity,
+        },
+        {
+          onSuccess: () => {
+            refetchCart();
+            updateTotals();
+          },
+        }
+      );
+    } else {
+      addCartItem.mutate(
+        {
+          item_type: "product",
+          product_id: productId,
+          quantity: 1,
+        },
+        {
+          onSuccess: () => {
+            refetchCart();
+            updateTotals();
+          },
+          onError: (error) => {
+            console.error("Add to cart failed:", error);
+          },
+          onSettled: () => {
+            console.log("Add to cart operation completed (success or failure)");
+          },
+        }
+      );
+    }
   };
 
   const decrement = (productId: number) => {
-    setSelectedProducts((prev) => {
-      const newCount = Math.max((prev[productId] || 0) - 1, 0);
-      const newSelected = { ...prev, [productId]: newCount };
-      if (newCount === 0) {
-        delete newSelected[productId];
+    const cartItem = getCartItem(productId);
+    if (cartItem) {
+      if (cartItem.quantity > 1) {
+        const newQuantity = cartItem.quantity - 1;
+        updateCartItem.mutate(
+          {
+            item_type: "product",
+            item_id: cartItem.id,
+            quantity: newQuantity,
+          },
+          {
+            onSuccess: () => refetchCart(),
+          }
+        );
+      } else {
+        deleteCartItem.mutate(
+          {
+            item_type: "product",
+            cart_product_id: cartItem.id,
+          },
+          {
+            onSuccess: () => refetchCart(),
+          }
+        );
       }
-      console.log("Selected products:", newSelected);
-      return newSelected;
-    });
+    }
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +198,7 @@ function OrderMobile() {
   const filteredMealkits = filterItems(mealkits, searchValue);
   const filteredRecipes = filterItems(recipes, searchValue);
   const filteredProducts = filterItems(product, searchValue);
+
   return (
     <IonPage>
       <IonHeader>
@@ -202,7 +262,19 @@ function OrderMobile() {
         >
           <p style={{ fontSize: "16px", fontWeight: "600" }}>Mealkits</p>
           {isMealkitsFetching ? (
-            <p>Loading mealkits...</p>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                }}
+              >
+                {[...Array(5)].map((_, index) => (
+                  <SkeletonOrderCard key={index} />
+                ))}
+              </div>
+            </div>
           ) : filteredMealkits.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
@@ -229,7 +301,19 @@ function OrderMobile() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <h3 style={{ fontSize: "16px", fontWeight: "600" }}>Recipes</h3>
           {isRecipesFetching ? (
-            <p>Loading recipes...</p>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                }}
+              >
+                {[...Array(5)].map((_, index) => (
+                  <SkeletonOrderCard key={index} />
+                ))}
+              </div>
+            </div>
           ) : filteredRecipes.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
@@ -255,106 +339,121 @@ function OrderMobile() {
 
         {/* Bawah ini Product (Groceries) */}
 
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginBottom: "50px",
+            marginTop: "10px",
+          }}
+        >
           <h3 style={{ fontSize: "16px", fontWeight: "600" }}>Groceries</h3>
           {isProductFetching ? (
-            <p>Loading groceries...</p>
+            <>
+              <SkeletonProductItem />
+              <SkeletonProductItem />
+              <SkeletonProductItem />
+            </>
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product: ProductData) => (
-              <div
-                key={product.id}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: "#ffffff",
-                  borderRadius: 15,
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  padding: "10px",
-                  marginBottom: "10px",
-                }}
-              >
+            filteredProducts.map((product: ProductData) => {
+              const cartItem = getCartItem(product.id);
+              const cartQuantity = cartItem ? cartItem.quantity : 0;
+              return (
                 <div
+                  key={product.id}
                   style={{
                     display: "flex",
                     flexDirection: "row",
-                    gap: "5px",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: "#ffffff",
+                    borderRadius: 15,
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    padding: "10px",
+                    marginBottom: "10px",
                   }}
                 >
-                  <img
-                    alt={product.name}
-                    src={product.image || "/img/no-photo.png"}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      objectFit: "cover",
-                      maxWidth: "50px",
-                      maxHeight: "50px",
-                      borderRadius: "10px",
-                    }}
-                  />
                   <div
                     style={{
                       display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "flex-start",
-                      height: "100%",
+                      flexDirection: "row",
+                      gap: "5px",
                     }}
                   >
-                    <p
+                    <img
+                      alt={product.name}
+                      src={product.image || "/img/no-photo.png"}
                       style={{
-                        margin: 0,
-                        marginBottom: "4px",
-                        fontSize: "10px",
-                        fontWeight: "normal",
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                        maxWidth: "50px",
+                        maxHeight: "50px",
+                        borderRadius: "10px",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "flex-start",
+                        height: "100%",
                       }}
                     >
-                      {product.name.length > 50
-                        ? `${product.name.slice(0, 50)}...`
-                        : product.name}
-                    </p>
-                    <h3
-                      style={{
-                        margin: 0,
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      ${product.price_per_unit}
-                    </h3>
+                      <p
+                        style={{
+                          margin: 0,
+                          marginBottom: "4px",
+                          fontSize: "10px",
+                          fontWeight: "normal",
+                        }}
+                      >
+                        {product.name.length > 50
+                          ? `${product.name.slice(0, 50)}...`
+                          : product.name}
+                      </p>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        ${product.price_per_unit}
+                      </h3>
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  <IonIcon
-                    icon={removeCircleOutline}
-                    onClick={() => decrement(product.id)}
-                    style={{ fontSize: "24px", cursor: "pointer" }}
-                  />
                   <div
                     style={{
-                      width: "30px",
-                      textAlign: "center",
-                      margin: "0px",
+                      display: "flex",
+                      flexDirection: "row",
                     }}
                   >
-                    {selectedProducts[product.id] || 0}
+                    <IonIcon
+                      icon={removeCircleOutline}
+                      onClick={() => decrement(product.id)}
+                      style={{ fontSize: "24px", cursor: "pointer" }}
+                    />
+                    <div
+                      style={{
+                        width: "30px",
+                        textAlign: "center",
+                        margin: "0px",
+                      }}
+                    >
+                      {cartQuantity}
+                    </div>
+                    <IonIcon
+                      icon={addCircleOutline}
+                      onClick={() => increment(product.id)}
+                      style={{ fontSize: "24px", cursor: "pointer" }}
+                    />
                   </div>
-                  <IonIcon
-                    icon={addCircleOutline}
-                    onClick={() => increment(product.id)}
-                    style={{ fontSize: "24px", cursor: "pointer" }}
-                  />
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p>No Groceries found.</p>
           )}
@@ -363,55 +462,63 @@ function OrderMobile() {
         {/* Bawah ini Floating Button */}
 
         {!isFilterVisible && (
-        <IonButton
-          onClick={() => router.push("/mycart")}
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "85vw",
-            height: "50px",
-            "--border-radius": "25px",
-            "--box-shadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
-            "--background": "#7862FC",
-            zIndex: 1000,
-          }}
-        >
-          <div
+          <IonButton
+            onClick={() => router.push("/mycart")}
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-              flexDirection: "row",
-              padding: "5px",
+              position: "fixed",
+              bottom: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "85vw",
+              height: "50px",
+              "--border-radius": "25px",
+              "--box-shadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+              "--background": "#7862FC",
+              zIndex: 1000,
             }}
           >
             <div
               style={{
                 display: "flex",
+                justifyContent: "space-between",
                 width: "100%",
-                flexDirection: "column",
-                justifyContent: "space-around",
+                flexDirection: "row",
+                padding: "5px",
               }}
             >
-              <p
+              <div
                 style={{
-                  fontSize: "16px",
-                  fontWeight: "400",
-                  textAlign: "left",
-                  color: "#fff",
+                  display: "flex",
+                  width: "100%",
+                  flexDirection: "column",
+                  justifyContent: "space-around",
                 }}
               >
-                My Orders
-              </p>
-              <p style={{ fontSize: "12px", textAlign: "left", color: "#fff" }}>
-                {totalCartItems} items - $0 AUD
-              </p>
+                <p
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "400",
+                    textAlign: "left",
+                    color: "#fff",
+                  }}
+                >
+                  My Orders
+                </p>
+                {cart && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      textAlign: "left",
+                      color: "#fff",
+                    }}
+                  >
+                    {totalItem} items - ${totalPrice} AUD
+                  </p>
+                )}
+              </div>
+              <FloatCartIcon />
             </div>
-            <FloatCartIcon />
-          </div>
-        </IonButton>
+          </IonButton>
         )}
       </IonContent>
     </IonPage>
