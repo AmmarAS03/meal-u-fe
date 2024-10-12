@@ -27,11 +27,11 @@ const Navbar: React.FC = () => {
   ];
 
   const customerNavItems = [
-    { to: "/tab1", icon: RepeatIcon, label: "Repeat" },
-    { to: "/tab2", icon: StoreIcon, label: "Store" },
+    { to: "/home", icon: RepeatIcon, label: "Repeat" },
+    { to: "/community", icon: StoreIcon, label: "Store" },
     { to: "/categories", icon: OrderIcon, label: "Order" },
     { to: "/tab4", icon: ReceiptIcon, label: "Receipt" },
-    { to: "/mycart", icon: UserIcon, label: "Profile" }
+    { to: "/user", icon: UserIcon, label: "Profile" }
   ];
 
   const navItems = role === 'courier' ? courierNavItems : customerNavItems;

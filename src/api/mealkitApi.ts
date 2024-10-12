@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
+import { RecipeData } from './recipeApi';
 
 interface Creator {
   name: string;
@@ -56,7 +57,9 @@ export interface MealkitData {
   created_at: string;
   description: string;
   dietary_details: string[];
-  price: number;
+  total_price: number;
+  quantity: number;
+  recipes: RecipeData[];
 }
 
 export interface MealkitDetailsData {
@@ -80,7 +83,7 @@ export const useMealkitList = (params: MealkitListParams): UseQueryResult<Mealki
 
   const fetchMealkits = async (): Promise<MealkitData[]> => {
     const url = params.search && params.search !== "Show All"
-      ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/?categories=${encodeURIComponent(params.search)}`
+      ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/?search=${encodeURIComponent(params.search)}`
       : 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/';
 
     const response = await fetch(url, {
@@ -142,5 +145,39 @@ export const useMealkitDetails = (mealkitId: number): UseQueryResult<MealkitDeta
     queryKey: ['mealkit.details', mealkitId],
     queryFn: () => fetchMealkitDetails(mealkitId, token),
     enabled: !!token && !!mealkitId,
+  });
+};
+
+export const useTrendingMealkitList = (): UseQueryResult<MealkitData[], Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || '';
+
+  const fetchTrendingMealkits = async (): Promise<MealkitData[]> => {
+    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-mealkits/';
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch mealkits');
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch mealkits');
+    }
+
+    return data.data;
+  };
+
+  return useQuery<MealkitData[], Error, MealkitData[], [string]>({
+    queryKey: ['trending-mealkit.list'],
+    queryFn: fetchTrendingMealkits,
+    initialData: [],
+    enabled: !!token,
   });
 };

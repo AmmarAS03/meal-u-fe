@@ -1,4 +1,4 @@
-# Meal-U-FE
+# meal-u-fe
 
 Meal-U-FE is a frontend application built with Ionic Framework and React. This project aims to provide a platform for students to order and pick up meals on campus.
 

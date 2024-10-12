@@ -16,8 +16,17 @@ import {
 } from '@ionic/react';
 import { addOutline, chevronForward } from 'ionicons/icons';
 import styles from './PaymentOptions.module.css';
+import { useUpdateOrderStatusToPaid, useGetUserOrders } from '../../api/orderApi';
 
 const PaymentOptions: React.FC = () => {
+    const {data: orders} = useGetUserOrders();
+    const mostRecentOrder = orders && orders.length > 0 ? orders[0] : null;
+    const { mutate } = useUpdateOrderStatusToPaid();
+
+    const changeStatusToPaid = () => {
+        mostRecentOrder && (mutate(mostRecentOrder.id));
+    }
+    
     return (
         <IonPage>
             <IonHeader>
@@ -63,6 +72,11 @@ const PaymentOptions: React.FC = () => {
                         name="Cash on Delivery"
                         details="Pay in Cash"
                     />
+                </div>
+                <div className={styles.bottom_button}>
+                  <IonButton expand="block" className={styles.checkout_button} onClick={changeStatusToPaid} >
+                  Pay
+                  </IonButton>
                 </div>
             </IonContent>
         </IonPage>

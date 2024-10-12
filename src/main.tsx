@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import App from "./App";
 import { AuthProvider } from "./contexts/authContext";
+import { OrderProvider } from "./contexts/orderContext";
 import './index.css'
 import '@fontsource/dm-sans/400.css';
 import '@fontsource/dm-sans/500.css';
@@ -17,7 +18,9 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <App />
+        <OrderProvider>
+          <App />
+        </OrderProvider>
       </AuthProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition={'top-right'} /> */}
     </QueryClientProvider>
