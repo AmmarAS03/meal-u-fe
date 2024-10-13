@@ -3,17 +3,17 @@ import { useOrder } from '../../../contexts/orderContext'
 
 const DeliveryDateFilter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { deliveryDateFilter, setDeliveryDateFilter } = useOrder();
+  const { filters, setFilter } = useOrder();
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
   };
 
   const handleFilterChange = (date: string | null) => {
-    setDeliveryDateFilter(date);
+    setFilter('deliveryDate', date);
     setIsOpen(false);
   };
-
+  
   return (
     <div className="relative inline-block text-left">
       <div>
@@ -25,7 +25,7 @@ const DeliveryDateFilter: React.FC = () => {
           aria-haspopup="true"
           onClick={toggleDropdown}
         >
-          {deliveryDateFilter || 'Filter by Delivery Date'}
+          {filters.deliveryDate || 'Delivery Date'}
           <svg
             className="-mr-1 h-5 w-5 text-gray-400"
             viewBox="0 0 20 20"

@@ -5,9 +5,14 @@ import { useWarehouseOrders } from '../../../api/warehouseApi';
 import { useHistory } from 'react-router-dom';
 import OrdersToolbar from '../../../components/Warehouse/Toolbar/OrdersToolbar';
 import { useOrder } from '../../../contexts/orderContext';
+import { useUpdateOrderStatusToPreparing, useUpdateOrderStatusToReadyToDeliver } from '../../../api/orderApi';
+import { useQueryClient } from "@tanstack/react-query";
 
 const AllOrders: React.FC = () => {
+  const queryClient = useQueryClient();
   const { data: warehouseOrders, isLoading, error } = useWarehouseOrders();
+  const { mutate: updateToPreparing } = useUpdateOrderStatusToPreparing();
+  const { mutate: updateToReadyToDeliver } = useUpdateOrderStatusToReadyToDeliver();
   const history = useHistory();
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const { filters, clearFilters } = useOrder();
@@ -79,6 +84,28 @@ const AllOrders: React.FC = () => {
     clearFilters();
     setIsFilterUsed(false);
   };
+
+  const handleUpdateStatusToPreparing = () => {
+    if (selectedOrders.length) {
+      Promise.all(selectedOrders.map(orderId => 
+        updateToPreparing(parseInt(orderId))
+      )).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
+        setSelectedOrders([]);
+      });
+    }
+  }
+
+  const handleUpdateStatusToReadyToDeliver = () => {
+    if (selectedOrders.length) {
+      Promise.all(selectedOrders.map(orderId =>
+        updateToReadyToDeliver(parseInt(orderId))
+        )).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
+          setSelectedOrders([]);
+        });
+    }
+  }
   
   return (
     <IonPage>
@@ -90,16 +117,29 @@ const AllOrders: React.FC = () => {
               <p className="text-center py-4 text-gray-500">There are no orders</p>
             ) : (
               <>
-              <div className='flex flex-row'>
+              <div className='flex flex-row gap-10'>
                 <OrdersToolbar />
                 {isFilterUsed && (
                 <button 
                   onClick={handleResetFilters}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  // className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                  className="bg-transparent hover:bg-purple-500 text-purple-700 font-semibold hover:text-white py-2 px-4 border border-purple-500 hover:border-transparent rounded"
                 >
                   Reset Filters
                 </button>
               )}
+              <button
+                onClick={handleUpdateStatusToPreparing}
+                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
+              >
+                Update Status to preparing
+              </button>
+              <button
+                onClick={handleUpdateStatusToReadyToDeliver}
+                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
+              >
+                Update Status to ready to deliver
+              </button>
               </div>
               {/* <OrdersToolbar /> */}
               <table className="table-auto">
