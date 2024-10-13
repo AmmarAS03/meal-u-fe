@@ -96,8 +96,8 @@ const Login: React.FC = () => {
             </div>
           )}
 
-          <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
-            <h2 className="text-3xl mb-2.5 font-bold">Sign in</h2>
+          <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-center">
+            <h2 className="text-3xl mb-2.5 font-bold">Login</h2>
             {!isMobile && (
               <p className="mb-5">Hi, let's jump in! 👋</p>
             )}
