@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   IonHeader,
   IonContent,
@@ -18,9 +18,13 @@ import SkeletonCommunityCard from '../../../components/CommunityCard/SkeletonCom
 
 function UserMobile() {
   const history = useHistory();
-  const { data: user, isLoading, error } = useUserProfile();
+  const { data: user, isLoading, error, refetch } = useUserProfile();
   const { data: recipes = [], isFetching } = useCommunityRecipesList();
   const [activeIcon, setActiveIcon] = useState('grid');
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const handleEditProfile = () => {
     history.push('/edit-profile');

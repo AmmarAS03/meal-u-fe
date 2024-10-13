@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonHeader,
   IonContent,
@@ -8,37 +8,73 @@ import {
   IonAvatar,
   IonInput,
   IonItem,
-  IonLabel,
   IonButton,
   IonIcon
 } from '@ionic/react';
 import { personOutline, mailOutline, cardOutline, checkmarkOutline, arrowBackOutline } from 'ionicons/icons';
-import { useUserProfile } from '../../api/userApi';
+import { useUserProfile, useUpdateUserProfile } from '../../api/userApi';
 import { useHistory } from 'react-router-dom';
 import './EditProfile.css';
 
 function EditProfile() {
-    const history = useHistory();
-    const { data: user, isLoading, error } = useUserProfile();
+  const history = useHistory();
+  const { data: user, isLoading, error } = useUserProfile();
+  const updateUserProfile = useUpdateUserProfile();
 
-    const [firstName, setFirstName] = useState(user?.first_name || '');
-    const [lastName, setLastName] = useState(user?.last_name || '');
-    const [email, setEmail] = useState(user?.email || '');
-    // Other states...
-
-    if (isLoading) return <p>Loading...</p>;
-    if (error) return <p>Error loading profile.</p>;
-  const [paymentMethod, setPaymentMethod] = useState(''); // HARDCODED --------------------------------
-  const [gender, setGender] = useState('Male'); // HARDCODED ------------------------------------------
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [gender, setGender] = useState('Male');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.first_name);
+      setLastName(user.last_name);
+      setEmail(user.email);
+      setPaymentMethod(user.profile?.paymentMethod || '');
+      setGender(user.profile?.gender || 'Male');
+    }
+  }, [user]);
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const handleUpdateProfile = () => {
-    console.log('Profile updated:', { firstName, lastName, email, paymentMethod, gender });
+    setIsUpdating(true);
+    const updatedProfile = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      profile: {
+        ...user?.profile,
+        // gender: gender,
+        // paymentMethod: paymentMethod
+      }
+    };
+  
+    console.log('Updating with:', updatedProfile);
+    
+    updateUserProfile.mutate(updatedProfile, {
+      onSuccess: () => {
+        setIsUpdating(false);
+        alert('Profile updated successfully');
+        history.push('/user');
+      },
+      onError: (err) => {
+        setIsUpdating(false);
+        console.error('Error updating profile:', err);
+        alert('Error updating profile');
+      },
+    });
   };
 
   const handleBack = () => {
-    history.push('/user'); // Redirect to the user page
+    history.push('/user');
   };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading profile.</p>;
 
   return (
     <IonPage>
@@ -150,9 +186,15 @@ function EditProfile() {
             </div>
           </div>
         </div>
-        <IonButton expand="full" color="primary" onClick={handleUpdateProfile} className="update-profile-button">
-          Update Profile
-        </IonButton>
+        <IonButton 
+      expand="full" 
+      color="primary" 
+      onClick={handleUpdateProfile} 
+      className="update-profile-button"
+      disabled={isUpdating}
+    >
+      {isUpdating ? 'Updating...' : 'Update Profile'}
+    </IonButton>
       </IonContent>
     </IonPage>
   );
