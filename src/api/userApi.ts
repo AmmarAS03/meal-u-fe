@@ -14,6 +14,32 @@ interface UserProfile {
   profile: any;
 }
 
+interface Recipe {
+    id: number;
+    creator: {
+      name: string;
+      profile_picture: string;
+      userID: number;
+    };
+    name: string;
+    serving_size: number;
+    meal_type: string;
+    cooking_time: number;
+    created_at: string;
+    image: string;
+    dietary_details: string[];
+    total_price: number;
+  }
+  
+interface LikedRecipe {
+recipe: Recipe;
+liked_at: string;
+}
+
+interface LikedRecipesResponse {
+liked_recipes: LikedRecipe[];
+}
+
 export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
@@ -85,5 +111,38 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Pa
       onError: (error) => {
         console.error('Error updating profile:', error);
       },
+    });
+  };
+
+  export const useLikedRecipes = (): UseQueryResult<LikedRecipesResponse, Error> => {
+    const { getToken } = useAuth();
+    const token = getToken() || '';
+  
+    const fetchLikedRecipes = async (): Promise<LikedRecipesResponse> => {
+      const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/user-likes/';
+  
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch liked recipes');
+      }
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch liked recipes');
+      }
+  
+      return data.data;
+    };
+  
+    return useQuery<LikedRecipesResponse, Error>({
+      queryKey: ['user.likedRecipes'],
+      queryFn: fetchLikedRecipes,
+      enabled: !!token,
     });
   };

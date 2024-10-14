@@ -9,7 +9,7 @@ import {
   IonInput,
   IonItem,
   IonButton,
-  IonIcon
+  IonIcon,
 } from '@ionic/react';
 import { personOutline, mailOutline, cardOutline, checkmarkOutline, arrowBackOutline } from 'ionicons/icons';
 import { useUserProfile, useUpdateUserProfile } from '../../api/userApi';
@@ -48,13 +48,9 @@ function EditProfile() {
       email: email,
       profile: {
         ...user?.profile,
-        // gender: gender,
-        // paymentMethod: paymentMethod
-      }
+      },
     };
-  
-    console.log('Updating with:', updatedProfile);
-    
+
     updateUserProfile.mutate(updatedProfile, {
       onSuccess: () => {
         setIsUpdating(false);
@@ -89,7 +85,7 @@ function EditProfile() {
       <IonContent className="ion-padding">
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <IonAvatar className="avatar">
-            <img src="public/img/food-image.png" alt="Profile" style={{ width: '100%', height: '100%' }} />
+            <img src={user?.image || 'public/img/no-photo.png'} alt="Profile" style={{ width: '100%', height: '100%' }} />
           </IonAvatar>
         </div>
         <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
@@ -187,14 +183,14 @@ function EditProfile() {
           </div>
         </div>
         <IonButton 
-      expand="full" 
-      color="primary" 
-      onClick={handleUpdateProfile} 
-      className="update-profile-button"
-      disabled={isUpdating}
-    >
-      {isUpdating ? 'Updating...' : 'Update Profile'}
-    </IonButton>
+          expand="full" 
+          color="primary" 
+          onClick={handleUpdateProfile} 
+          className="update-profile-button"
+          disabled={isUpdating}
+        >
+          {isUpdating ? 'Updating...' : 'Update Profile'}
+        </IonButton>
       </IonContent>
     </IonPage>
   );

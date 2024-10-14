@@ -81,27 +81,29 @@ export const useRecipesList = (
   const fetchRecipe = async (): Promise<RecipeData[]> => {
     const url =
       params.search && params.search !== "Show All"
-        ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?search=${encodeURIComponent(
+        ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?${encodeURIComponent(
             params.search
           )}`
         : "http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/";
-
+  
+    console.log("Fetching recipes from URL:", url); // Log the URL
+  
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
+  
     if (!response.ok) {
       throw new Error("Failed to fetch mealkits");
     }
-
+  
     const data = await response.json();
-
+  
     if (!data.success) {
       throw new Error(data.message || "Failed to fetch recipes");
     }
-
+  
     return data.data;
   };
 

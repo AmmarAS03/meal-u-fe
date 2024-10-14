@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   IonHeader,
   IonContent,
@@ -10,28 +10,47 @@ import {
   IonIcon,
 } from "@ionic/react";
 import { useHistory } from 'react-router-dom';
-import { gridOutline, heartOutline, bookmarkOutline } from 'ionicons/icons';
-import { useUserProfile } from '../../../api/userApi';
-import { useCommunityRecipesList } from '../../../api/recipeApi';
+import { gridOutline, heartOutline } from 'ionicons/icons';
+import { useUserProfile, useLikedRecipes } from '../../../api/userApi';
+import { useRecipesList, useCommunityRecipesList } from '../../../api/recipeApi';
 import CommunityCard from '../../../components/CommunityCard/CommunityCard';
 import SkeletonCommunityCard from '../../../components/CommunityCard/SkeletonCommunityCard';
 
 function UserMobile() {
   const history = useHistory();
-  const { data: user, isLoading, error, refetch } = useUserProfile();
-  const { data: recipes = [], isFetching } = useCommunityRecipesList();
+  const { data: user, isLoading: isUserLoading, error: userError } = useUserProfile();
   const [activeIcon, setActiveIcon] = useState('grid');
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  // Fetch user's recipes
+  const { data: userRecipes = [], isFetching: isRecipesFetching } = useRecipesList({
+    search: user ? `creator=${user.id}` : '',
+  });
+
+  // Fetch all community recipes
+  const { data: communityRecipes = [], isFetching: isCommunityRecipesFetching } = useCommunityRecipesList();
+
+  // Fetch liked recipes
+  const { data: likedRecipesData, isFetching: isLikedFetching } = useLikedRecipes();
+  const likedRecipes = likedRecipesData?.liked_recipes.map(item => item.recipe) || [];
+  
+  // Filter logic
+  const filteredRecipes = useMemo(() => {
+    if (activeIcon === 'grid') {
+      const userRecipeIds = new Set(userRecipes.map(recipe => recipe.id));
+      return communityRecipes.filter(recipe => userRecipeIds.has(recipe.id));
+    } else if (activeIcon === 'heart') {
+      const likedRecipeIds = new Set(likedRecipes.map(recipe => recipe.id));
+      return communityRecipes.filter(recipe => likedRecipeIds.has(recipe.id));
+    }
+    return [];
+  }, [activeIcon, userRecipes, communityRecipes, likedRecipes]);
 
   const handleEditProfile = () => {
     history.push('/edit-profile');
   };
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading profile.</p>;
+  if (isUserLoading) return <p>Loading...</p>;
+  if (userError) return <p>Error loading profile.</p>;
 
   return (
     <IonPage>
@@ -89,29 +108,22 @@ function UserMobile() {
               }}
               onClick={() => setActiveIcon('heart')}
             />
-            <IonIcon
-              icon={bookmarkOutline}
-              style={{
-                fontSize: '24px',
-                color: activeIcon === 'bookmark' ? '#7862FC' : '#000',
-                cursor: 'pointer',
-              }}
-              onClick={() => setActiveIcon('bookmark')}
-            />
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '20px 0' }}>
-          {isFetching ? (
+          {isRecipesFetching || isCommunityRecipesFetching || isLikedFetching ? (
             <>
               <SkeletonCommunityCard />
               <SkeletonCommunityCard />
               <SkeletonCommunityCard />
             </>
-          ) : (
-            recipes.map((recipe) => (
+          ) : filteredRecipes.length > 0 ? (
+            filteredRecipes.map((recipe) => (
               <CommunityCard key={recipe.id} recipe={recipe} />
             ))
+          ) : (
+            <p>No recipes found.</p>
           )}
         </div>
       </IonContent>
