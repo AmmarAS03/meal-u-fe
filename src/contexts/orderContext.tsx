@@ -8,6 +8,13 @@ import { useQueries } from "@tanstack/react-query";
 import { useAuth } from '../contexts/authContext';
 
 
+interface Filters {
+  deliveryDate: string | null;
+  deliveryBatch: string | null;
+  deliveryLocation: number | null;
+  orderStatus: string | null;
+}
+
 // Define the shape of the order context
 interface OrderContextProps {
   handleOrderCreation: () => Promise<OrderCreationResponse | undefined>;
@@ -35,7 +42,12 @@ interface OrderContextProps {
   getUnitFromId: (id: number) => string | undefined;
   meal_types: MealType[] | undefined;
   getMealTypeFromId: (id: number) => string | undefined;
-  // getPreparationTypes: (categoryId: number) => PreparationType[];
+
+  deliveryDateFilter: string | null;
+  setDeliveryDateFilter: (date: string | null) => void;
+  filters: Filters;
+  setFilter: (filterName: keyof Filters, value: string | number | null) => void;
+  clearFilters: () => void;
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
@@ -154,6 +166,34 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return data?.name;
   }
 
+  // New state for filter
+  const [deliveryDateFilter, setDeliveryDateFilter] = useState<string | null>(null);
+  // New state for filters
+  const [filters, setFilters] = useState<Filters>({
+    deliveryDate: null,
+    deliveryBatch: null,
+    deliveryLocation: null,
+    orderStatus: null,
+  });
+
+  // Function to set individual filters
+  const setFilter = (filterName: keyof Filters, value: string | number | null) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterName]: value,
+    }));
+  };
+
+  // Function to clear all filters
+  const clearFilters = () => {
+    setFilters({
+      deliveryDate: null,
+      deliveryBatch: null,
+      deliveryLocation: null,
+      orderStatus: null,
+    });
+  };
+    
   // categories and preparation types
   const { data: categories } = useCategoriesList();
 
@@ -177,7 +217,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         getUnitFromId,
         meal_types,
         getMealTypeFromId,
-        // getPreparationTypes,
+        deliveryDateFilter,
+        setDeliveryDateFilter,
+        filters,
+        setFilter,
+        clearFilters,
       }
     }>
       {children}
