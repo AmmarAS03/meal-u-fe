@@ -1,7 +1,7 @@
 import ArrowDownIcon from "../../../../public/icon/arrow-down";
 import ArrowUpIcon from "../../../../public/icon/arrow-up";
 import styles from "./cart.module.css";
-import { useState } from "react";
+import React, { useState } from "react";
 import Increment from "../../../../public/icon/increment";
 import Decrement from "../../../../public/icon/decrement";
 import {
@@ -9,8 +9,6 @@ import {
   useDeleteCartMealkit,
   useUpdateCartItem,
 } from "../../../api/cartApi";
-
-
 import CollapsibleRecipeCard from "./collapsible-recipe-card";
 
 interface CollapsibleMealkitCardProps {
@@ -99,6 +97,7 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
             <CollapsibleRecipeCard
               key={index}
               data={data}
+              isFromMealkit={true}
             />
           ))}
         </div>

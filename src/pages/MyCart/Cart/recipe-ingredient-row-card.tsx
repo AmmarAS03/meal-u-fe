@@ -8,24 +8,39 @@ import {
   useDeleteCartItem,
   useUpdateCartItem,
 } from "../../../api/cartApi";
+import { IonAlert } from '@ionic/react';
 
 interface RecipeIngredientRowCardProps {
   data: RecipeIngredient;
+  isFromMealkit: boolean;
 }
 
-const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data }) => {
+const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data, isFromMealkit }) => {
   const [quantity, setQuantity] = useState(data.quantity);
-  const [price, setPrice] = useState(data.price);
+  const [showAlert, setShowAlert] = useState(false);
+  const [isFirstCustomization, setIsFirstCustomization] = useState(true);
+  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
   const updateCartItem = useUpdateCartItem();
   const deleteCartIngredient = useDeleteCartIngredient();
 
+  const handleCustomization = (action: () => void) => {
+    if (isFirstCustomization) {
+      setShowAlert(true);
+      setPendingAction(() => action);
+    } else {
+      action();
+    }
+  };
+
   const handleIncrement = () => {
-    const newQuantity = quantity + 1;
-    setQuantity(newQuantity);
-    updateCartItem.mutate({
-      item_type: "ingredient",
-      item_id: data.id,
-      quantity: newQuantity,
+    handleCustomization(() => {
+      const newQuantity = quantity + 1;
+      setQuantity(newQuantity);
+      updateCartItem.mutate({
+        item_type: "ingredient",
+        item_id: data.id,
+        quantity: newQuantity,
+      });
     });
   };
 
@@ -34,20 +49,22 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
   }, [data.quantity]);
 
   const handleDecrement = () => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      updateCartItem.mutate({
-        item_type: "ingredient",
-        item_id: data.id,
-        quantity: newQuantity,
-      });
-    } else {
-      deleteCartIngredient.mutate({
-        item_type: "ingredient",
-        cart_ingredient_id: data.id,
-      });
-    }
+    handleCustomization(() => {
+      if (quantity > 1) {
+        const newQuantity = quantity - 1;
+        setQuantity(newQuantity);
+        updateCartItem.mutate({
+          item_type: "ingredient",
+          item_id: data.id,
+          quantity: newQuantity,
+        });
+      } else {
+        deleteCartIngredient.mutate({
+          item_type: "ingredient",
+          cart_ingredient_id: data.id,
+        });
+      }
+    });
   };
 
   return (
@@ -77,13 +94,37 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
           <div className={styles.price}>${data.price}</div>
         </div>
         <div className={styles.column}>
-          <div className={styles.quantity}>
+          {isFromMealkit ? null : (
+            <div className={styles.quantity}>
             <Decrement onClick={handleDecrement} />
-            <p style={{ fontSize: "12px" }}>{quantity}</p>
+            <p style={{ fontSize: "12px" }}>{data.quantity}</p>
             <Increment onClick={handleIncrement} />
           </div>
+          )}
         </div>
       </div>
+      <IonAlert
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        header="Customization Alert"
+        message="After customization, any addition to recipe will multiply from your customized recipe. Are you sure you want to continue?"
+        buttons={[
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              setShowAlert(false);
+            },
+          },
+          {
+            text: 'Continue',
+            handler: () => {
+              setIsFirstCustomization(false);
+              pendingAction();
+            },
+          },
+        ]}
+      />
     </div>
   );
 };

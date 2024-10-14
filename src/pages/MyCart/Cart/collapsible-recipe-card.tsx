@@ -10,15 +10,21 @@ import {
 } from "../../../api/cartApi";
 import { CartRecipe, } from '../../../api/cartApi'
 import RecipeIngredientRowCard from "./recipe-ingredient-row-card";
+import { IonAlert } from '@ionic/react';
 
 interface CollapsibleRecipeCardProps {
   data: CartRecipe;
+  isFromMealkit: boolean;
 }
 
-const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => {
+const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data, isFromMealkit}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isChildExist, setIsChildExist] = useState(false);
   const [newQuantity, setNewQuantity] = useState(0);
+  const [showAlert, setShowAlert] = useState(false);
+  const [isFirstCustomization, setIsFirstCustomization] = useState(true);
+  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
+
   const updateCartItem = useUpdateCartItem();
   const deleteCartRecipe = useDeleteCartRecipe();
 
@@ -26,7 +32,27 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
     setIsExpanded((prevState) => !prevState);
   };
 
+  const handleCustomization = (action: () => void) => {
+    if (isFirstCustomization) {
+      setShowAlert(true);
+      setPendingAction(() => action);
+    } else {
+      action();
+    }
+  };
+
   const handleIncrement = () => {
+    if (isFromMealkit) {
+      handleCustomization(() => {
+        const newQuantity = data.quantity + 1;
+        setNewQuantity(newQuantity);
+        updateCartItem.mutate({
+          item_type: "recipe",
+          item_id: data.id,
+          quantity: newQuantity,
+        });
+      });
+    } else {
     const newQuantity = data.quantity + 1;
     setNewQuantity(newQuantity);
     updateCartItem.mutate({
@@ -34,22 +60,42 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
       item_id: data.id,
       quantity: newQuantity,
     });
+    }
   };
 
   const handleDecrement = () => {
-    if (data.quantity > 1) {
-      const newQuantity = data.quantity - 1;
-      setNewQuantity(newQuantity);
-      updateCartItem.mutate({
-        item_type: "recipe",
-        item_id: data.id,
-        quantity: newQuantity,
-      });
+    if (isFromMealkit) {
+      handleCustomization(() => {
+        if (data.quantity > 1) {
+          const newQuantity = data.quantity - 1;
+          setNewQuantity(newQuantity);
+          updateCartItem.mutate({
+            item_type: "recipe",
+            item_id: data.id,
+            quantity: newQuantity,
+          });
+        } else {
+          deleteCartRecipe.mutate({
+            item_type: "recipe",
+            cart_recipe_id: data.id,
+          });
+        }
+      })
     } else {
-      deleteCartRecipe.mutate({
-        item_type: "recipe",
-        cart_recipe_id: data.id,
-      });
+      if (data.quantity > 1) {
+        const newQuantity = data.quantity - 1;
+        setNewQuantity(newQuantity);
+        updateCartItem.mutate({
+          item_type: "recipe",
+          item_id: data.id,
+          quantity: newQuantity,
+        });
+      } else {
+        deleteCartRecipe.mutate({
+          item_type: "recipe",
+          cart_recipe_id: data.id,
+        });
+      }
     }
   };
 
@@ -112,10 +158,32 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
       {isExpanded ? (
         <div className="expanded_content">
           {data.ingredients.map((data, index) => (
-            <RecipeIngredientRowCard key={index} data={data}/>
+            <RecipeIngredientRowCard key={index} data={data} isFromMealkit={isFromMealkit}/>
           ))}
         </div>
       ) : null}
+      <IonAlert
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        header="Customization Alert"
+        message="After customization, any addition to mealkits will multiply from your customized mealkit. Are you sure you want to continue?"
+        buttons={[
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              setShowAlert(false);
+            },
+          },
+          {
+            text: 'Continue',
+            handler: () => {
+              setIsFirstCustomization(false);
+              pendingAction();
+            },
+          },
+        ]}
+      />
       </div>
   );
 };
