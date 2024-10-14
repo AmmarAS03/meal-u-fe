@@ -57,6 +57,21 @@ interface OrderResponse<T> {
     data: T;
 }
 
+export interface Location {
+    id: number;
+    name: string;
+    branch: string,
+    address_line1: string,
+    address_line2: string,
+    city: string,
+    postal_code: string,
+    country: string,
+    details: string,
+    delivery_fee: string,
+    longitude: string,
+    latitude: string
+}
+
 export const useOrderDetails = (orderId: number): UseQueryResult<OrderDetails, Error> => {
     const { getToken } = useAuth();
     const token = getToken() || '';
@@ -174,4 +189,41 @@ export const useGetUserOrders = (): UseQueryResult<UserOrders[], Error> => {
         queryFn: fetchUserOrders,
         enabled: !!token,
     });
+};
+
+export const useLocationList = (): UseQueryResult<
+  Location[],
+  Error
+> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchLocation = async (): Promise<Location[]> => {
+    const url =
+      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch mealkits");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch recipes");
+    }
+
+    return data.data;
+  };
+  return useQuery<Location[], Error, Location[], [string]>({
+    queryKey: ["location.list"],
+    queryFn: fetchLocation,
+    initialData: [],
+    enabled: !!token,
+  });
 };
