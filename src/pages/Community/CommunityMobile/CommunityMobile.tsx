@@ -7,6 +7,10 @@ import {
   IonPage,
   IonButton,
   useIonRouter,
+  IonFab,
+  IonFabButton,
+  IonFabList,
+  IonIcon
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
 import FilterOverlay from "../../../components/FilterOverlay";
@@ -20,6 +24,13 @@ import HomeImageCard from "../../../components/HomeImageCard";
 import CreatorCommunityCard from "../../../components/CreatorCommunityCard/CreatorCommunityCard";
 import SkeletonCreatorCommunityCard from "../../../components/CreatorCommunityCard/SkeletonCreatorCommunityCard";
 import RecipeIcon from "../../../../public/icon/recipe-icon";
+import {
+  addOutline,
+  restaurantOutline,
+  gift,
+} from 'ionicons/icons';
+
+import styles from './CommunityMobile.module.css'
 
 function CommunityMobile() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -193,17 +204,24 @@ function CommunityMobile() {
 
         {renderContent()}
 
-        <div className="mb-20">
-        <IonButton onClick={navigateToCreateRecipe}>
-          Create Recipe
-        </IonButton>
-        </div>
-
         {isFilterVisible && (
           <div className="filter">
             <FilterOverlay />
           </div>
         )}
+        <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
+          <IonFabButton>
+            <IonIcon icon={addOutline}></IonIcon> {/*main button*/}
+          </IonFabButton>
+          <IonFabList side="top">
+            <IonFabButton color="dark" onClick={navigateToCreateRecipe}>
+              <IonIcon icon={restaurantOutline}></IonIcon>
+            </IonFabButton>
+            <IonFabButton color="dark">
+              <IonIcon icon={gift}></IonIcon>
+            </IonFabButton>
+          </IonFabList>
+        </IonFab>
       </IonContent>
     </IonPage>
   );

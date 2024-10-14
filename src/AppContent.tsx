@@ -81,7 +81,7 @@ const AppContent: React.FC = () => {
               <Route path="/mealkit-details/:id" component={MealkitDetails} />
               <Route path="/recipe-details/:id" component={RecipeDetails} />
               <Route path="/product-details/:id" component={ProductDetails} />
-              <Route path="/payment-options" component={PaymentOptions} />
+              <Route path="/payment-options/:id" component={PaymentOptions} />
               <Route path="/courier/home" component={CourierHome} />
               <Route path="/courier/:type/:id" component={CourierDelivery} />
               <Route path="/courier/confirm-pickup/:type/:id" component={ConfirmPickup} />

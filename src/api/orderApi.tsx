@@ -95,7 +95,7 @@ export interface OrderStatusResponse {
     data: string;
   }
   
-  export const useUpdateOrderStatusToPaid = () => {
+  export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void; }) => {
     const { getToken } = useAuth();
     const queryClient = useQueryClient();
   
@@ -125,6 +125,7 @@ export interface OrderStatusResponse {
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({queryKey: ['orders']});
+        options?.onSuccess?.();
       }
     })
   }

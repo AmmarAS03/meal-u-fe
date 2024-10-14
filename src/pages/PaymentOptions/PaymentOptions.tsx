@@ -16,15 +16,22 @@ import {
 } from '@ionic/react';
 import { addOutline, chevronForward } from 'ionicons/icons';
 import styles from './PaymentOptions.module.css';
-import { useUpdateOrderStatusToPaid, useGetUserOrders } from '../../api/orderApi';
+import { useUpdateOrderStatusToPaid } from '../../api/orderApi';
+import { useHistory, useParams } from 'react-router-dom';
 
 const PaymentOptions: React.FC = () => {
-    const {data: orders} = useGetUserOrders();
-    const mostRecentOrder = orders && orders.length > 0 ? orders[0] : null;
-    const { mutate } = useUpdateOrderStatusToPaid();
+    const { id } = useParams<{ id: string }>();
+    const history = useHistory();
+    const { mutate } = useUpdateOrderStatusToPaid({
+        onSuccess: () => {
+          setTimeout(() => {
+            history.replace('/tab4'); 
+          }, 100);
+        }
+      });
 
     const changeStatusToPaid = () => {
-        mostRecentOrder && (mutate(mostRecentOrder.id));
+        mutate(parseInt(id));
     }
     
     return (
@@ -73,11 +80,13 @@ const PaymentOptions: React.FC = () => {
                         details="Pay in Cash"
                     />
                 </div>
-                <div className={styles.bottom_button}>
-                  <IonButton expand="block" className={styles.checkout_button} onClick={changeStatusToPaid} >
-                  Pay
-                  </IonButton>
-                </div>
+                {/* { id ? ( */}
+                    <div className={styles.bottom_button}>
+                        <IonButton expand="block" className={styles.checkout_button} onClick={changeStatusToPaid} >
+                            Pay
+                        </IonButton>
+                  </div>
+                {/* ) : null } */}
             </IonContent>
         </IonPage>
     );

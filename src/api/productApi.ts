@@ -34,6 +34,7 @@ export interface ProductData {
   product_nutrition: ProductNutrition | null;
   recipes: RecipePreview[];
   total_price: number;
+  category_id: string;
 }
 
 interface ProductNutrition {
@@ -237,3 +238,4 @@ export const useMealTypeList = (): UseQueryResult<MealType[], Error> => {
     enabled: !!token,
   });
 };
+

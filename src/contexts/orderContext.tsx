@@ -1,12 +1,16 @@
-import React, { createContext, useContext, useState } from 'react';
-import { DeliveryLocation, DeliveryTimeSlot, useCreateOrder, useDeliveryLocations, useDeliveryTimeSlots } from "../api/deliveryApi";
-import { useCreateRecipe, CreateRecipePayload } from '../api/recipeApi';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { DeliveryLocation, DeliveryTimeSlot, OrderCreationResponse, useCreateOrder, useDeliveryLocations, useDeliveryTimeSlots } from "../api/deliveryApi";
+import { useCreateRecipe, CreateRecipePayload, usePreparationTypeList, PreparationType } from '../api/recipeApi';
 import { formatDate } from '../pages/MyCart/MyCart-Mobile';
 import { UnitData, useUnitList, ProductData, MealType, useMealTypeList } from '../api/productApi';
+import { CategoryData, useCategoriesList } from '../api/categoryApi';
+import { useQueries } from "@tanstack/react-query";
+import { useAuth } from '../contexts/authContext';
+
 
 // Define the shape of the order context
 interface OrderContextProps {
-  handleOrderCreation: () => void;
+  handleOrderCreation: () => Promise<OrderCreationResponse | undefined>;
   handleRecipeCreation: (payload: CreateRecipePayload) => void;
   deliveryDetails: {
     deliveryLocation: number;
@@ -28,8 +32,11 @@ interface OrderContextProps {
   fillDeliveryTimeSlotDetails: (id: number) => void;
   units: UnitData[] | undefined;
   getUnitId: (product: ProductData) => number;
+  getUnitFromId: (id: number) => string | undefined;
   meal_types: MealType[] | undefined;
   getMealTypeFromId: (id: number) => string | undefined;
+  prepTypeMap: Record<number, PreparationType[]>;
+  // getPreparationTypes: (categoryId: number) => PreparationType[];
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
@@ -43,7 +50,8 @@ export const useOrder = () => {
 };
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { mutate: createOrder } = useCreateOrder();
+  // const { mutate: createOrder } = useCreateOrder();
+  const createOrderMutation = useCreateOrder();
   const { mutate: createRecipe} = useCreateRecipe();
   const { data: allDeliveryLocations } = useDeliveryLocations();
   const { data: allDeliveryTimeSlots } = useDeliveryTimeSlots();
@@ -64,7 +72,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     postal_code: "",
     country: "",
     details: "",
-  })
+    delivery_fee: "",
+    longitude: "",
+    latitude: "",
+  });
 
   const fillDeliveryLocationDetails = (id: number) => {
     const data = allDeliveryLocations?.find(location => location.id === id);
@@ -79,6 +90,9 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         postal_code: data.postal_code,
         country: data.country,
         details: data.details,
+        delivery_fee: data.delivery_fee,
+        longitude: data.longitude,
+        latitude: data.latitude,
       });
     }
   }
@@ -105,13 +119,18 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }
 
 
-  const handleOrderCreation = () => {
+  const handleOrderCreation = async () => {
     const { deliveryLocation, deliveryTime, deliveryDate } = deliveryDetails;
-    createOrder({
-        delivery_location: deliveryLocation,
-        delivery_time: deliveryTime,
-        delivery_date: formatDate(deliveryDate), 
-      });
+    try {
+      const result = await createOrderMutation.mutateAsync({
+            delivery_location: deliveryLocation,
+            delivery_time: deliveryTime,
+            delivery_date: formatDate(deliveryDate), 
+          });
+      return result;
+    } catch (error) {
+      console.error('Error creating order:', error);
+    };
   };
 
   const handleRecipeCreation = (payload: CreateRecipePayload) => {
@@ -123,6 +142,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const data = units!.find(unit => unit.name === product.unit_id);
     return data!.id;
   }
+  // get unit from unit_id
+  const getUnitFromId = (id: number) => {
+    const data = units?.find((unit) => unit.id === id);
+    return data?.name;
+  }
 
   const { data: meal_types } = useMealTypeList();
 
@@ -130,6 +154,38 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const data = meal_types?.find(type => type.id === id);
     return data?.name;
   }
+
+  // categories and preparation types
+  const { data: categories } = useCategoriesList();
+
+  const useAllPreparationTypes = (categories: CategoryData[] | undefined): Record<number, PreparationType[]> => {
+    const { getToken } = useAuth();
+    const token = getToken() || "";
+  
+    const queries = useQueries({
+      queries: categories?.map((category) => ({
+        queryKey: ['preparationType', category.id],
+        queryFn: () => usePreparationTypeList(category.id).data,
+        enabled: !!token && !!category.id,
+      })) || [],
+    });
+  
+    const prepTypeMap: Record<number, PreparationType[]> = {};
+    queries.forEach((query, index) => {
+      if (query.data && categories) {
+        prepTypeMap[categories[index].id] = query.data;
+      }
+    });
+
+    console.log("in orderContext: ", prepTypeMap);
+    return prepTypeMap;
+  };
+
+  const prepTypeMap = useAllPreparationTypes(categories);
+
+  const getPreparationTypes = (categoryId: number): PreparationType[] => {
+    return prepTypeMap[categoryId] || [];
+  };
 
   return (
     <OrderContext.Provider
@@ -148,8 +204,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         fillDeliveryTimeSlotDetails,
         units,
         getUnitId,
+        getUnitFromId,
         meal_types,
         getMealTypeFromId,
+        prepTypeMap,
+        // getPreparationTypes,
       }
     }>
       {children}
