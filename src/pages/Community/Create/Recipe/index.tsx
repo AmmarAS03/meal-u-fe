@@ -66,7 +66,9 @@ const CreateRecipe: React.FC = () => {
   };
 
   const handleCreateRecipe = () => {
+    console.log(state);
     const response = handleRecipeCreation(state);
+    console.log(response);
   }
 
   const renderSection = (currentStep: number) => {

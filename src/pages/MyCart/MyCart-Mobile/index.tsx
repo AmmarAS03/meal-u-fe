@@ -76,7 +76,7 @@ const MyCartMobile: React.FC = () => {
         {cartNotEmpty ? (
           <>
             <div className={styles.subsection}>
-              <Checkout/>
+              <Checkout />
             </div>
             <div className={styles.subsection}>
               <div className={styles.title}>Payment Summary</div>

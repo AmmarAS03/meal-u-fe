@@ -1,5 +1,5 @@
 import { IonButton, IonIcon, IonImg, IonInput, IonLabel, IonSelect, IonSelectOption } from "@ionic/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CreateRecipePayload } from "../../../../api/recipeApi";
 import ImageInput from "../../../../components/image-input";
 import { useOrder } from "../../../../contexts/orderContext";
@@ -14,17 +14,53 @@ interface GeneralFormProps {
 
 const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
   const { meal_types } = useOrder();
-  const handleChange = (field: keyof CreateRecipePayload['recipe']) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    let value: string | number = e.target.value;
+  const [recipeName, setRecipeName] = useState(state.recipe.name);
+  const [description, setDescription] = useState(state.recipe.description);
+  const [cookingTime, setCookingTime] = useState(state.recipe.cooking_time);
+  const [servingSize, setServingSize] = useState(state.recipe.serving_size);
+  const [mealType, setMealType] = useState(state.recipe.meal_type);
+  const [photo, setPhoto] = useState<string | null>(state.image);
 
-    if (['cooking_time', 'serving_size', 'meal_type'].includes(field)) {
-      value = Math.max(0, parseInt(value, 10));
+  useEffect(() => {
+    setRecipeName(state.recipe.name);
+    setDescription(state.recipe.description);
+    setCookingTime(state.recipe.cooking_time);
+    setServingSize(state.recipe.serving_size);
+    setMealType(state.recipe.meal_type);
+    setPhoto(state.image);
+  }, [state]);
+
+  const handleChange = (field: keyof CreateRecipePayload['recipe'], value: any) => {
+    let processedValue = value;
+    
+    if (['cooking_time', 'serving_size'].includes(field)) {
+      processedValue = Math.max(0, parseInt(value, 10));
     }
 
-    dispatch({ type: 'SET_FIELD', field, value });
+    // update local state
+    switch (field) {
+      case 'name':
+        setRecipeName(processedValue);
+        break;
+      case 'description':
+        setDescription(processedValue);
+        break;
+      case 'cooking_time':
+        setCookingTime(processedValue);
+        break;
+      case 'serving_size':
+        setServingSize(processedValue);
+        break;
+      case 'meal_type':
+        setMealType(processedValue);
+        break;
+    }
+
+    // Update global state
+    dispatch({ type: 'SET_FIELD', field, value: processedValue });
   };
 
-  const [photo, setPhoto] = useState<string | null>(null);
+  // for uploading photo
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const uploadPhoto = async () => {
@@ -37,6 +73,8 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
       });
       
       setPhoto(image.dataUrl || null);
+
+      dispatch({type: "SET_FIELD", field: "image", value: image.dataUrl})
     } catch (error) {
       console.error('Error uploading photo:', error);
       setToastMessage('Failed to upload photo');
@@ -61,7 +99,10 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
             {photo ? (
                 <IonImg src={photo} alt="Recipe Photo" className="w-full rounded-lg shadow-lg" />
               ) : (
-                <ImageInput />
+                // <ImageInput />
+                <div className="grid grid-cols-1 justify-items-center items-center py-20">
+                  <p>No image selected</p>
+                </div>
               )
             }
           </div>
@@ -75,9 +116,9 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         <IonInput
           id="name"
           type="text"
-          value={state.recipe.name}
+          value={recipeName}
           placeholder="Recipe Name"
-          onIonInput={(e) => handleChange('name')}
+          onIonInput={(e) => handleChange('name', e.target.value)}
           fill="outline"
         />
       </div>
@@ -91,7 +132,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
           type="text"
           value={state.recipe.description}
           placeholder="Description"
-          onIonInput={(e) => handleChange('description')}
+          onIonInput={(e) => handleChange('description', e.target.value)}
           fill="outline"
         />
       </div>
@@ -101,21 +142,18 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
           Cooking Time
         </IonLabel>
         <div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center">
             <IonInput
               id="cooking_time"
               type="number"
               value={state.recipe.cooking_time}
               placeholder="Cooking Time"
-              onIonInput={(e) => handleChange('cooking_time')}
+              onIonInput={(e) => handleChange('cooking_time', e.target.value)}
               min={0}
               fill="outline"
               >
               </IonInput>
-            <IonSelect value="minutes">
-              <IonSelectOption value="minutes">Minute(s)</IonSelectOption>
-              <IonSelectOption value="hours">Hour(s)</IonSelectOption>
-            </IonSelect>
+            <IonLabel>Minute(s)</IonLabel>
           </div>
         </div>
       </div>
@@ -129,7 +167,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
           type="number"
           value={state.recipe.serving_size}
           placeholder="Number of Servings"
-          onIonInput={(e) => handleChange('serving_size')}
+          onIonInput={(e) => handleChange('serving_size', e.target.value)}
           min={0}
           fill="outline"
         >
@@ -140,7 +178,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Meal Type
         </IonLabel>
-        <IonSelect id="meal_type" placeholder="Select Meal Type" onIonChange={(e) => handleChange('meal_type')} value={state.recipe.meal_type}>
+        <IonSelect id="meal_type" placeholder="Select Meal Type" onIonChange={(e) => handleChange('meal_type', e.target.value)} value={state.recipe.meal_type}>
           {meal_types?.map((meal) => (
             <IonSelectOption key={meal.id} value={meal.id}>{meal.name}</IonSelectOption>
           ))}
