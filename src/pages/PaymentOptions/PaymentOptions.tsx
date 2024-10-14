@@ -10,20 +10,25 @@ import {
     IonCard,
     IonCardContent,
     IonText,
-    IonButton,
     IonIcon,
     IonImg,
 } from '@ionic/react';
-import { addOutline, chevronForward } from 'ionicons/icons';
+import { chevronForward } from 'ionicons/icons';
 import { useUpdateOrderStatusToPaid, useGetUserOrders } from '../../api/orderApi';
+import { useHistory } from 'react-router-dom';
 
 const PaymentOptions: React.FC = () => {
     const {data: orders} = useGetUserOrders();
     const mostRecentOrder = orders && orders.length > 0 ? orders[0] : null;
     const { mutate } = useUpdateOrderStatusToPaid();
+    const history = useHistory();
 
     const changeStatusToPaid = () => {
         mostRecentOrder && (mutate(mostRecentOrder.id));
+    }
+
+    const handlePayLater = () => {
+        history.push('/home');
     }
     
     return (
@@ -77,12 +82,18 @@ const PaymentOptions: React.FC = () => {
                         details="Pay in Cash"
                     />
                 </div>
-                <div className="fixed bottom-0 left-0 right-0 bg-white p-4 z-50 flex items-center gap-2.5 rounded-t-3xl">
+                <div className="fixed bottom-0 left-0 right-0 bg-white p-4 z-50 flex flex-col w-full items-center gap-2.5 rounded-t-3xl">
                     <button 
-                        className="w-full py-3 px-4 bg-[#7862FC] hover:bg-[#6a56de] active:bg-[#6a56de] focus:bg-[#6a56de] text-white transition-all duration-300 rounded-xl"
+                        className="flex-1 w-full py-3 px-4 bg-[#7862FC] hover:bg-[#6a56de] active:bg-[#6a56de] focus:bg-[#6a56de] text-white transition-all duration-300 rounded-xl"
                         onClick={changeStatusToPaid}
                     >
                         Pay
+                    </button>
+                    <button 
+                        className="flex-1 w-full py-3 px-4 bg-transparent border-2 border-[#7862FC] text-[#7862FC] hover:bg-[#7862FC] hover:text-white transition-all duration-300 rounded-xl"
+                        onClick={handlePayLater}
+                    >
+                        Pay Later
                     </button>
                 </div>
             </IonContent>

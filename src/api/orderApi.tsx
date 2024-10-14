@@ -129,11 +129,11 @@ export interface OrderStatusResponse {
     })
   }
 
-export interface UserOrders {
+  export interface UserOrders {
     id: number;
     order_status: string;
     delivery_details: CreateOrderPayload;
-    item_names: string[];
+    item_names: Array<{ name: string; quantity: number }>;
     created_at: string;
     updated_at: string;
     total: string;
