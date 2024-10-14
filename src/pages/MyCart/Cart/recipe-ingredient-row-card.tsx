@@ -4,6 +4,7 @@ import styles from "./cart.module.css";
 import { useEffect, useState } from "react";
 import {
   RecipeIngredient,
+  useDeleteCartIngredient,
   useDeleteCartItem,
   useUpdateCartItem,
 } from "../../../api/cartApi";
@@ -16,7 +17,7 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
   const [quantity, setQuantity] = useState(data.quantity);
   const [price, setPrice] = useState(data.price);
   const updateCartItem = useUpdateCartItem();
-  const deleteCartItem = useDeleteCartItem();
+  const deleteCartIngredient = useDeleteCartIngredient();
 
   const handleIncrement = () => {
     const newQuantity = quantity + 1;
@@ -42,9 +43,9 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
         quantity: newQuantity,
       });
     } else {
-      deleteCartItem.mutate({
+      deleteCartIngredient.mutate({
         item_type: "ingredient",
-        cart_product_id: data.id,
+        cart_ingredient_id: data.id,
       });
     }
   };
