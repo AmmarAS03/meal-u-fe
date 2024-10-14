@@ -84,22 +84,15 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-    <div className="grid grid-cols-1 gap-4 justify-between items-start mb-4">
-      <div className="w-full col-span-1">
-        <div className="flex flex-row gap-4 items-center justify-items-stretch">
-          <IonLabel className="grow block text-gray-700 text-sm font-bold mb-2">
-            Recipe Photo
-          </IonLabel>
-          <IonButton size="small" onClick={uploadPhoto}>
-            <IonIcon slot="icon-only" ios={cloudUploadOutline} md={cloudUploadOutline}></IonIcon>
-          </IonButton>
-        </div>
+      <div className="mb-4">
+        <IonLabel className="grow block text-gray-700 text-sm font-bold mb-2">
+          Recipe Photo
+        </IonLabel>
         <div className="flex justify-center">
           <div className="w-full max-w-md rounded-lg mb-4 border-4 border-dashed border-[#7862FC] p-2">
             {photo ? (
                 <IonImg src={photo} alt="Recipe Photo" className="w-full rounded-lg shadow-lg" />
               ) : (
-                // <ImageInput />
                 <div className="grid grid-cols-1 justify-items-center items-center py-20">
                   <p>No image selected</p>
                 </div>
@@ -107,9 +100,12 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
             }
           </div>
         </div>
+        <IonButton expand="block" onClick={uploadPhoto}>
+            <IonIcon slot="start" ios={cloudUploadOutline} md={cloudUploadOutline}>Upload Photo</IonIcon>
+        </IonButton>
       </div>
   
-      <div className="w-full">
+      <div className="mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Recipe Name
         </IonLabel>
@@ -123,7 +119,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         />
       </div>
   
-      <div className="w-full">
+      <div className="mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Description
         </IonLabel>
@@ -137,7 +133,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         />
       </div>
   
-      <div className="w-full">
+      <div className="mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Cooking Time
         </IonLabel>
@@ -158,7 +154,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         </div>
       </div>
   
-      <div className="w-full">
+      <div className="mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Number of Servings
         </IonLabel>
@@ -174,7 +170,7 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         </IonInput>
       </div>
   
-      <div className="w-full">
+      <div className="mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Meal Type
         </IonLabel>
@@ -184,7 +180,6 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
           ))}
         </IonSelect>
       </div>
-    </div>
   </div>
   
   );

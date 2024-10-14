@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/authContext';
 interface Creator {
   name: string;
   profile_picture: string;
+  userID: number;
 }
 
 export interface PreparationType {

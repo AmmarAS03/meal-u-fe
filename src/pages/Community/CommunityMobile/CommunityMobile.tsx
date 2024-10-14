@@ -168,10 +168,17 @@ function CommunityMobile() {
       <CommunityCard key={recipe.id} recipe={recipe} />
     ));
   };
+
   const router = useIonRouter();
+
   const navigateToCreateRecipe = () => {
     router.push('/community/create/recipe');
   }
+
+  const navigateToCreateMealkit = () => {
+    router.push('/community/create/mealkit');
+  }
+
   return (
     <IonPage>
       <IonHeader>
@@ -217,7 +224,7 @@ function CommunityMobile() {
             <IonFabButton color="dark" onClick={navigateToCreateRecipe}>
               <IonIcon icon={restaurantOutline}></IonIcon>
             </IonFabButton>
-            <IonFabButton color="dark">
+            <IonFabButton color="dark" onClick={navigateToCreateMealkit}>
               <IonIcon icon={gift}></IonIcon>
             </IonFabButton>
           </IonFabList>
