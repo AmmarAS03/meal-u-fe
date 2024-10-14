@@ -120,7 +120,6 @@ export interface OrderStatusResponse {
           throw new Error(data.message || 'Failed to update order status to paid');
         }
   
-        console.log("success");
         return data;
       },
       onSuccess: (data) => {

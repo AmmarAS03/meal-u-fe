@@ -14,21 +14,18 @@ import {
   IonChip,
   IonLabel,
   IonText,
-  IonButton,
   IonSelect,
   IonSelectOption,
 } from "@ionic/react";
 import { RecipeAction } from "./index";
-import { fetchProductDetails, ProductData, useProductList } from "../../../../api/productApi";
+import { ProductData, useProductList } from "../../../../api/productApi";
 import { useParams } from "react-router-dom";
 import IconInput from "../../../../components/icon-input";
 import SearchIcon from "../../../../../public/icon/search-icon";
 import { CreateRecipePayload, IngredientRecipe, usePreparationTypeList, PreparationType } from "../../../../api/recipeApi"
 import { useUnitList } from '../../../../api/productApi';
 import { useOrder } from '../../../../contexts/orderContext'
-import { useAuth } from '../../../../contexts/authContext';
 import { useCategoriesList } from '../../../../api/categoryApi';
-import { useQueries } from "@tanstack/react-query";
 
 interface IngredientsFormProps {
   state: CreateRecipePayload;
@@ -43,25 +40,33 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const { category } = useParams<{ category: string }>();
   const { data: products = [], isFetching: isProductFetching } = useProductList({ search: category });
   const { data: units } = useUnitList();
-  const { getUnitFromId, prepTypeMap } = useOrder();
+  const { getUnitFromId } = useOrder();
 
   const [selectedIngredients, setSelectedIngredients] = useState<IngredientRecipe[]>( state.ingredients || [] );
   const [showResults, setShowResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { data: categories } = useCategoriesList();
-  console.log("categories: ", categories);
-  console.log("prepTypeMap: ", prepTypeMap);
 
-  const getPreparationTypes = (categoryId: number): PreparationType[] => {
-    return prepTypeMap[categoryId] || [];
-  };
+  const prepTypeMap: Record<number, PreparationType[]> = {};
+  
+  const preparationTypeQueries = (categories ?? []).map(category => usePreparationTypeList(category.id));
+
+  preparationTypeQueries?.forEach((query, index) => {
+    if (query.isError) {
+      console.error(`Error fetching preparation types for category ${categories![index]?.name}:`, query.error);
+    } else {
+      if (query.data) {
+        prepTypeMap[categories![index]?.id] = query.data; // Map the data to category ID
+      }
+    }
+  });
 
   function getIdFromCategoryName(name: string): number {
     const result = categories?.find((category) => category.name === name)
     return result!.id;
   }
 
-  
+  // search related -----------------------------------------
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -85,6 +90,26 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     );
   };
 
+  const filteredProducts = filterItems(products, searchValue);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  //  end ofsearch related -----------------------------------------
+
   const getUnitId = (product: ProductData) => {
     const data = units!.find(unit => unit.name === product.unit_id);
     return data!.id;
@@ -101,18 +126,13 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           unit_size: product.unit_size,
           description: product.description,
         },
-        preparation_type: {
-          "id": -1,
-          "name": "",
-          "additional_price": "",
-          "category": getIdFromCategoryName(product.category_id),
-        },
+        preparation_type: 0,
         quantity: 1,
-        price: product.total_price
+        price: Number(product.price_per_unit),
       };
 
       setSelectedIngredients((prev) => [...prev, newIngredient]);
-      console.log("entered ingridient with category ", newIngredient.preparation_type?.category);
+      console.log("entered ingridient: ", newIngredient);
       dispatch({
         type: "SET_FIELD",
         field: "ingredients",
@@ -147,54 +167,55 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     });
   };
 
-  const filteredProducts = filterItems(products, searchValue);
+  const handlePrepTypeChange = (productId: number, preptype: string) => {
+    setSelectedIngredients((prevIngredients) => {
+      const updatedIngredients = prevIngredients.map((item) => {
+        if (item.ingredient.product_id === productId) {
+          const categoryId = getCategoryIdFromProductId(item.ingredient.product_id);
+          if (categoryId) {
+            const prepTypes = prepTypeMap[categoryId] || [];
+            console.log("prepTypes: ", prepTypes);
+            const selectedPrepType = prepTypes.find((type) => type.name === preptype);
+            console.log("selectedpreptype: ", selectedPrepType);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)
-      ) {
-        setShowResults(false);
-      }
-    };
+            // calculate the new price
+            let newPrice;
+            if (parseFloat(selectedPrepType!.additional_price) !== 0) {
+              newPrice = item.price + Number(selectedPrepType!.additional_price);
+            } else {
+              newPrice = item.price;
+            }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handlePrepTypeChange = (productId: number, prepId: number) => {
-    const updatedIngredients = selectedIngredients.map((item) => {
-      if (item.ingredient.product_id === productId) {
-        const categoryId = item.preparation_type?.category;
-        if (categoryId) {
-          const prepTypes = prepTypeMap[categoryId] || [];
-          const selectedPrepType = prepTypes.find((type) => type.id === prepId);
-          if (selectedPrepType) {
-            return {
-              ...item,
-              preparation_type: {
-                id: prepId,
-                name: selectedPrepType.name,
-                category: selectedPrepType.category,
-                additional_price: selectedPrepType.additional_price,
-              },
-            };
+            if (selectedPrepType) {
+              // update the preparation type for the selected ingredient
+              return {
+                ...item,
+                preparation_type: selectedPrepType.id,
+                price: newPrice,
+              };
+            }
           }
         }
-      }
-      return item;
-    });
+        return item;
+      });
 
-    setSelectedIngredients(updatedIngredients);
-    dispatch({
-      type: "SET_FIELD",
-      field: "ingredients",
-      value: updatedIngredients,
+      dispatch({
+        type: "SET_FIELD",
+        field: "ingredients",
+        value: updatedIngredients,
+      });
+  
+      return updatedIngredients;
     });
   };
+
+
+  function getCategoryIdFromProductId(productId: number): number {
+    const product = products.find((product) => product.id === productId)
+    const category = categories?.find((category) => category.name === product?.category_id)
+    return category!.id;
+  }
+  
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -268,14 +289,14 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
                   </div>
                   <div className="flex items-center gap-x-3 mt-2">
               <IonSelect
-                value={ingredient.preparation_type?.id}
+                value={ingredient.preparation_type}
                 placeholder="Select preparation type"
                 onIonChange={(e) => handlePrepTypeChange(ingredient.ingredient.product_id, e.detail.value)}
               >
                 <IonSelectOption value={null}>None</IonSelectOption>
-                {ingredient.preparation_type?.category && 
-                 prepTypeMap[ingredient.preparation_type.category]?.map((prepType) => (
-                  <IonSelectOption key={prepType.id} value={prepType.id}>
+                {ingredient && 
+                 prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)]?.map((prepType) => (
+                  <IonSelectOption key={prepType.id} value={prepType.name}>
                     {prepType.name}
                   </IonSelectOption>
                 ))}
