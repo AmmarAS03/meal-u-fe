@@ -1,21 +1,18 @@
 import ArrowDownIcon from "../../../../public/icon/arrow-down";
 import ArrowUpIcon from "../../../../public/icon/arrow-up";
 import styles from "./cart.module.css";
-import { useState } from "react";
-import { RecipeData } from "../../../api/recipeApi";
+import React, { useState } from "react";
 import Increment from "../../../../public/icon/increment";
 import Decrement from "../../../../public/icon/decrement";
 import {
-  useDeleteCartItem,
+  CartMealkit,
+  useDeleteCartMealkit,
   useUpdateCartItem,
 } from "../../../api/cartApi";
-
-
 import CollapsibleRecipeCard from "./collapsible-recipe-card";
-import { MealkitData } from "../../../api/mealkitApi";
 
 interface CollapsibleMealkitCardProps {
-  data: MealkitData;
+  data: CartMealkit;
 }
 
 const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
@@ -24,7 +21,7 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [newQuantity, setNewQuantity] = useState(0);
   const updateCartItem = useUpdateCartItem();
-  const deleteCartItem = useDeleteCartItem();
+  const deleteCartMealkit = useDeleteCartMealkit();
 
   const toggleExpand = () => {
     setIsExpanded((prevState) => !prevState);
@@ -50,9 +47,9 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
         quantity: newQuantity,
       });
     } else {
-      deleteCartItem.mutate({
+      deleteCartMealkit.mutate({
         item_type: "mealkit",
-        cart_product_id: data.id,
+        cart_mealkit_id: data.id,
       });
     }
   };
@@ -79,13 +76,6 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
               {data.name.length > 20 ? `${data.name.slice(0, 20)}...` : data.name}
             </p>
           </div>
-          <div className={styles.dietary_details}>
-            {data.dietary_details && Object.values(data.dietary_details).map((detail, index) => (
-              <div key={index} className={styles.node}>
-                {detail}
-              </div>
-            ))}
-          </div>
           <div className={styles.price}>${data.total_price}</div>
         </div>
         <div className={styles.column}>
@@ -107,6 +97,7 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
             <CollapsibleRecipeCard
               key={index}
               data={data}
+              isFromMealkit={true}
             />
           ))}
         </div>

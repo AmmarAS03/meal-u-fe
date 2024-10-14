@@ -1,5 +1,5 @@
 import React, { useReducer, useState, useEffect } from 'react'
-import { IonBackButton, IonButtons, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, useIonRouter} from '@ionic/react'
+import { IonBackButton, IonButtons, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react'
 import ProgressBar from './ProgressBar'
 import GeneralForm from './GeneralForm'
 import { CreateRecipePayload } from '../../../../api/recipeApi';
@@ -45,16 +45,10 @@ const recipeReducer = (state: CreateRecipePayload, action: RecipeAction): Create
 };
 
 const CreateRecipe: React.FC = () => {
-  const router = useIonRouter();
   const history = useHistory();
   const [state, dispatch] = useReducer(recipeReducer, initialState);
   const [currentStep, setCurrentStep] = useState(1);
 
-  const [isGeneralForm, setIsGeneralForm] = useState(true);
-  const [isInstructionsForm, setIsInstructionsForm] = useState(false);
-  const [isIngredientsForm, setIsIngredientsForm] = useState(false);
-  const [isDietaryDetailsForm, setIsDietaryDetailsForm] = useState(false);
-  const [isOverview, setIsOverview] = useState(false);
   const { mutate: handleRecipeCreation } = useCreateRecipe({
     onSuccess: (data) => {
       setTimeout(() => {
@@ -72,35 +66,27 @@ const CreateRecipe: React.FC = () => {
   };
 
   const handleCreateRecipe = () => {
+    console.log(state);
     const response = handleRecipeCreation(state);
+    console.log(response);
   }
 
-  useEffect(() => {
-    if (currentStep == 1) {
-      setIsGeneralForm(true);
-      setIsInstructionsForm(false);
-      setIsIngredientsForm(false);
-      setIsDietaryDetailsForm(false);
-    } else if (currentStep == 2) {
-      setIsGeneralForm(false);
-      setIsInstructionsForm(true);
-      setIsIngredientsForm(false);
-      setIsDietaryDetailsForm(false);
-    } else if (currentStep == 3) {
-      setIsGeneralForm(false);
-      setIsInstructionsForm(false);
-      setIsIngredientsForm(true);
-      setIsDietaryDetailsForm(false);
-    } else if (currentStep == 4) {
-      setIsGeneralForm(false);
-      setIsInstructionsForm(false);
-      setIsIngredientsForm(false);
-      setIsDietaryDetailsForm(true);
-    } else {
-      setIsDietaryDetailsForm(false);
-      setIsOverview(true);
+  const renderSection = (currentStep: number) => {
+    switch (currentStep) {
+      case 1:
+        return <GeneralForm state={state} dispatch={dispatch} />
+      case 2:
+        return <InstructionsForm state={state} dispatch={dispatch} />
+      case 3:
+        return <IngredientsForm state={state} dispatch={dispatch}/>
+      case 4:
+        return <DietaryDetailsForm state={state} dispatch={dispatch} />
+      case 5:
+        return <Overview state={state} />
+      default:
+        return null;
     }
-  })
+  }
 
   return (
     <IonPage>
@@ -115,11 +101,7 @@ const CreateRecipe: React.FC = () => {
       <IonContent className="ion-padding">
         <div className="w-full max-w-md mx-auto mb-[80px]">
           <ProgressBar currentStep={currentStep} />
-          {currentStep === 1 && <GeneralForm state={state} dispatch={dispatch} />}
-          {currentStep === 2 && <InstructionsForm state={state} dispatch={dispatch} />}
-          {currentStep === 3 && <IngredientsForm state={state} dispatch={dispatch}/>}
-          {currentStep === 4 && <DietaryDetailsForm state={state} dispatch={dispatch} />}
-          {currentStep === 5 && <Overview state={state} /> }
+          {renderSection(currentStep)}
           {currentStep === 5 ? (
             <NavigationButtons
               currentStep={currentStep}

@@ -95,7 +95,7 @@ export interface OrderStatusResponse {
     data: string;
   }
   
-  export const useUpdateOrderStatusToPaid = () => {
+  export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void; }) => {
     const { getToken } = useAuth();
     const queryClient = useQueryClient();
   
@@ -120,11 +120,11 @@ export interface OrderStatusResponse {
           throw new Error(data.message || 'Failed to update order status to paid');
         }
   
-        console.log("success");
         return data;
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({queryKey: ['orders']});
+        options?.onSuccess?.();
       }
     })
   }
