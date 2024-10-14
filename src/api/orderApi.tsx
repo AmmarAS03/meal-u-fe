@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack
 import { useAuth } from '../contexts/authContext';
 import { DeliveryLocation, DeliveryTimeSlot } from './deliveryApi';
 import { CreateOrderPayload } from './deliveryApi';
-import { User } from './userApi';
 
 export interface OrderDetails {
     id: number;
@@ -138,7 +137,13 @@ export interface UserOrders {
     updated_at: string;
     total: string;
     delivery_proof_photo?: string | null;
-    user_id: User;
+    user_id: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+        image: string | null;
+    };
 }
 
 export const useGetUserOrders = (): UseQueryResult<UserOrders[], Error> => {

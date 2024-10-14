@@ -24,6 +24,7 @@ import Home from "./pages/Home";
 import { useAuth } from "./contexts/authContext";
 import MealkitDetails from "./pages/MealkitDetails/MealkitDetails";
 import CreateRecipe from "./pages/Community/Create/Recipe";
+import CreateMealkit from "./pages/Community/Create/Mealkit";
 import CourierHome from "./pages/Courier/CourierHome/CourierHome";
 import CourierDelivery from "./pages/Courier/CourierDelivery/CourierDelivery";
 import ConfirmPickup from "./pages/Courier/ConfirmPickUp/ConfirmPickUp";
@@ -43,7 +44,7 @@ const AppContent: React.FC = () => {
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;
@@ -76,6 +77,7 @@ const AppContent: React.FC = () => {
               <Route exact path="/home" component={Home} />
               <Route exact path="/community" component={Tab2} />
               <Route path="/community/create/recipe" component={CreateRecipe} />
+              <Route path="/community/create/mealkit" component={CreateMealkit} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
               <Route path="/mycart" component={MyCart} />
