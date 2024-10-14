@@ -1,7 +1,6 @@
 import { IonButton, IonText } from '@ionic/react';
 import styles from './checkout.module.css';
 import { useState } from 'react';
-import LocationModal from '../../pages/MyCart/MyCart-Mobile/LocationModal';
 import { useOrder } from '../../contexts/orderContext';
 import DateModal from '../../pages/MyCart/MyCart-Mobile/DateModal';
 

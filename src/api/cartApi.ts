@@ -15,6 +15,7 @@ interface Ingredient {
   id: number;
   name: string;
   image: string | null;
+  product_id: number;
   unit_id: number;
   unit_size: string;
   price_per_unit: string;
@@ -24,11 +25,14 @@ interface PreparationType {
   id: number;
   name: string;
   additional_price: string;
+  category: number;
 }
 
 export interface RecipeIngredient {
+  id: number;
   ingredient: Ingredient;
   preparation_type: PreparationType | null;
+  quantity: number;
   price: number;
 }
 
@@ -36,25 +40,34 @@ export interface CartProduct {
   id: number;
   product: ProductData;
   quantity: number;
+  total_price: number;
 }
 
 export interface CartRecipe {
   id: number;
-  recipe: RecipeData;
+  recipe: number;
+  name: string;
+  image: string;
   quantity: number;
+  ingredients: RecipeIngredient[];
+  dietary_details: string[];
+  total_price: number;
 }
 
-export interface CartItem {
+export interface CartMealkit {
   id: number;
-  product: ProductData;
+  mealkit: number;
+  name: string;
+  image: string;
   quantity: number;
+  recipes: CartRecipe[];
   total_price: number;
 }
 
 export interface CartData {
-  products: CartItem[];
-  recipes: RecipeData[];
-  mealkits: MealkitData[];
+  products: CartProduct[];
+  recipes: CartRecipe[];
+  mealkits: CartMealkit[];
   total_item: number;
   total_price: number;
 }

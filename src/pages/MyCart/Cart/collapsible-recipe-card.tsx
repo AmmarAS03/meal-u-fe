@@ -8,12 +8,11 @@ import {
   useDeleteCartItem,
   useUpdateCartItem,
 } from "../../../api/cartApi";
-import { Ingredient, RecipeData } from '../../../api/recipeApi'
-import { CartRecipe } from '../../../api/cartApi'
+import { CartRecipe, } from '../../../api/cartApi'
 import RecipeIngredientRowCard from "./recipe-ingredient-row-card";
 
 interface CollapsibleRecipeCardProps {
-  data: RecipeData;
+  data: CartRecipe;
   // id: number;
   // title: string;
   // image: string;

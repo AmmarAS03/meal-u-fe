@@ -2,20 +2,19 @@ import ArrowDownIcon from "../../../../public/icon/arrow-down";
 import ArrowUpIcon from "../../../../public/icon/arrow-up";
 import styles from "./cart.module.css";
 import { useState } from "react";
-import { RecipeData } from "../../../api/recipeApi";
 import Increment from "../../../../public/icon/increment";
 import Decrement from "../../../../public/icon/decrement";
 import {
+  CartMealkit,
   useDeleteCartItem,
   useUpdateCartItem,
 } from "../../../api/cartApi";
 
 
 import CollapsibleRecipeCard from "./collapsible-recipe-card";
-import { MealkitData } from "../../../api/mealkitApi";
 
 interface CollapsibleMealkitCardProps {
-  data: MealkitData;
+  data: CartMealkit;
 }
 
 const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
@@ -78,13 +77,6 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
             <p style={{ fontSize: "11px", fontWeight: "600" }}>
               {data.name.length > 20 ? `${data.name.slice(0, 20)}...` : data.name}
             </p>
-          </div>
-          <div className={styles.dietary_details}>
-            {data.dietary_details && Object.values(data.dietary_details).map((detail, index) => (
-              <div key={index} className={styles.node}>
-                {detail}
-              </div>
-            ))}
           </div>
           <div className={styles.price}>${data.total_price}</div>
         </div>

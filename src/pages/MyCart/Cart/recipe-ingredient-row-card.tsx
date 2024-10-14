@@ -11,7 +11,7 @@ import {
 import { Ingredient } from "../../../api/recipeApi";
 
 interface RecipeIngredientRowCardProps {
-  data: Ingredient;
+  data: RecipeIngredient;
 }
 
 const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data }) => {
