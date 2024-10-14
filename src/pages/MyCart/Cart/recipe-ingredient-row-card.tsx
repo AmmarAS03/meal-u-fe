@@ -3,12 +3,10 @@ import Decrement from "../../../../public/icon/decrement";
 import styles from "./cart.module.css";
 import { useEffect, useState } from "react";
 import {
-  CartProduct,
   RecipeIngredient,
   useDeleteCartItem,
   useUpdateCartItem,
 } from "../../../api/cartApi";
-import { Ingredient } from "../../../api/recipeApi";
 
 interface RecipeIngredientRowCardProps {
   data: RecipeIngredient;
@@ -29,6 +27,10 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
       quantity: newQuantity,
     });
   };
+
+  useEffect(() => {
+    setQuantity(data.quantity);
+  }, [data.quantity]);
 
   const handleDecrement = () => {
     if (quantity > 1) {

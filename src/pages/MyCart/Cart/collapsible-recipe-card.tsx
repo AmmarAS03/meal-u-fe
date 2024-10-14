@@ -5,7 +5,6 @@ import Decrement from "../../../../public/icon/decrement";
 import styles from "./cart.module.css";
 import { useEffect, useState } from "react";
 import {
-  useDeleteCartItem,
   useDeleteCartRecipe,
   useUpdateCartItem,
 } from "../../../api/cartApi";
@@ -14,13 +13,6 @@ import RecipeIngredientRowCard from "./recipe-ingredient-row-card";
 
 interface CollapsibleRecipeCardProps {
   data: CartRecipe;
-  // id: number;
-  // title: string;
-  // image: string;
-  // dietaryDetails: string[];
-  // price: number;
-  // quantity: number;
-  // child: Ingredient[];
 }
 
 const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => {
@@ -65,7 +57,7 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
     if (data.ingredients) {
       setIsChildExist(true);
     }
-  })
+  }, [data.ingredients])
 
   return (
     <div className={styles.card}>
@@ -120,7 +112,7 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
       {isExpanded ? (
         <div className="expanded_content">
           {data.ingredients.map((data, index) => (
-            <RecipeIngredientRowCard key={index} data={data} />
+            <RecipeIngredientRowCard key={index} data={data}/>
           ))}
         </div>
       ) : null}

@@ -6,8 +6,6 @@ import {
 } from "@tanstack/react-query";
 import { useAuth } from "../contexts/authContext";
 import { ProductData } from "./productApi";
-import { RecipeData } from "./recipeApi";
-import { MealkitData } from "./mealkitApi";
 
 // Interfaces for the API response structure
 
