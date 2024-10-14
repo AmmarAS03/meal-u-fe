@@ -6,6 +6,7 @@ import styles from "./cart.module.css";
 import { useEffect, useState } from "react";
 import {
   useDeleteCartItem,
+  useDeleteCartRecipe,
   useUpdateCartItem,
 } from "../../../api/cartApi";
 import { CartRecipe, } from '../../../api/cartApi'
@@ -27,7 +28,7 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
   const [isChildExist, setIsChildExist] = useState(false);
   const [newQuantity, setNewQuantity] = useState(0);
   const updateCartItem = useUpdateCartItem();
-  const deleteCartItem = useDeleteCartItem();
+  const deleteCartRecipe = useDeleteCartRecipe();
 
   const toggleExpand = () => {
     setIsExpanded((prevState) => !prevState);
@@ -53,9 +54,9 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data}) => 
         quantity: newQuantity,
       });
     } else {
-      deleteCartItem.mutate({
+      deleteCartRecipe.mutate({
         item_type: "recipe",
-        cart_product_id: data.id,
+        cart_recipe_id: data.id,
       });
     }
   };

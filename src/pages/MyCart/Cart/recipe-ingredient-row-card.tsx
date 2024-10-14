@@ -24,7 +24,7 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
     updateCartItem.mutate({
-      item_type: "product",
+      item_type: "ingredient",
       item_id: data.id,
       quantity: newQuantity,
     });
@@ -35,13 +35,13 @@ const RecipeIngredientRowCard: React.FC<RecipeIngredientRowCardProps> = ({ data 
       const newQuantity = quantity - 1;
       setQuantity(newQuantity);
       updateCartItem.mutate({
-        item_type: "product",
+        item_type: "ingredient",
         item_id: data.id,
         quantity: newQuantity,
       });
     } else {
       deleteCartItem.mutate({
-        item_type: "product",
+        item_type: "ingredient",
         cart_product_id: data.id,
       });
     }

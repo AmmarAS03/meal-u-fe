@@ -6,7 +6,7 @@ import Increment from "../../../../public/icon/increment";
 import Decrement from "../../../../public/icon/decrement";
 import {
   CartMealkit,
-  useDeleteCartItem,
+  useDeleteCartMealkit,
   useUpdateCartItem,
 } from "../../../api/cartApi";
 
@@ -23,7 +23,7 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [newQuantity, setNewQuantity] = useState(0);
   const updateCartItem = useUpdateCartItem();
-  const deleteCartItem = useDeleteCartItem();
+  const deleteCartMealkit = useDeleteCartMealkit();
 
   const toggleExpand = () => {
     setIsExpanded((prevState) => !prevState);
@@ -49,9 +49,9 @@ const CollapsibleMealkitCard: React.FC<CollapsibleMealkitCardProps> = ({
         quantity: newQuantity,
       });
     } else {
-      deleteCartItem.mutate({
+      deleteCartMealkit.mutate({
         item_type: "mealkit",
-        cart_product_id: data.id,
+        cart_mealkit_id: data.id,
       });
     }
   };

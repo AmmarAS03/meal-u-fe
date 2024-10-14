@@ -66,7 +66,6 @@ const InstructionsForm: React.FC<InstructionsFormProps> = ({ state, dispatch }) 
 
   const handleReorder = (event: CustomEvent<ItemReorderEventDetail>) => {
     setInstructions(event.detail.complete(instructions));
-    console.log("handleReorder: ", event.detail.complete(instructions));
     event.detail.complete();
   }
 
