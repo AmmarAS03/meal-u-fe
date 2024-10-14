@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { DeliveryLocation, DeliveryTimeSlot, OrderCreationResponse, useCreateOrder, useDeliveryLocations, useDeliveryTimeSlots } from "../api/deliveryApi";
 import { useCreateRecipe, CreateRecipePayload, usePreparationTypeList, PreparationType } from '../api/recipeApi';
 import { formatDate } from '../pages/MyCart/MyCart-Mobile';
@@ -35,7 +35,6 @@ interface OrderContextProps {
   getUnitFromId: (id: number) => string | undefined;
   meal_types: MealType[] | undefined;
   getMealTypeFromId: (id: number) => string | undefined;
-  prepTypeMap: Record<number, PreparationType[]>;
   // getPreparationTypes: (categoryId: number) => PreparationType[];
 }
 
@@ -158,35 +157,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // categories and preparation types
   const { data: categories } = useCategoriesList();
 
-  const useAllPreparationTypes = (categories: CategoryData[] | undefined): Record<number, PreparationType[]> => {
-    const { getToken } = useAuth();
-    const token = getToken() || "";
-  
-    const queries = useQueries({
-      queries: categories?.map((category) => ({
-        queryKey: ['preparationType', category.id],
-        queryFn: () => usePreparationTypeList(category.id).data,
-        enabled: !!token && !!category.id,
-      })) || [],
-    });
-  
-    const prepTypeMap: Record<number, PreparationType[]> = {};
-    queries.forEach((query, index) => {
-      if (query.data && categories) {
-        prepTypeMap[categories[index].id] = query.data;
-      }
-    });
-
-    console.log("in orderContext: ", prepTypeMap);
-    return prepTypeMap;
-  };
-
-  const prepTypeMap = useAllPreparationTypes(categories);
-
-  const getPreparationTypes = (categoryId: number): PreparationType[] => {
-    return prepTypeMap[categoryId] || [];
-  };
-
   return (
     <OrderContext.Provider
       value={{
@@ -207,7 +177,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         getUnitFromId,
         meal_types,
         getMealTypeFromId,
-        prepTypeMap,
         // getPreparationTypes,
       }
     }>

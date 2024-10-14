@@ -236,12 +236,7 @@ export interface IngredientRecipe {
     unit_size: string;
     description?: string | null;
   };
-  preparation_type: {
-    id: number;
-    name: string;
-    additional_price: string;
-    category: number;
-  } | null;
+  preparation_type: PreparationType | number | null;
   quantity: number;
   price: number;
 }
