@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LoveIcon from "../../../public/icon/love-icon";
 import CommentIcon from "../../../public/icon/comment-icon";
 import { formatDistanceToNow } from 'date-fns';
@@ -13,13 +13,13 @@ interface CommunityRecipeData {
   id: number;
   creator: Creator;
   name: string;
-  serving_size: number;
-  meal_type: string;
-  cooking_time: number;
+  serving_size?: number;
+  meal_type?: string;
+  cooking_time?: number;
   created_at: string;
   image: string;
   dietary_details: string[];
-  total_price: number;
+  total_price?: number;
   likes_count: number;
   comments_count: number;
 }
@@ -28,7 +28,7 @@ interface CommunityCardProps {
   recipe: CommunityRecipeData;
 }
 
-const CommunityCard: React.FC<CommunityCardProps> = ({ recipe }) => {
+const CommunityCard: React.FC<CommunityCardProps> = ({ recipe  }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return formatDistanceToNow(date, { addSuffix: true });
@@ -63,22 +63,22 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe }) => {
               {recipe.name}
             </h1>
             <div className="flex space-x-2 mb-2">
-              {recipe.dietary_details.slice(0, 1).map((detail, index) => (
+              {recipe.dietary_details.slice(0, 2).map((detail, index) => (
                 <span
                   key={index}
-                  className="text-[0.4rem] px-1 py-1 outline text-[#7862FC] rounded-full"
+                  className="text-[0.5rem] px-1 py-1 outline text-[#7862FC] rounded-full"
                 >
                   {detail}
                 </span>
               ))}
-              {recipe.dietary_details.length > 1 && (
-                <div className="text-[0.4rem] px-1 py-1 outline text-[#7862FC] rounded-full">
-                  +{recipe.dietary_details.length - 1}
+              {recipe.dietary_details.length > 2 && (
+                <div className="text-[0.5rem] px-1 py-1 outline text-[#7862FC] rounded-full">
+                  +{recipe.dietary_details.length - 2}
                 </div>
               )}
             </div>
             <p className="text-xs text-gray-700">
-            {recipe.description.length > 40 ? `${recipe.description.slice(0, 40)}...` : recipe.description}
+            {recipe.description.length > 55 ? `${recipe.description.slice(0, 55)}...` : recipe.description}
             </p>
           </div>
 
