@@ -1,26 +1,15 @@
-import CheckoutDetailsCard from './checkout-details-card';
-import { Dispatch, SetStateAction, useEffect } from 'react';
+import CheckoutDetailsCard from '../../../components/CheckoutDetailsCard/CheckoutDetailsCard';
+import CheckoutTimeDetailsCard from '../../../components/CheckoutDetailsCard/CheckoutTimeDetailsCard';
+import CheckoutDateDetailsCard from '../../../components/CheckoutDetailsCard/CheckoutDateDetailsCard';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import styles from './checkout.module.css';
 import { useOrder } from '../../../contexts/orderContext';
 
 interface CheckoutProps {
-    subTotal: number;
-    total: number;
-    setTotal: Dispatch<SetStateAction<number>>;
 }
 
-const Checkout: React.FC<CheckoutProps> = ({subTotal, total, setTotal}) => {
+const Checkout: React.FC<CheckoutProps> = () => {
     const { deliveryLocationDetails, deliveryTimeSlotDetails } = useOrder();
-
-
-    // TODO: change with delivery fee from BE when ready
-    useEffect(() => {
-      const calculateTotal = () => {
-          const newTotal = subTotal + 10;
-          setTotal(newTotal);
-      };
-      calculateTotal();
-    }, [subTotal, total]);
 
     return (
         <>
@@ -30,8 +19,13 @@ const Checkout: React.FC<CheckoutProps> = ({subTotal, total, setTotal}) => {
           </div>
 
           <div className={styles.subsection}>
+            <div className={styles.title}>Set Delivery Date</div>
+            <CheckoutDateDetailsCard />
+          </div>
+
+          <div className={styles.subsection}>
             <div className={styles.title}>Set Time</div>
-            <CheckoutDetailsCard data1={deliveryTimeSlotDetails.name} data2={deliveryTimeSlotDetails.end_time} button="Change Time" />
+            <CheckoutTimeDetailsCard data={deliveryTimeSlotDetails}/>
           </div>
         </>
     )

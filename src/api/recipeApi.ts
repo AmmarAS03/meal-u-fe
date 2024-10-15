@@ -4,7 +4,17 @@ import { useAuth } from '../contexts/authContext';
 interface Creator {
   name: string;
   profile_picture: string;
+  userID: number;
 }
+
+export interface PreparationType {
+  id: number;
+  name: string;
+  additional_price: string;
+  category: number;
+}
+
+// IngredientRecipe[] maybe can be deleted
 
 export interface Ingredient {
   ingredient: {
@@ -16,12 +26,8 @@ export interface Ingredient {
     unit_size: string;
     price_per_unit: string;
   };
-  preparation_type: {
-    id: number;
-    name: string;
-    additional_price: string;
-    category: number;
-  } | null;
+  preparation_type: PreparationType | null;
+  quantity: number;
   price: number;
 }
 
@@ -230,11 +236,7 @@ export interface IngredientRecipe {
     unit_size: string;
     description?: string | null;
   };
-  preparation_type: {
-    id: number;
-    name: string;
-    additional_price: string;
-  } | null;
+  preparation_type: PreparationType | number | null;
   quantity: number;
   price: number;
 }
@@ -248,9 +250,9 @@ export interface CreateRecipePayload {
     meal_type: number;
     instructions: string[];
   };
-  ingredients: IngredientRecipe[];
+  ingredients: Ingredient[];
   dietary_details: string[];
-  image: File | null;
+  image: string | null;
 }
 
 interface RecipeCreationResponse {
@@ -287,7 +289,6 @@ export const useCreateRecipe = (options?: {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type header, let the browser set it with the boundary
         },
         body: formData,
       });
@@ -305,9 +306,44 @@ export const useCreateRecipe = (options?: {
       return data;
     },
     onSuccess: (data) => {
-      // Invalidate or refetch queries related to recipes after a successful mutation
       queryClient.invalidateQueries({queryKey: ['recipes']});
       options?.onSuccess?.(data);
     },
+  });
+};
+
+export const usePreparationTypeList = (
+  categoryId: number
+): UseQueryResult<PreparationType[], Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || '';
+
+  const fetchPreparationTypes = async (): Promise<PreparationType[]> => {
+    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/preparation-type/${categoryId}/`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch preparation types');
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch preparation types');
+    }
+
+    return data.data;
+  };
+
+  return useQuery<PreparationType[], Error, PreparationType[], [string, number]>({
+    queryKey: ['preparationType.list', categoryId],
+    queryFn: fetchPreparationTypes,
+    initialData: [],
+    enabled: !!token && !!categoryId,
   });
 };

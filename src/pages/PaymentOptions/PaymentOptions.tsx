@@ -14,17 +14,24 @@ import {
     IonImg,
 } from '@ionic/react';
 import { chevronForward } from 'ionicons/icons';
-import { useUpdateOrderStatusToPaid, useGetUserOrders } from '../../api/orderApi';
+import { useUpdateOrderStatusToPaid } from '../../api/orderApi';
+import { useHistory, useParams } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 
 const PaymentOptions: React.FC = () => {
-    const {data: orders} = useGetUserOrders();
-    const mostRecentOrder = orders && orders.length > 0 ? orders[0] : null;
-    const { mutate } = useUpdateOrderStatusToPaid();
+    const { id } = useParams<{ id: string }>();
+    const history = useHistory();
+    const { mutate } = useUpdateOrderStatusToPaid({
+        onSuccess: () => {
+          setTimeout(() => {
+            history.replace('/tab4'); 
+          }, 100);
+        }
+      });
     const history = useHistory();
 
     const changeStatusToPaid = () => {
-        mostRecentOrder && (mutate(mostRecentOrder.id));
+        mutate(parseInt(id));
     }
 
     const handlePayLater = () => {
