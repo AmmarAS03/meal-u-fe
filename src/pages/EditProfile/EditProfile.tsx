@@ -55,7 +55,7 @@ function EditProfile() {
         alert('Profile updated successfully');
         history.push('/user');
       },
-      onError: (err) => {
+      onError: (err: any) => {
         setIsUpdating(false);
         console.error('Error updating profile:', err);
         alert('Error updating profile');

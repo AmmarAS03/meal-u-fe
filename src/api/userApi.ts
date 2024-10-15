@@ -1,4 +1,4 @@
-import { useMutation, useMutationResult, useQuery, useQueries, useQueryClient, UseQueryResult, QueryFunction, QueryKey } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery, useQueries, useQueryClient, UseQueryResult, QueryFunction, QueryKey } from '@tanstack/react-query';
 import { useAuth } from "../contexts/authContext";
 import { DietaryDetail, useDietaryDetails } from "./productApi";
 
@@ -73,6 +73,12 @@ export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
     enabled: !!token,
   });
 };
+
+interface UserProfileResponse {
+  success: boolean,
+  message: string,
+  data: UserProfile,
+}
 
 export const useCreatorProfile = (userId: number): UseQueryResult<UserProfile, Error> => {
   const { getToken } = useAuth();
