@@ -43,7 +43,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
   const isRecipe = 'meal_type' in recipe || 'cooking_time' in recipe;
 
   const handleLike = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card's onClick from firing
+    e.stopPropagation();
     const mutation = isRecipe ? likeRecipeMutation : likeMealkitMutation;
     
     mutation.mutate(recipe.id, {
