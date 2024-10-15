@@ -70,13 +70,13 @@ const FilterOverlay = ({
               </IonChip>
             ))}
           </div>
-          <IonCheckbox 
+          {/* <IonCheckbox 
             checked={applyDietary} 
             onIonChange={e => setApplyDietary(e.detail.checked)}
             className={styles.checkbox}
           >
             Apply my dietary requirements
-          </IonCheckbox>
+          </IonCheckbox> */}
         </div>
         <div className={styles.subsection}>
           <div className={styles.subsectionTitle}>Meal Type</div>
