@@ -11,7 +11,7 @@ import {
   IonButton,
   IonIcon,
 } from '@ionic/react';
-import { personOutline, mailOutline, cardOutline, checkmarkOutline, arrowBackOutline } from 'ionicons/icons';
+import { personOutline, mailOutline, cardOutline, arrowBackOutline } from 'ionicons/icons';
 import { useUserProfile, useUpdateUserProfile } from '../../api/userApi';
 import { useHistory } from 'react-router-dom';
 import './EditProfile.css';
@@ -25,7 +25,6 @@ function EditProfile() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [gender, setGender] = useState('Male');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,7 +33,6 @@ function EditProfile() {
       setLastName(user.last_name);
       setEmail(user.email);
       setPaymentMethod(user.profile?.paymentMethod || '');
-      setGender(user.profile?.gender || 'Male');
     }
   }, [user]);
 
@@ -158,29 +156,6 @@ function EditProfile() {
               style={{ textDecoration: 'none', '--highlight-background': 'transparent' }}
             />
           </IonItem>
-        </div>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Gender</label>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div
-              className={`gender-button ${gender === 'Female' ? 'gender-button-selected' : ''}`}
-              onClick={() => setGender('Female')}
-            >
-              Female
-              {gender === 'Female' && (
-                <IonIcon icon={checkmarkOutline} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }} />
-              )}
-            </div>
-            <div
-              className={`gender-button ${gender === 'Male' ? 'gender-button-selected' : ''}`}
-              onClick={() => setGender('Male')}
-            >
-              Male
-              {gender === 'Male' && (
-                <IonIcon icon={checkmarkOutline} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }} />
-              )}
-            </div>
-          </div>
         </div>
         <IonButton 
           expand="full" 

@@ -12,7 +12,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { gridOutline, heartOutline } from 'ionicons/icons';
 import { useUserProfile, useLikedRecipes } from '../../../api/userApi';
-import { useRecipesList, useCommunityRecipesList } from '../../../api/recipeApi';
+import { useRecipesByCreator, useCommunityRecipesList } from '../../../api/recipeApi';
 import CommunityCard from '../../../components/CommunityCard/CommunityCard';
 import SkeletonCommunityCard from '../../../components/CommunityCard/SkeletonCommunityCard';
 
@@ -21,10 +21,8 @@ function UserMobile() {
   const { data: user, isLoading: isUserLoading, error: userError } = useUserProfile();
   const [activeIcon, setActiveIcon] = useState('grid');
 
-  // Fetch user's recipes
-  const { data: userRecipes = [], isFetching: isRecipesFetching } = useRecipesList({
-    search: user ? `creator=${user.id}` : '',
-  });
+  const creatorId = user ? user.id : 0; // Replace with actual user ID logic
+  const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } = useRecipesByCreator(creatorId);
 
   // Fetch all community recipes
   const { data: communityRecipes = [], isFetching: isCommunityRecipesFetching } = useCommunityRecipesList();
@@ -44,6 +42,14 @@ function UserMobile() {
     }
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedRecipes]);
+
+  useEffect(() => {
+    console.log("User ID:", user?.id);
+  }, [user]);
+
+  useEffect(() => {
+    console.log("User recipes:", userRecipes);
+  }, [userRecipes]);
 
   const handleEditProfile = () => {
     history.push('/edit-profile');
@@ -112,7 +118,7 @@ function UserMobile() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '20px 0' }}>
-          {isRecipesFetching || isCommunityRecipesFetching || isLikedFetching ? (
+          {isCreatorRecipesFetching || isCommunityRecipesFetching || isLikedFetching ? (
             <>
               <SkeletonCommunityCard />
               <SkeletonCommunityCard />

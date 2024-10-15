@@ -81,13 +81,11 @@ export const useRecipesList = (
   const fetchRecipe = async (): Promise<RecipeData[]> => {
     const url =
       params.search && params.search !== "Show All"
-        ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?${encodeURIComponent(
+        ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?search=${encodeURIComponent(
             params.search
           )}`
         : "http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/";
-  
-    console.log("Fetching recipes from URL:", url); // Log the URL
-  
+
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -241,6 +239,42 @@ export interface IngredientRecipe {
   quantity: number;
   price: number;
 }
+
+export const useRecipesByCreator = (
+  creatorId: number
+): UseQueryResult<RecipeData[], Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchRecipesByCreator = async (): Promise<RecipeData[]> => {
+    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?creator=${creatorId}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch recipes by creator");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch recipes by creator");
+    }
+
+    return data.data;
+  };
+
+  return useQuery<RecipeData[], Error, RecipeData[], [string, number]>({
+    queryKey: ["recipe.list.byCreator", creatorId],
+    queryFn: fetchRecipesByCreator,
+    initialData: [],
+    enabled: !!token,
+  });
+};
 
 export interface CreateRecipePayload {
   recipe: {
