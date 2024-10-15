@@ -37,6 +37,7 @@ import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryB
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
 import AllOrders from "./pages/Warehouse/Orders";
+import DeliveryStatus from "./pages/DeliveryStatus/DeliveryStatus";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -44,7 +45,7 @@ const AppContent: React.FC = () => {
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader' ];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/order-status/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;
@@ -89,6 +90,7 @@ const AppContent: React.FC = () => {
               <Route path="/courier/:type/:id" component={CourierDelivery} />
               <Route path="/courier/confirm-pickup/:type/:id" component={ConfirmPickup} />
               <Route path="/courier/confirm-delivery/:id" component={ConfirmDelivery} />
+              <Route path="/order-status/:id" component={DeliveryStatus} />
               <Route path="/qr-reader" component={QRReader} />
               <Route path="/courier/deliveries" component={CourierDeliveries} />
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />

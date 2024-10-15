@@ -13,8 +13,11 @@ const Orders: React.FC = () => {
 
   const groupOrders = (orders: UserOrders[]) => {
     const now = new Date();
-    const yesterday = new Date(now.setDate(now.getDate() - 1));
-    const sevenDaysAgo = new Date(now.setDate(now.getDate() - 6));
+    now.setHours(0, 0, 0, 0); // Start of today
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     return [
       {
@@ -25,17 +28,33 @@ const Orders: React.FC = () => {
       {
         title: 'Ongoing',
         isCurrent: true,
-        orders: orders.filter(order => ['preparing', 'ready', 'picked_up'].includes(order.order_status)),
+        orders: orders.filter(order => ['paid', 'preparing', 'ready to deliver', 'delivering', 'delivered', 'picked_up'].includes(order.order_status)),
+      },
+      {
+        title: 'Completed Today',
+        isCurrent: false,
+        orders: orders.filter(order => 
+          order.order_status === 'completed' && 
+          new Date(order.created_at) >= now
+        ),
       },
       {
         title: 'Yesterday',
         isCurrent: false,
-        orders: orders.filter(order => new Date(order.created_at) >= yesterday && new Date(order.created_at) < now && order.order_status !== 'pending'),
+        orders: orders.filter(order => 
+          new Date(order.created_at) >= yesterday && 
+          new Date(order.created_at) < now && 
+          order.order_status !== 'pending'
+        ),
       },
       {
         title: 'Past 7 Days',
         isCurrent: false,
-        orders: orders.filter(order => new Date(order.created_at) >= sevenDaysAgo && new Date(order.created_at) < yesterday && order.order_status !== 'pending'),
+        orders: orders.filter(order => 
+          new Date(order.created_at) >= sevenDaysAgo && 
+          new Date(order.created_at) < yesterday && 
+          order.order_status !== 'pending'
+        ),
       },
     ];
   };
@@ -64,7 +83,7 @@ const Orders: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
+      <IonHeader collapse='fade'>
         <IonToolbar className='font-sans'>
           <IonTitle>Orders</IonTitle>
         </IonToolbar>
@@ -72,10 +91,10 @@ const Orders: React.FC = () => {
       <IonContent fullscreen className='font-sans'>
         <div className="px-4 py-6 pb-20">
           {orderGroups.map((group, index) => (
-            <div key={index} className="mb-6">
-              <h2 className="text-xl font-bold mb-3">{group.title}</h2>
-              {group.orders.length > 0 ? (
-                group.orders.map((order, orderIndex) => (
+            group.orders.length > 0 && (
+              <div key={index} className="mb-6">
+                <h2 className="text-xl font-bold mb-3">{group.title}</h2>
+                {group.orders.map((order, orderIndex) => (
                   <OrderItem
                     key={orderIndex}
                     id={order.id}
@@ -84,16 +103,9 @@ const Orders: React.FC = () => {
                     date={formatDate(order.created_at)}
                     isCurrent={group.isCurrent}
                   />
-                ))
-              ) : (
-                <p className="text-gray-500">
-                  {group.title === 'Waiting for Payment' && 'No orders waiting for payment'}
-                  {group.title === 'Ongoing' && 'No ongoing orders'}
-                  {group.title === 'Yesterday' && 'No orders yesterday'}
-                  {group.title === 'Past 7 Days' && 'No orders in the last 7 days'}
-                </p>
-              )}
-            </div>
+                ))}
+              </div>
+            )
           ))}
         </div>
       </IonContent>

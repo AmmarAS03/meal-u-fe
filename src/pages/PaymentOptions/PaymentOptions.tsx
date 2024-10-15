@@ -23,7 +23,7 @@ const PaymentOptions: React.FC = () => {
     const { mutate } = useUpdateOrderStatusToPaid({
         onSuccess: () => {
           setTimeout(() => {
-            history.replace('/tab4'); 
+            history.push('/tab4'); 
           }, 100);
         }
       });
@@ -46,8 +46,8 @@ const PaymentOptions: React.FC = () => {
                     <IonTitle>Payment Options</IonTitle>
                 </IonToolbar>
             </IonHeader>
-            <IonContent>
-                <div className="pb-20">
+            <IonContent className='font-sans'>
+                <div className="pb-40">
                     <h2 className="text-2xl font-bold text-[#0A2533] px-4 mt-4">Your Card</h2>
                     <IonCard className="bg-[#D9D5FF] rounded-2xl p-4 mb-5">
                         <IonCardContent>

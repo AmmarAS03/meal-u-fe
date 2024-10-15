@@ -299,3 +299,45 @@ export const useUpdateOrderStatusToReadyToDeliver = () => {
         }
     });
 }
+
+export interface CompleteOrderResponse {
+    success: boolean;
+    message: string;
+    data: OrderDetails;
+}
+
+export const useUpdateOrderStatusToCompleted = () => {
+    const { getToken } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation<CompleteOrderResponse, Error, { orderId: number; passcode: string }>({
+        mutationFn: async ({ orderId, passcode }) => {
+            const token = getToken() || '';
+            const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/completed/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ passcode }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update order status to completed');
+            }
+
+            const data: CompleteOrderResponse = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to update order status to completed');
+            }
+
+            return data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['orderDetails'] });
+        },
+    });
+};

@@ -20,12 +20,14 @@ const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurren
   const handleClick = () => {
     if (status === 'pending') {
       history.push(`/payment-options/${id}`);
+    } else {
+      history.push(`/order-status/${id}`);
     }
   };
 
   return (
     <div 
-      className={`flex items-center bg-white rounded-xl p-3 mb-3 shadow-sm ${status === 'pending' ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+      className={`flex items-center bg-white rounded-xl p-3 mb-3 shadow-sm cursor-pointer hover:bg-gray-50`}
       onClick={handleClick}
     >
       <div className="w-12 h-12 bg-gray-100 rounded-lg mr-3 flex items-center justify-center">
