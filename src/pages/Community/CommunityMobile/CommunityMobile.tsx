@@ -34,25 +34,35 @@ import {
   gift,
 } from 'ionicons/icons';
 
-import styles from './CommunityMobile.module.css'
+import styles from './CommunityMobile.module.css';
+import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
+import { useOrder } from "../../../contexts/orderContext";
 
 
 function CommunityMobile() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [filterApplied, setFilterApplied] = useState(false);
+  const [dietary, setDietary] = useState<number[]>([]);
+  const [applyDietary, setApplyDietary] = useState(false);
+  const [mealType, setMealType] = useState<number[]>([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 100 });
+
   const { data: communityRecipes = [], isFetching: isRecipesFetching } =
     useCommunityRecipesList();
   const { data: communityMealkit = [], isFetching: isMealkitFetching } =
     useCommunityMealkitList();
-
-  const handleFilter = useCallback(() => {
-    setIsFilterVisible((prev) => !prev);
-  }, []);
-
+  const { data: dietaryRequirements = [] } = useDietaryDetails();
+  const { data: mealTypes = [] } = useMealTypeList();
+  const { meal_types } = useOrder();
 
   const router = useIonRouter();
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
+
+  const handleFilter = useCallback(() => {
+    setIsFilterVisible((prev) => !prev);
+  }, []);
 
   const handleButtonClick = useCallback((button: string) => {
     setSelectedFilter(button);
@@ -74,6 +84,7 @@ function CommunityMobile() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [communityRecipes, communityMealkit]);
+
 
   console.log("MEALKIT COMMUNITY",communityMealkit)
 
@@ -172,14 +183,75 @@ function CommunityMobile() {
         return <p>No content to display.</p>;
     }
 
+    let filteredContent = contentToRender;
+    
+    if (filterApplied) {
+      // if dietary requirements filter applied
+      if (dietary.length > 0) {
+        filteredContent = contentToRender.filter(item => {
+          // get the names of the selected dietary requirements
+          const selectedDietaryNames = dietary
+          .map(id => dietaryRequirements.find(dr => dr.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
+
+          // check if all selected dietary names are included in the item's dietary_details
+          return selectedDietaryNames.every(name => item.dietary_details.includes(name));
+        })
+      }
+      // if meal type filters applied
+      if (mealType.length > 0) {
+        filteredContent = filteredContent.filter(item => {
+          // get the names of the selected meal types
+          const selectedMealTypes = mealType
+          .map(id => meal_types?.find(mt => mt.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
+
+          // check if all selected meal types are included in the item's meal types
+          if ('cooking_time' in item || 'meal_type' in item) { // recipe
+            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
+          } else { // mealkit
+            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          }
+        });
+      }
+      // if price range filters applied
+      if (priceRange.min !== 0 || priceRange.max !== 100) {
+        filteredContent = filteredContent.filter(item => {
+          // field 'price' on mealkit, field 'total_price' on recipe
+          const itemPrice = ('cooking_time' in item || 'meal_type' in item) ? item.total_price : item.price;
+          return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
+        })
+      }
+
+      // if no content matches the filter
+      if (filteredContent.length === 0) {
+        return (
+          <div className="flex items-center justify-center h-4/5">
+            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
+          </div>
+        );
+      }
+
+    }
+
     return (
       <>
-        {contentToRender.map((item: CommunityRecipeData | CommunityMealkitData, index: number) => (
+        {filteredContent.map((item: CommunityRecipeData | CommunityMealkitData, index: number) => (
           <CommunityCard key={`${item.id}-${index}`} recipe={item} onClick={() => handleItemClick(item)}/>
         ))}
       </>
     );
-  }, [selectedFilter, isRecipesFetching, isMealkitFetching, communityRecipes, communityMealkit, combinedAndSortedData]);
+  }, [selectedFilter,
+      isRecipesFetching,
+      isMealkitFetching,
+      communityRecipes,
+      communityMealkit,
+      combinedAndSortedData,
+      filterApplied,
+      dietary,
+      mealType,
+      priceRange,
+    ]);
 
 
   const navigateToCreateRecipe = () => {
@@ -189,6 +261,19 @@ function CommunityMobile() {
   const navigateToCreateMealkit = () => {
     router.push('/community/create/mealkit');
   }
+
+  const handleApplyFilter = (filters: any) => {
+    setFilterApplied(true);
+    setIsFilterVisible(false);
+  };
+
+  // user clears filter
+  useEffect(() => {
+    if (!dietary.length && !applyDietary && !mealType.length &&
+      priceRange.min === 0 && priceRange.max === 100) {
+      setFilterApplied(false);
+    }
+  }, [dietary, applyDietary, mealType, priceRange]);
 
   return (
     <IonPage>
@@ -223,12 +308,23 @@ function CommunityMobile() {
         {renderContent}
 
         {isFilterVisible && (
-          <div className="filter">
-            <FilterOverlay />
-          </div>
+            <FilterOverlay
+            onClose={() => setIsFilterVisible(false)}
+            onApplyFilter={handleApplyFilter}
+            dietary={dietary}
+            setDietary={setDietary}
+            applyDietary={applyDietary}
+            setApplyDietary={setApplyDietary}
+            meals={mealType}
+            setMeals={setMealType}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            dietaryRequirements={dietaryRequirements}
+            mealTypes={mealTypes}
+          />
         )}
         <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton>
+          <IonFabButton color="tertiary">
             <IonIcon icon={addOutline}></IonIcon> {/*main button*/}
           </IonFabButton>
           <IonFabList side="top">
