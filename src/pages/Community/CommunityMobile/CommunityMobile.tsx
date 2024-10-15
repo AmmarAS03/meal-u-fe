@@ -207,10 +207,12 @@ function CommunityMobile() {
           .filter((name): name is string => name !== undefined);
 
           // check if all selected meal types are included in the item's meal types
-          if ('cooking_time' in item || 'meal_type' in item) { // recipe
+          if ('cooking_time' in item) { // recipe
             return selectedMealTypes.every(mt => item.meal_type.includes(mt));
-          } else { // mealkit
+          } else if ('meal_types' in item) { // mealkit
             return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          } else {
+            return false;
           }
         });
       }
@@ -218,7 +220,7 @@ function CommunityMobile() {
       if (priceRange.min !== 0 || priceRange.max !== 100) {
         filteredContent = filteredContent.filter(item => {
           // field 'price' on mealkit, field 'total_price' on recipe
-          const itemPrice = ('cooking_time' in item || 'meal_type' in item) ? item.total_price : item.price;
+          const itemPrice = ('cooking_time' in item) ? item.total_price : item.price;
           return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
         })
       }
