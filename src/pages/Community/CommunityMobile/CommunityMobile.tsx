@@ -10,7 +10,8 @@ import {
   IonFab,
   IonFabButton,
   IonFabList,
-  IonIcon
+  IonIcon,
+  IonCard
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
 import FilterOverlay from "../../../components/FilterOverlay";
@@ -33,8 +34,10 @@ import {
   restaurantOutline,
   gift,
 } from 'ionicons/icons';
-
-import styles from './CommunityMobile.module.css'
+import { useQueries } from "@tanstack/react-query";
+import styles from './CommunityMobile.module.css';
+import { useDietaryDetails } from "../../../api/productApi";
+import { useTrendingCreators } from "../../../api/userApi";
 
 
 function CommunityMobile() {
@@ -43,6 +46,8 @@ function CommunityMobile() {
     useCommunityRecipesList();
   const { data: communityMealkit = [], isFetching: isMealkitFetching } =
     useCommunityMealkitList();
+  const { data: dietaryDetails = [] } = useDietaryDetails();
+  const { trendingCreatorsMap, isLoading: isCreatorsLoading, isError } = useTrendingCreators();
 
   const handleFilter = useCallback(() => {
     setIsFilterVisible((prev) => !prev);
@@ -68,6 +73,10 @@ function CommunityMobile() {
     }
   }, [router]);
 
+  const handleCreatorClick = useCallback((id: number) => {
+    router.push(`community/creator-profile/${id}`);
+  }, [router]); 
+
   const combinedAndSortedData = useMemo(() => {
     const combined = [...communityRecipes, ...communityMealkit];
     return combined.sort((a, b) => 
@@ -75,11 +84,9 @@ function CommunityMobile() {
     );
   }, [communityRecipes, communityMealkit]);
 
-  console.log("MEALKIT COMMUNITY",communityMealkit)
-
   const renderContent = useMemo(() => {
 
-    if (isRecipesFetching || isMealkitFetching) {
+    if (isRecipesFetching || isMealkitFetching || isCreatorsLoading) {
       return (
         <>
           <SkeletonCommunityCard />
@@ -108,6 +115,7 @@ function CommunityMobile() {
               display: "flex",
               flexDirection: "column",
               marginTop: "20px",
+              marginBottom: "50px",
               gap: "5px",
             }}
           >
@@ -128,43 +136,32 @@ function CommunityMobile() {
                 <HomeImageCard />
               </div>
             </div>
-
-            <h3
-              style={{ fontSize: "14px", fontWeight: "500", marginTop: "20px" }}
-            >
-              Popular Gluten Free Creators
-            </h3>
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {communityRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
-            </div>
-
-            <h3
-              style={{ fontSize: "14px", fontWeight: "500", marginTop: "10px" }}
-            >
-              Popular Vegan Creator
-            </h3>
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {communityRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
+            
+            <div>
+              {dietaryDetails.map((dietaryDetail) => (
+                <div key={dietaryDetail.id}>
+                  {trendingCreatorsMap[dietaryDetail.id].length > 0 && (
+                    <div>
+                      <h3>Popular {dietaryDetail.name} Creators</h3>
+                      <div>
+                        <div style={{ overflowX: "auto", width: "100%" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              minWidth: "min-content",
+                            }}
+                          >
+                            {trendingCreatorsMap[dietaryDetail.id].map((creator) => (
+                              <CreatorCommunityCard key={creator.id} item={creator} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -228,7 +225,7 @@ function CommunityMobile() {
           </div>
         )}
         <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton>
+          <IonFabButton color="tertiary">
             <IonIcon icon={addOutline}></IonIcon> {/*main button*/}
           </IonFabButton>
           <IonFabList side="top">

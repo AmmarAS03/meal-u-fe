@@ -37,6 +37,7 @@ import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryB
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
 import AllOrders from "./pages/Warehouse/Orders";
+import CreatorProfile from "./pages/Community/CreatorProfile";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -78,6 +79,7 @@ const AppContent: React.FC = () => {
               <Route exact path="/community" component={Tab2} />
               <Route path="/community/create/recipe" component={CreateRecipe} />
               <Route path="/community/create/mealkit" component={CreateMealkit} />
+              <Route path="/community/creator-profile/:id" component={CreatorProfile} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
               <Route path="/mycart" component={MyCart} />
