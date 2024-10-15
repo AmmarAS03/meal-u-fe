@@ -11,19 +11,19 @@ const FilterOverlay = ({
   setDietary,
   applyDietary,
   setApplyDietary,
-  meals,
+  meals, // user's supplied
   setMeals,
   priceRange,
   setPriceRange,
   dietaryRequirements,
-  mealTypes
+  mealTypes // existing mealtypes in the app
 }:{
   onClose: () => void,
   onApplyFilter: (filters: any) => void,
   dietary: number[],
   setDietary: Dispatch<React.SetStateAction<number[]>>,
-  // applyDietary: boolean,
-  // setApplyDietary: Dispatch<React.SetStateAction<boolean>>,
+  applyDietary: boolean,
+  setApplyDietary: Dispatch<React.SetStateAction<boolean>>,
   meals: number[],
   setMeals: Dispatch<React.SetStateAction<number[]>>,
   priceRange: {min: number, max: number},
@@ -57,9 +57,9 @@ const FilterOverlay = ({
 
   return (
     <div className={styles.mainContainer}>
-      {/* <button className={styles.closeButton} onClick={onClose}>
+      <button className={styles.closeButton} onClick={onClose}>
         <IonIcon icon={close} />
-      </button> */}
+      </button>
       <div className={styles.mainSection}>
         <div className={styles.subsection}>
           <div className={styles.subsectionTitle}>Dietary Requirements</div>
@@ -89,7 +89,7 @@ const FilterOverlay = ({
               <IonChip
                 key={item.id}
                 onClick={() => handleMealToggle(item.id)}
-                color={meals.includes(item.name) ? 'primary' : 'medium'}
+                color={meals.includes(item.id) ? 'primary' : 'medium'}
               >
                 <IonLabel>{item.name}</IonLabel>
               </IonChip>
@@ -122,10 +122,10 @@ const FilterOverlay = ({
             <IonLabel className={styles.priceRangeLabel} slot="end">${priceRange.max}</IonLabel>
           </IonRange>
         </div>
-      </div>
-      <div className={styles.bottomButtons}>
+        <div className={styles.subsection}>
         <IonButton expand="block" fill="clear" onClick={handleClearFilter}>Clear</IonButton>
-        <IonButton expand="block" onClick={handleApplyFilter}>Apply</IonButton>
+        <IonButton color="tertiary" expand="block" onClick={handleApplyFilter}>Apply</IonButton>
+      </div>
       </div>
     </div>
   );

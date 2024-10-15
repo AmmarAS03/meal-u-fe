@@ -30,6 +30,7 @@ import {
   gift,
 } from 'ionicons/icons';
 import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
+import { useOrder } from "../../../contexts/orderContext";
 
 import styles from './CommunityMobile.module.css'
 import { useCommunityMealkitsList, CommunityMealkitData } from "../../../api/mealkitApi";
@@ -50,6 +51,7 @@ function CommunityMobile() {
   const { data: communityMealkits = [], isFetching: isMealkitFetching } = useCommunityMealkitsList();
   const { data: dietaryRequirements = [] } = useDietaryDetails();
   const { data: mealTypes = [] } = useMealTypeList();
+  const { meal_types } = useOrder();
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
@@ -131,8 +133,29 @@ function CommunityMobile() {
           return selectedDietaryNames.every(name => item.dietary_details.includes(name));
         })
       // if meal type filters applied
+      if (mealType.length > 0) {
+        filteredDataFiltered = filteredDataFiltered.filter(item => {
+          // get the names of the selected meal types
+          const selectedMealTypes = mealType
+          .map(id => meal_types?.find(mt => mt.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
 
+          // check if all selected meal types are included in the item's meal types
+          if (item.type === 'mealkit') {
+            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          } else {
+            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
+          }
+        });
+      }
       // if price range filters applied
+      if (priceRange.min !== 0 || priceRange.max !== 100) {
+        filteredDataFiltered = filteredDataFiltered.filter(item => {
+          // field 'price' on mealkit, field 'total_price' on recipe
+          const itemPrice = item.type === 'mealkit' ? item.price : item.total_price;
+          return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
+        })
+      }
       }
     }
 
