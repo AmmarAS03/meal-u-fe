@@ -8,12 +8,14 @@ import { useOrder } from '../../../contexts/orderContext';
 interface DeliveryLocationPickerProps {
 	setIsDeliveryDetailsSet: Dispatch<SetStateAction<boolean>>;
 	setIsPickerShown: Dispatch<SetStateAction<boolean>>;
+    setDeliveryFee: Dispatch<SetStateAction<number>>;
 }
 
 const DeliveryLocationPicker: React.FC<DeliveryLocationPickerProps> = 
 ({
 	setIsDeliveryDetailsSet,
 	setIsPickerShown,
+    setDeliveryFee,
 }) => {
   const [isFieldFilled, setIsFieldFilled] = useState(false);
   const [deliveryLocation, setDeliveryLocation] = useState(-1);
@@ -21,7 +23,7 @@ const DeliveryLocationPicker: React.FC<DeliveryLocationPickerProps> =
   const [deliveryDate, setDeliveryDate] = useState(new Date());
 
 	const { data: deliveryTimeSlot } = useDeliveryTimeSlots();
-	const { data: deliveryData }= useDeliveryLocations();
+	const { data: deliveryData } = useDeliveryLocations();
   const { fillDeliveryLocationDetails, setDeliveryDetails, fillDeliveryTimeSlotDetails } = useOrder();
 
   useEffect(() => {
@@ -32,6 +34,7 @@ const DeliveryLocationPicker: React.FC<DeliveryLocationPickerProps> =
           deliveryTime: deliveryBatch,
           deliveryDate: deliveryDate,
         });
+        deliveryData ? setDeliveryFee(parseInt(deliveryData[deliveryLocation].delivery_fee)) : null;
     } else {
         setIsFieldFilled(false);
     }

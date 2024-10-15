@@ -13,14 +13,19 @@ import {
   IonInput,
   IonChip,
   IonLabel,
+  IonText,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import { RecipeAction } from "./index";
 import { ProductData, useProductList } from "../../../../api/productApi";
 import { useParams } from "react-router-dom";
 import IconInput from "../../../../components/icon-input";
 import SearchIcon from "../../../../../public/icon/search-icon";
-import { CreateRecipePayload, IngredientRecipe } from "../../../../api/recipeApi"
+import { CreateRecipePayload, IngredientRecipe, usePreparationTypeList, PreparationType } from "../../../../api/recipeApi"
 import { useUnitList } from '../../../../api/productApi';
+import { useOrder } from '../../../../contexts/orderContext'
+import { useCategoriesList } from '../../../../api/categoryApi';
 
 interface IngredientsFormProps {
   state: CreateRecipePayload;
@@ -34,11 +39,34 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const [searchValue, setSearchValue] = useState("");
   const { category } = useParams<{ category: string }>();
   const { data: products = [], isFetching: isProductFetching } = useProductList({ search: category });
-  const {data: units} = useUnitList();
+  const { data: units } = useUnitList();
+  const { getUnitFromId } = useOrder();
 
   const [selectedIngredients, setSelectedIngredients] = useState<IngredientRecipe[]>( state.ingredients || [] );
   const [showResults, setShowResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const { data: categories } = useCategoriesList();
+
+  const prepTypeMap: Record<number, PreparationType[]> = {};
+  
+  const preparationTypeQueries = (categories ?? []).map(category => usePreparationTypeList(category.id));
+
+  preparationTypeQueries?.forEach((query, index) => {
+    if (query.isError) {
+      console.error(`Error fetching preparation types for category ${categories![index]?.name}:`, query.error);
+    } else {
+      if (query.data) {
+        prepTypeMap[categories![index]?.id] = query.data; // Map the data to category ID
+      }
+    }
+  });
+
+  function getIdFromCategoryName(name: string): number {
+    const result = categories?.find((category) => category.name === name)
+    return result!.id;
+  }
+
+  // search related -----------------------------------------
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -62,6 +90,26 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     );
   };
 
+  const filteredProducts = filterItems(products, searchValue);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  //  end ofsearch related -----------------------------------------
+
   const getUnitId = (product: ProductData) => {
     const data = units!.find(unit => unit.name === product.unit_id);
     return data!.id;
@@ -80,9 +128,11 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
         },
         preparation_type: null,
         quantity: 1,
-        price: product.total_price
+        price: Number(product.price_per_unit),
       };
+
       setSelectedIngredients((prev) => [...prev, newIngredient]);
+      console.log("entered ingridient: ", newIngredient);
       dispatch({
         type: "SET_FIELD",
         field: "ingredients",
@@ -117,34 +167,65 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     });
   };
 
-  const filteredProducts = filterItems(products, searchValue);
+  const handlePrepTypeChange = (productId: number, preptype: string) => {
+    setSelectedIngredients((prevIngredients) => {
+      const updatedIngredients = prevIngredients.map((item) => {
+        if (item.ingredient.product_id === productId) {
+          const categoryId = getCategoryIdFromProductId(item.ingredient.product_id);
+          if (categoryId) {
+            const prepTypes = prepTypeMap[categoryId] || [];
+            console.log("prepTypes: ", prepTypes);
+            const selectedPrepType = prepTypes.find((type) => type.name === preptype);
+            console.log("selectedpreptype: ", selectedPrepType);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)
-      ) {
-        setShowResults(false);
-      }
-    };
+            // calculate the new price
+            let newPrice;
+            if (parseFloat(selectedPrepType!.additional_price) !== 0) {
+              newPrice = item.price + Number(selectedPrepType!.additional_price);
+            } else {
+              newPrice = item.price;
+            }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+            if (selectedPrepType) {
+              // update the preparation type for the selected ingredient
+              return {
+                ...item,
+                preparation_type: selectedPrepType.id,
+                price: newPrice,
+              };
+            }
+          }
+        }
+        return item;
+      });
+
+      dispatch({
+        type: "SET_FIELD",
+        field: "ingredients",
+        value: updatedIngredients,
+      });
+  
+      return updatedIngredients;
+    });
+  };
+
+
+  function getCategoryIdFromProductId(productId: number): number {
+    const product = products.find((product) => product.id === productId)
+    const category = categories?.find((category) => category.name === product?.category_id)
+    return category!.id;
+  }
+  
 
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex flex-col space-y-4 justify-between items-center mb-4">
         <div className="w-full" ref={searchContainerRef}>
-          <label
+          <IonLabel
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="ingredients"
           >
             Recipe Ingredients
-          </label>
+          </IonLabel>
           <div style={{ position: "relative" }}>
             <IconInput
               onInputHandleChange={handleSearchChange}
@@ -173,36 +254,58 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
             )}
           </div>
 
-          {/* Display selected ingredients */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {selectedIngredients.map((ingredient) => (
-              <IonCard key={ingredient.ingredient.product_id}>
-                <IonCardHeader>
-                  <IonCardSubtitle>{ingredient.ingredient.name}</IonCardSubtitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="flex items-center space-x-2">
-                    <IonInput
-                      type="number"
-                      value={ingredient.ingredient.unit_size}
-                      placeholder="Amount"
-                      onIonChange={(e) =>
-                        handleAmountChange(ingredient.ingredient.product_id, e.detail.value!)
-                      }
-                    />
-                    Unit:{ingredient.ingredient.product_id}
-                    
-                    <IonChip
-                      onClick={() => handleIngredientRemove(ingredient.ingredient.product_id)}
-                      color="danger"
-                    >
-                      <IonLabel>Remove</IonLabel>
-                    </IonChip>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {selectedIngredients.map((ingredient) => (
+          <IonCard key={ingredient.ingredient.product_id}>
+            <IonCardHeader>
+              <IonCardSubtitle>{ingredient.ingredient.name}</IonCardSubtitle>
+            </IonCardHeader>
+            <IonCardContent>
+            <div className="flex items-center gap-x-3">
+                    <div className="flex-auto">
+                      <IonInput
+                        type="number"
+                        value={ingredient.ingredient.unit_size}
+                        placeholder="Amount"
+                        onIonChange={(e) =>
+                          handleAmountChange(ingredient.ingredient.product_id, e.detail.value!)
+                        }
+                        fill="outline"
+                      />
+                    </div>
+                    <div className="flex-none">
+                      <IonText>
+                        Unit: {getUnitFromId(ingredient.ingredient.unit_id)}
+                      </IonText>
+                    </div>
+                    <div className="flex-none">
+                      <IonChip
+                        onClick={() => handleIngredientRemove(ingredient.ingredient.product_id)}
+                        color="danger"
+                      >
+                        <IonLabel>Remove</IonLabel>
+                      </IonChip>
+                    </div>
                   </div>
-                </IonCardContent>
-              </IonCard>
-            ))}
-          </div>
+                  <div className="flex items-center gap-x-3 mt-2">
+              <IonSelect
+                value={ingredient.preparation_type}
+                placeholder="Select preparation type"
+                onIonChange={(e) => handlePrepTypeChange(ingredient.ingredient.product_id, e.detail.value)}
+              >
+                <IonSelectOption value={null}>None</IonSelectOption>
+                {ingredient && 
+                 prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)]?.map((prepType) => (
+                  <IonSelectOption key={prepType.id} value={prepType.name}>
+                    {prepType.name}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </div>
+            </IonCardContent>
+          </IonCard>
+        ))}
+      </div>
         </div>
       </div>
     </div>

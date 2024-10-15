@@ -24,6 +24,7 @@ import Home from "./pages/Home";
 import { useAuth } from "./contexts/authContext";
 import MealkitDetails from "./pages/MealkitDetails/MealkitDetails";
 import CreateRecipe from "./pages/Community/Create/Recipe";
+import CreateMealkit from "./pages/Community/Create/Mealkit";
 import CourierHome from "./pages/Courier/CourierHome/CourierHome";
 import CourierDelivery from "./pages/Courier/CourierDelivery/CourierDelivery";
 import ConfirmPickup from "./pages/Courier/ConfirmPickUp/ConfirmPickUp";
@@ -35,6 +36,7 @@ import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveri
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
+import AllOrders from "./pages/Warehouse/Orders";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -42,7 +44,7 @@ const AppContent: React.FC = () => {
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;
@@ -75,13 +77,14 @@ const AppContent: React.FC = () => {
               <Route exact path="/home" component={Home} />
               <Route exact path="/community" component={Tab2} />
               <Route path="/community/create/recipe" component={CreateRecipe} />
+              <Route path="/community/create/mealkit" component={CreateMealkit} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
               <Route path="/mycart" component={MyCart} />
               <Route path="/mealkit-details/:id" component={MealkitDetails} />
               <Route path="/recipe-details/:id" component={RecipeDetails} />
               <Route path="/product-details/:id" component={ProductDetails} />
-              <Route path="/payment-options" component={PaymentOptions} />
+              <Route path="/payment-options/:id" component={PaymentOptions} />
               <Route path="/courier/home" component={CourierHome} />
               <Route path="/courier/:type/:id" component={CourierDelivery} />
               <Route path="/courier/confirm-pickup/:type/:id" component={ConfirmPickup} />
@@ -91,6 +94,7 @@ const AppContent: React.FC = () => {
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />
               <Route path="/warehouse/dashboard" component={Dashboard} />
               <Route path="/warehouse/order/:id" component={OrderDetail} />
+              <Route path="/warehouse/orders" component={AllOrders} />
               <Route exact path="/">
                 <Redirect to="/home" />
               </Route>

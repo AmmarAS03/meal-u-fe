@@ -12,6 +12,9 @@ export interface DeliveryLocation {
   postal_code: string;
   country: string;
   details: string;
+  delivery_fee: string;
+  longitude: string;
+  latitude: string;
 }
 
 export interface DeliveryTimeSlot {
@@ -101,10 +104,13 @@ export interface CreateOrderPayload {
 }
 
 // Interface for the API response structure
-interface OrderCreationResponse {
+export interface OrderCreationResponse {
   success: boolean;
   message: string;
-  data: any; // Adjust to match your Order data structure
+  data: {
+    order_id: number;
+    total: number;
+  };
 }
 
 export const useCreateOrder = () => {
@@ -137,11 +143,12 @@ export const useCreateOrder = () => {
         throw new Error(data.message || 'Failed to create order');
       }
 
-      return data.data;
+      return data;
     },
     onSuccess: (data) => {
       // Invalidate or refetch queries related to orders after a successful mutation
       queryClient.invalidateQueries({queryKey: ['orders']});
+      return data;
     },
   });
 };
