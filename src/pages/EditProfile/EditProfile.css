@@ -1,0 +1,57 @@
+.back-button {
+    --background: transparent;
+    --ripple-color: transparent;
+    --box-shadow: none;
+  }
+  
+  .avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border: 3px solid #6c63ff;
+    border-radius: 60px;
+    overflow: hidden;
+  }
+  
+  .input-item {
+    border-radius: 8px;
+    padding: 3px 6px;
+    align-items: center;
+    transition: border-color 0.3s;
+  }
+  
+  .input-item-focused {
+    border: 2px solid black;
+  }
+  
+  .input-item-blur {
+    border: 1px solid #ccc;
+  }
+  
+  .gender-button {
+    background-color: #f8f8f8;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    padding: 10px 0;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  
+  .gender-button-selected {
+    background-color: #fff;
+    border: 2px solid black;
+  }
+  
+  .update-profile-button {
+    background-color: #6c63ff;
+    font-weight: bold;
+    border-radius: 20px;
+  }

@@ -106,17 +106,17 @@ export const useRecipesList = (
         Authorization: `Bearer ${token}`,
       },
     });
-
+  
     if (!response.ok) {
       throw new Error("Failed to fetch mealkits");
     }
-
+  
     const data = await response.json();
-
+  
     if (!data.success) {
       throw new Error(data.message || "Failed to fetch recipes");
     }
-
+  
     return data.data;
   };
 
@@ -259,6 +259,42 @@ export interface IngredientRecipe {
   quantity: number;
   price: number;
 }
+
+export const useRecipesByCreator = (
+  creatorId: number
+): UseQueryResult<RecipeData[], Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchRecipesByCreator = async (): Promise<RecipeData[]> => {
+    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?creator=${creatorId}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch recipes by creator");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch recipes by creator");
+    }
+
+    return data.data;
+  };
+
+  return useQuery<RecipeData[], Error, RecipeData[], [string, number]>({
+    queryKey: ["recipe.list.byCreator", creatorId],
+    queryFn: fetchRecipesByCreator,
+    initialData: [],
+    enabled: !!token,
+  });
+};
 
 export interface CreateRecipePayload {
   recipe: {

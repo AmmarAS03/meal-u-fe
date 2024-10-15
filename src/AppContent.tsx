@@ -32,6 +32,7 @@ import ConfirmDelivery from "./pages/Courier/ConfirmDelivery/ConfirmDelivery";
 import Orders from "./pages/Orders/Orders";
 import QRReader from "./pages/QR-Reader/QR-Reader";
 import User from "./pages/User";
+import EditProfile from "./pages/EditProfile/EditProfile";
 import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveries";
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
@@ -81,6 +82,7 @@ const AppContent: React.FC = () => {
               <Route path="/community/create/mealkit" component={CreateMealkit} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
+              <Route path="/edit-profile" component={EditProfile} />
               <Route path="/mycart" component={MyCart} />
               <Route path="/mealkit-details/:id" component={MealkitDetails} />
               <Route path="/recipe-details/:id" component={RecipeDetails} />
