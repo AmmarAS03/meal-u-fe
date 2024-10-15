@@ -31,8 +31,8 @@ const Orders: React.FC = () => {
         orders: orders.filter(order => ['paid', 'preparing', 'ready to deliver', 'delivering', 'delivered', 'picked_up'].includes(order.order_status)),
       },
       {
-        title: 'Completed Today',
-        isCurrent: false,
+        title: 'Today',
+        isCurrent: !orders.filter(order => order.order_status === 'completed'),
         orders: orders.filter(order => 
           order.order_status === 'completed' && 
           new Date(order.created_at) >= now

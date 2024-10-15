@@ -14,11 +14,12 @@ import {
     IonChip,
     IonAvatar,
     IonSkeletonText,
+    IonToast,
 } from '@ionic/react';
-import { heartOutline, chatbubbleOutline, shareOutline, bookmarkOutline } from 'ionicons/icons';
+import { heartOutline, chatbubbleOutline } from 'ionicons/icons';
 import { BsPencilSquare } from 'react-icons/bs';
 import LongRecipeCard from '../../components/LongRecipeCard/LongRecipeCard';
-import { fetchMealkitDetails, MealkitDetailsData } from '../../api/mealkitApi';
+import { fetchMealkitDetails, MealkitDetailsData, useAddMealkitComment, useMealkitComments } from '../../api/mealkitApi';
 import { useAuth } from '../../contexts/authContext';
 import { useAddCartItem } from '../../api/cartApi';
 import { IonToast } from '@ionic/react';
@@ -34,6 +35,17 @@ const MealkitDetails: React.FC = () => {
 
     const { getToken } = useAuth();
     const token = getToken();
+
+    const [newComment, setNewComment] = useState('');
+    const addComment = useAddMealkitComment(parseInt(id));
+    const { data: comments, isLoading: isLoadingComments } = useMealkitComments(parseInt(id));
+    const [commentCount, setCommentCount] = useState(0);
+
+    useEffect(() => {
+        if (comments) {
+            setCommentCount(comments.length);
+        }
+    }, [comments]);
 
     useEffect(() => {
         const loadMealkit = async () => {
@@ -55,6 +67,54 @@ const MealkitDetails: React.FC = () => {
 
         loadMealkit();
     }, [id, token]);
+
+    const handleAddComment = () => {
+        if (newComment.trim()) {
+            addComment.mutate({ comment: newComment }, {
+                onSuccess: () => {
+                    setNewComment('');
+                    setToastMessage('Comment added successfully');
+                    setShowToast(true);
+                },
+                onError: (error) => {
+                    setToastMessage(`Failed to add comment: ${error.message}`);
+                    setShowToast(true);
+                },
+            });
+        }
+    };
+
+    const handleAddToCart = () => {
+        if (!mealkit) return;
+
+        const payload = {
+            item_type: 'mealkit' as const,
+            item_data: {
+                mealkit_id: parseInt(id, 10),
+                recipes: mealkit.recipes.map(recipe => ({
+                    recipe_id: recipe.id,
+                    quantity: 1,
+                    recipe_ingredients: recipe.ingredients.map(ingredient => ({
+                        ingredient_id: ingredient.ingredient.id,
+                        preparation_type_id: ingredient.preparation_type?.id || null,
+                        quantity: 1,
+                    })),
+                })),
+            },
+            quantity: 1,
+        };
+
+        addCartItem.mutate(payload, {
+            onSuccess: () => {
+                setToastMessage('Mealkit added to cart successfully');
+                setShowToast(true);
+            },
+            onError: (error) => {
+                setToastMessage(`Failed to add mealkit to cart: ${error.message}`);
+                setShowToast(true);
+            },
+        });
+    };
 
     if (loading) {
         return (
@@ -112,8 +172,8 @@ const MealkitDetails: React.FC = () => {
 
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar>
+            <IonHeader collapse='fade'>
+                <IonToolbar className='font-sans'>
                     <IonButtons slot="start">
                         <IonBackButton defaultHref="/mealkits" />
                     </IonButtons>
@@ -144,14 +204,8 @@ const MealkitDetails: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <IonIcon icon={chatbubbleOutline} className="w-6 h-6"></IonIcon>
-                                <IonText className="text-sm text-[#0A2533]">N/A</IonText>
+                                <IonText className="text-sm text-[#0A2533]">{commentCount}</IonText>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <IonIcon icon={shareOutline} className="w-6 h-6"></IonIcon>
-                            </div>
-                        </div>
-                        <div>
-                            <IonIcon icon={bookmarkOutline} className="w-6 h-6"></IonIcon>
                         </div>
                     </div>
                     <div className="p-4">
@@ -178,10 +232,45 @@ const MealkitDetails: React.FC = () => {
                             price={recipe.total_price}
                         />
                     ))}
-                    <div className="px-4 mt-4">
-                        <h2 className="text-lg font-bold text-[#0A2533]">Comments</h2>
+                    <div className="px-4 mt-8 mb-24">
+                        <h2 className="text-xl font-bold mb-4">Comments</h2>
+                        <div className="space-y-4">
+                            {isLoadingComments ? (
+                                <div className="animate-pulse bg-gray-200 h-20 rounded-md"></div>
+                            ) : comments && comments.length > 0 ? (
+                                comments.map((comment) => (
+                                    <div key={comment.id} className="bg-white rounded-lg p-4 shadow-sm">
+                                        <div className="flex items-center mb-2">
+                                            <img src={comment.user_details.profile_picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
+                                            <div>
+                                                <p className="font-semibold">{comment.is_creator ? 'Author' : comment.user_details.name}</p>
+                                                <p className="text-xs text-gray-500">{new Date(comment.commented_at).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-700">{comment.comment}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+                            )}
+                        </div>
+                        <div className="mt-4">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Add a comment"
+                                className="w-full bg-white p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7862FC] focus:border-transparent"
+                                rows={3}
+                            />
+                            <button
+                                onClick={handleAddComment}
+                                disabled={addComment.isPending}
+                                className="mt-2 w-full bg-[#7862FC] text-white py-2 px-4 rounded-md font-semibold hover:bg-[#6a56de] transition-colors duration-300"
+                            >
+                                {addComment.isPending ? 'Adding...' : 'Add Comment'}
+                            </button>
+                        </div>
                     </div>
-                    <IonText className="px-4">No comments available.</IonText>
                 </div>
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md z-10 flex items-center gap-3 rounded-t-3xl">
                     <button 

@@ -19,10 +19,11 @@ import {
     IonAvatar,
     IonSkeletonText,
     IonToast,
+    IonInput,
 } from '@ionic/react';
 import { heartOutline, chatbubbleOutline, shareOutline, bookmarkOutline, time, restaurant, flame, fastFood, pencil } from 'ionicons/icons';
 import LongIngredientCard from '../../components/LongIngredientCard/LongIngredientCard';
-import { fetchRecipeDetails, RecipeData } from '../../api/recipeApi';
+import { fetchRecipeDetails, RecipeData, useAddRecipeComment, useRecipeComments } from '../../api/recipeApi';
 import { useAuth } from '../../contexts/authContext';
 import { BsPencilSquare } from 'react-icons/bs';
 import { useAddCartItem } from '../../api/cartApi';
@@ -38,6 +39,33 @@ const RecipeDetails: React.FC = () => {
     const { getToken } = useAuth();
     const token = getToken();
     const addCartItem = useAddCartItem();
+
+    const [newComment, setNewComment] = useState('');
+    const addComment = useAddRecipeComment(parseInt(id));
+    const { data: comments, isLoading: isLoadingComments } = useRecipeComments(parseInt(id));
+    const [commentCount, setCommentCount] = useState(0);
+
+    useEffect(() => {
+        if (comments) {
+            setCommentCount(comments.length);
+        }
+    }, [comments]);
+
+    const handleAddComment = () => {
+        if (newComment.trim()) {
+            addComment.mutate({ comment: newComment }, {
+                onSuccess: () => {
+                    setNewComment('');
+                    setToastMessage('Comment added successfully');
+                    setShowToast(true);
+                },
+                onError: (error) => {
+                    setToastMessage(`Failed to add comment: ${error.message}`);
+                    setShowToast(true);
+                },
+            });
+        }
+    };
 
     useEffect(() => {
         const loadRecipe = async () => {
@@ -108,8 +136,8 @@ const RecipeDetails: React.FC = () => {
 
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar>
+            <IonHeader collapse='fade'>
+                <IonToolbar className='font-sans'>
                     <IonButtons slot="start">
                         <IonBackButton defaultHref="/recipes" />
                     </IonButtons>
@@ -139,12 +167,9 @@ const RecipeDetails: React.FC = () => {
                                 <IonText>N/A</IonText>
                             </div>
                             <div className="flex items-center gap-2">
-                                <IonIcon icon={shareOutline} className="w-6 h-6" />
-                                <IonText>N/A</IonText>
+                                <IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
+                                <IonText>{commentCount}</IonText>
                             </div>
-                        </div>
-                        <div>
-                            <IonIcon icon={bookmarkOutline} className="w-6 h-6" />
                         </div>
                     </div>
                     <div className="flex items-start justify-between p-4">
@@ -209,12 +234,46 @@ const RecipeDetails: React.FC = () => {
                             price={`$${ingredient.price.toFixed(2)}`}
                         />
                     ))}
-                    <div className="px-4 mt-4">
-                        <h2 className="font-bold text-base">Comments</h2>
-                    </div>
-                    <IonText className="px-4">No comments yet. Be the first to comment!</IonText>
+                    <div className="px-4 mt-8 mb-24">
+                <h2 className="text-xl font-bold mb-4">Comments</h2>
+                <div className="space-y-4">
+                    {isLoadingComments ? (
+                        <div className="animate-pulse bg-gray-200 h-20 rounded-md"></div>
+                    ) : comments && comments.length > 0 ? (
+                        comments.map((comment) => (
+                            <div key={comment.id} className="bg-white rounded-lg p-4 shadow-sm">
+                                <div className="flex items-center mb-2">
+                                    <img src={comment.user_details.profile_picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
+                                    <div>
+                                        <p className="font-semibold">{comment.is_creator ? 'Author' : comment.user_details.name}</p>
+                                        <p className="text-xs text-gray-500">{new Date(comment.commented_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700">{comment.comment}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+                    )}
                 </div>
-
+                <div className="mt-4">
+                    <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Add a comment"
+                        className="w-full bg-white p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7862FC] focus:border-transparent"
+                        rows={3}
+                    />
+                    <button
+                        onClick={handleAddComment}
+                        disabled={addComment.isPending}
+                        className="mt-2 w-full bg-[#7862FC] text-white py-2 px-4 rounded-md font-semibold hover:bg-[#6a56de] transition-colors duration-300"
+                    >
+                        {addComment.isPending ? 'Adding...' : 'Add Comment'}
+                    </button>
+                </div>
+            </div>
+            </div>
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md z-10 flex items-center gap-3 rounded-t-3xl">
                     <button 
                         className="flex-grow bg-[#7862FC] text-white py-3 px-4 rounded-2xl font-semibold text-base font-sans"
