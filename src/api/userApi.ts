@@ -1,4 +1,4 @@
-import { useQuery, useQueries, UseQueryResult, QueryFunction, QueryKey } from '@tanstack/react-query';
+import { useMutation, useMutationResult, useQuery, useQueries, useQueryClient, UseQueryResult, QueryFunction, QueryKey } from '@tanstack/react-query';
 import { useAuth } from "../contexts/authContext";
 import { DietaryDetail, useDietaryDetails } from "./productApi";
 
@@ -12,46 +12,65 @@ export interface UserProfile {
   role: string;
   image: string | null;
   voucher_credits: string;
-  profile: any | null;
+  profile: any;
 }
 
-interface UserProfileResponse {
-  success: boolean;
-  message: string;
-  data: UserProfile;
+interface Recipe {
+    id: number;
+    creator: {
+      name: string;
+      profile_picture: string;
+      userID: number;
+    };
+    name: string;
+    serving_size: number;
+    meal_type: string;
+    cooking_time: number;
+    created_at: string;
+    image: string;
+    dietary_details: string[];
+    total_price: number;
+  }
+  
+interface LikedRecipe {
+recipe: Recipe;
+liked_at: string;
+}
+
+interface LikedRecipesResponse {
+liked_recipes: LikedRecipe[];
 }
 
 export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
-  const { getToken } = useAuth(); // Assume useAuth provides authentication token
-  const token = getToken() || "";
+  const { getToken } = useAuth();
+  const token = getToken() || '';
 
   const fetchUserProfile = async (): Promise<UserProfile> => {
-    const response = await fetch(
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch user profile");
+      throw new Error('Failed to fetch user profile');
     }
 
-    const data: UserProfileResponse = await response.json();
+    const data = await response.json();
 
     if (!data.success) {
-      throw new Error(data.message || "Failed to fetch user profile");
+      throw new Error(data.message || 'Failed to fetch user profile');
     }
 
     return data.data;
   };
 
   return useQuery<UserProfile, Error>({
-    queryKey: ["userProfile"],
+    queryKey: ['user.profile'],
     queryFn: fetchUserProfile,
-    enabled: !!token, // Only enable the query if the token exists
+    enabled: !!token,
   });
 };
 
@@ -151,3 +170,77 @@ export const useTrendingCreators = () => {
     isError: trendingCreatorsQueries.some(query => query.isError),
   };
 };
+
+export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Partial<UserProfile>> => {
+    const { getToken } = useAuth();
+    const queryClient = useQueryClient();
+  
+    return useMutation<UserProfile, Error, Partial<UserProfile>>({
+      mutationFn: async (updatedProfile) => {
+        const token = getToken() || '';
+        const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+  
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedProfile),
+        });
+  
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to update profile: ${errorText}`);
+        }
+  
+        const data = await response.json();
+  
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to update profile');
+        }
+  
+        return data.data;
+      },
+      onSuccess: (data) => {
+        queryClient.setQueryData(['user.profile'], data);
+        queryClient.invalidateQueries({queryKey: ['user.profile']});
+      },
+      onError: (error) => {
+        console.error('Error updating profile:', error);
+      },
+    });
+  };
+
+  export const useLikedRecipes = (): UseQueryResult<LikedRecipesResponse, Error> => {
+    const { getToken } = useAuth();
+    const token = getToken() || '';
+  
+    const fetchLikedRecipes = async (): Promise<LikedRecipesResponse> => {
+      const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/user-likes/';
+  
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch liked recipes');
+      }
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch liked recipes');
+      }
+  
+      return data.data;
+    };
+  
+    return useQuery<LikedRecipesResponse, Error>({
+      queryKey: ['user.likedRecipes'],
+      queryFn: fetchLikedRecipes,
+      enabled: !!token,
+    });
+  };

@@ -98,7 +98,7 @@ export const useDeliveryTimeSlots = (): UseQueryResult<DeliveryTimeSlot[], Error
 
 // Interface for order creation payload
 export interface CreateOrderPayload {
-  delivery_location: number;
+  delivery_location: any;
   delivery_time: number;
   delivery_date: string;
 }

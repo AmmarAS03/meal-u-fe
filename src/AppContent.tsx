@@ -32,12 +32,14 @@ import ConfirmDelivery from "./pages/Courier/ConfirmDelivery/ConfirmDelivery";
 import Orders from "./pages/Orders/Orders";
 import QRReader from "./pages/QR-Reader/QR-Reader";
 import User from "./pages/User";
+import EditProfile from "./pages/EditProfile/EditProfile";
 import CourierDeliveries from "./pages/Courier/CourierDeliveries/CourierDeliveries";
 import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryBatchDetails";
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
 import AllOrders from "./pages/Warehouse/Orders";
 import CreatorProfile from "./pages/Community/CreatorProfile";
+import DeliveryStatus from "./pages/DeliveryStatus/DeliveryStatus";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -45,7 +47,7 @@ const AppContent: React.FC = () => {
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/community/creator-profile/'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/order-status/', '/community/creator-profile/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;
@@ -82,6 +84,7 @@ const AppContent: React.FC = () => {
               <Route path="/community/creator-profile/:id" component={CreatorProfile} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
+              <Route path="/edit-profile" component={EditProfile} />
               <Route path="/mycart" component={MyCart} />
               <Route path="/mealkit-details/:id" component={MealkitDetails} />
               <Route path="/recipe-details/:id" component={RecipeDetails} />
@@ -91,6 +94,7 @@ const AppContent: React.FC = () => {
               <Route path="/courier/:type/:id" component={CourierDelivery} />
               <Route path="/courier/confirm-pickup/:type/:id" component={ConfirmPickup} />
               <Route path="/courier/confirm-delivery/:id" component={ConfirmDelivery} />
+              <Route path="/order-status/:id" component={DeliveryStatus} />
               <Route path="/qr-reader" component={QRReader} />
               <Route path="/courier/deliveries" component={CourierDeliveries} />
               <Route path="/courier/delivery-batch/:batchNumber" component={DeliveryBatchDetails} />

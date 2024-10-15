@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
-import { RecipeData } from './recipeApi';
 
 interface CommunityCreator {
   name: string;
@@ -22,8 +21,10 @@ interface NutritionDetails {
 
 interface Ingredient {
   ingredient: {
+    id: number;
     name: string;
     image: string | null;
+    product_id: number;
     unit_id: number;
     unit_size: string;
     price_per_unit: string;
@@ -32,6 +33,7 @@ interface Ingredient {
     id: number;
     name: string;
     additional_price: string;
+    category: number;
   } | null;
   price: number;
 }
@@ -65,7 +67,7 @@ export interface MealkitData {
   dietary_details: string[];
   total_price: number;
   quantity: number;
-  recipes: RecipeData[];
+  recipes: Recipe[];
 }
 
 export interface MealkitDetailsData {
@@ -91,6 +93,7 @@ export interface CommunityMealkitData {
   created_at: string;
   image: string;
   dietary_details: string[];
+  meal_types: string[];
   likes_count: number;
   comments_count: number;
   price: number;
@@ -305,7 +308,7 @@ interface MealkitCreationResponse {
     description: string;
     dietary_details: string[];
     total_price: number;
-    recipes: RecipeData[];
+    recipes: Recipe[];
   };
 }
 
@@ -353,3 +356,70 @@ export const useCreateMealkit = (options?: {
     }
   })
 }
+
+interface Comment {
+  id: number;
+  recipe?: number;
+  mealkit?: number;
+  user_details: any;
+  comment: string;
+  commented_at: string;
+  is_creator: boolean;
+}
+
+interface CommentResponse {
+  success: boolean;
+  message: string;
+  data: Comment[];
+}
+
+export const useAddMealkitComment = (mealkitId: number) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CommentResponse, Error, { comment: string }>({
+    mutationFn: async ({ comment }) => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comment/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mealkitComments', mealkitId] });
+    },
+  });
+};
+
+export const useMealkitComments = (mealkitId: number) => {
+  const { getToken } = useAuth();
+
+  return useQuery<Comment[], Error>({
+    queryKey: ['mealkitComments', mealkitId],
+    queryFn: async () => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comments/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+
+      const data: CommentResponse = await response.json();
+      return data.data;
+    },
+  });
+};

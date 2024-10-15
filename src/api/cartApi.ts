@@ -122,11 +122,47 @@ interface DeleteCartItemPayload {
   cart_product_id: number;
 }
 
-interface AddCartItemPayload {
-  item_type: "recipe" | "product" | "mealkit" | "ingredient";
-  product_id: number;
+interface AddMealkitPayload {
+  item_type: "mealkit";
+  item_data: {
+    mealkit_id: number;
+    recipes: {
+      recipe_id: number;
+      quantity: number;
+      recipe_ingredients: {
+        ingredient_id: number;
+        preparation_type_id: number | null;
+        quantity: number;
+      }[];
+    }[];
+  };
   quantity: number;
 }
+
+interface AddRecipePayload {
+  item_type: "recipe";
+  quantity: number;
+  recipe_id: number;
+  recipe_ingredients: {
+    ingredient_id: number;
+    preparation_type_id: number | null;
+    quantity: number;
+  }[];
+}
+
+interface AddProductPayload {
+  item_type: "product";
+  quantity: number;
+  product_id: number;
+}
+
+// interface AddCartItemPayload {
+//   item_type: "recipe" | "product" | "mealkit";
+//   product_id: number;
+//   quantity: number;
+// }
+
+type AddCartItemPayload = AddMealkitPayload | AddRecipePayload | AddProductPayload;
 
 export const useAddCartItem = () => {
   const { getToken } = useAuth();
@@ -148,13 +184,13 @@ export const useAddCartItem = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update cart item");
+        throw new Error("Failed to add cart item");
       }
 
       const data: CartResponse = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || "Failed to update cart item");
+        throw new Error(data.message || "Failed to add cart item");
       }
 
       return data.data;

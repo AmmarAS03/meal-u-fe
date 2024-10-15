@@ -76,11 +76,13 @@ const OrderDetail: React.FC = () => {
   
     const orderStatusMap: { [key: number]: string } = {
       1: 'Pending',
-      2: 'Processing',
-      3: 'Ready to Deliver',
-      4: 'Out for Delivery',
-      5: 'Delivered',
-      6: 'Cancelled'
+      2: 'Paid',
+      3: 'Preparing',
+      4: 'Ready for Delivery',
+      5: 'Delivering',
+      6: 'Delivered',
+      7: 'Completed',
+      8: 'Cancelled'
     };
   
     return (
