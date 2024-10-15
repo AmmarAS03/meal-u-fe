@@ -137,8 +137,8 @@ const MealkitDetails: React.FC = () => {
 
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar>
+            <IonHeader collapse='fade'>
+                <IonToolbar className='font-sans'>
                     <IonButtons slot="start">
                         <IonBackButton defaultHref="/mealkits" />
                     </IonButtons>
