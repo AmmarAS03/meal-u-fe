@@ -10,7 +10,7 @@ import {
   IonFab,
   IonFabButton,
   IonFabList,
-  IonIcon
+  IonIcon,
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
 import FilterOverlay from "../../../components/FilterOverlay";
@@ -24,20 +24,17 @@ import {
 } from "../../../api/mealkitApi";
 import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
-import HomeImageCard from "../../../components/HomeImageCard";
+import HomeImageCard from "../../../components/HomeImageCard/HomeImageCard";
 import CreatorCommunityCard from "../../../components/CreatorCommunityCard/CreatorCommunityCard";
 import SkeletonCreatorCommunityCard from "../../../components/CreatorCommunityCard/SkeletonCreatorCommunityCard";
 import RecipeIcon from "../../../../public/icon/recipe-icon";
-import {
-  addOutline,
-  restaurantOutline,
-  gift,
-} from 'ionicons/icons';
+import { addOutline, restaurantOutline, gift } from "ionicons/icons";
 
-import styles from './CommunityMobile.module.css';
+import styles from "./CommunityMobile.module.css";
 import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
 import { useOrder } from "../../../contexts/orderContext";
-
+import { useTopCreatorsByDietary } from "../../../api/creatorApi";
+import SkeletonHomeImageCard from "../../../components/HomeImageCard/SkeletonImageCard";
 
 function CommunityMobile() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -54,8 +51,14 @@ function CommunityMobile() {
   const { data: dietaryRequirements = [] } = useDietaryDetails();
   const { data: mealTypes = [] } = useMealTypeList();
   const { meal_types } = useOrder();
+  const { data: topCreator = [], isFetching: isTopCreatorFetching } =
+    useTopCreatorsByDietary();
 
   const router = useIonRouter();
+
+  console.log("TOPCREATOR: ", topCreator);
+
+  console.log("FETCHING STATUS: ", isTopCreatorFetching)
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
@@ -68,28 +71,28 @@ function CommunityMobile() {
     setSelectedFilter(button);
   }, []);
 
-  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData) => {
-    if ('cooking_time' in item || 'meal_type' in item) {
-      // It's a recipe
-      router.push(`/recipe-details/${item.id}`);
-    } else {
-      // It's a mealkit
-      router.push(`/mealkit-details/${item.id}`);
-    }
-  }, [router]);
+  const handleItemClick = useCallback(
+    (item: CommunityRecipeData | CommunityMealkitData) => {
+      if ("cooking_time" in item || "meal_type" in item) {
+        // It's a recipe
+        router.push(`/recipe-details/${item.id}`);
+      } else {
+        // It's a mealkit
+        router.push(`/mealkit-details/${item.id}`);
+      }
+    },
+    [router]
+  );
 
   const combinedAndSortedData = useMemo(() => {
     const combined = [...communityRecipes, ...communityMealkit];
-    return combined.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return combined.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [communityRecipes, communityMealkit]);
 
-
-  console.log("MEALKIT COMMUNITY",communityMealkit)
-
   const renderContent = useMemo(() => {
-
     if (isRecipesFetching || isMealkitFetching) {
       return (
         <>
@@ -126,18 +129,33 @@ function CommunityMobile() {
               This week's spotlight
             </h3>
             <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                  gap: 10,
-                }}
-              >
-                <HomeImageCard />
-                <HomeImageCard />
-                <HomeImageCard />
-              </div>
+            <div style={{
+              display: "flex",
+              flexDirection: "row",
+              minWidth: "min-content",
+              gap: 10,
+            }}>
+              {isTopCreatorFetching ? (
+                // Show skeleton loading state
+                Array.from({ length: 3 }).map((_, index) => (
+                  <SkeletonHomeImageCard key={index} />
+                ))
+              ) : topCreator.length > 0 ? (
+                // Render HomeImageCards with topCreator data
+                topCreator.map((item) => (
+                  <HomeImageCard
+                    key={item.dietary_detail.id}
+                    creatorImage={item.top_creator.image}
+                    creatorName={`${item.top_creator.first_name} ${item.top_creator.last_name}`}
+                    dietaryName={item.dietary_detail.name}
+                    recipeCount={item.top_creator.recipe_count}
+                  />
+                ))
+              ) : (
+                // Show message if no data
+                <p>No top creators found.</p>
+              )}
+            </div>
             </div>
 
             <h3
@@ -184,33 +202,39 @@ function CommunityMobile() {
     }
 
     let filteredContent = contentToRender;
-    
+
     if (filterApplied) {
       // if dietary requirements filter applied
       if (dietary.length > 0) {
-        filteredContent = contentToRender.filter(item => {
+        filteredContent = contentToRender.filter((item) => {
           // get the names of the selected dietary requirements
           const selectedDietaryNames = dietary
-          .map(id => dietaryRequirements.find(dr => dr.id === id)?.name)
-          .filter((name): name is string => name !== undefined);
+            .map((id) => dietaryRequirements.find((dr) => dr.id === id)?.name)
+            .filter((name): name is string => name !== undefined);
 
           // check if all selected dietary names are included in the item's dietary_details
-          return selectedDietaryNames.every(name => item.dietary_details.includes(name));
-        })
+          return selectedDietaryNames.every((name) =>
+            item.dietary_details.includes(name)
+          );
+        });
       }
       // if meal type filters applied
       if (mealType.length > 0) {
-        filteredContent = filteredContent.filter(item => {
+        filteredContent = filteredContent.filter((item) => {
           // get the names of the selected meal types
           const selectedMealTypes = mealType
-          .map(id => meal_types?.find(mt => mt.id === id)?.name)
-          .filter((name): name is string => name !== undefined);
+            .map((id) => meal_types?.find((mt) => mt.id === id)?.name)
+            .filter((name): name is string => name !== undefined);
 
           // check if all selected meal types are included in the item's meal types
-          if ('cooking_time' in item) { // recipe
-            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
-          } else if ('meal_types' in item) { // mealkit
-            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          if ("cooking_time" in item) {
+            // recipe
+            return selectedMealTypes.every((mt) => item.meal_type.includes(mt));
+          } else if ("meal_types" in item) {
+            // mealkit
+            return selectedMealTypes.every((mt) =>
+              item.meal_types.includes(mt)
+            );
           } else {
             return false;
           }
@@ -218,51 +242,59 @@ function CommunityMobile() {
       }
       // if price range filters applied
       if (priceRange.min !== 0 || priceRange.max !== 100) {
-        filteredContent = filteredContent.filter(item => {
+        filteredContent = filteredContent.filter((item) => {
           // field 'price' on mealkit, field 'total_price' on recipe
-          const itemPrice = ('cooking_time' in item) ? item.total_price : item.price;
+          const itemPrice =
+            "cooking_time" in item ? item.total_price : item.price;
           return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
-        })
+        });
       }
 
       // if no content matches the filter
       if (filteredContent.length === 0) {
         return (
           <div className="flex items-center justify-center h-4/5">
-            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
+            <p className="text-sm text-gray-800">
+              Sorry, we don't have anything that matches your preferences.
+            </p>
           </div>
         );
       }
-
     }
 
     return (
       <>
-        {filteredContent.map((item: CommunityRecipeData | CommunityMealkitData, index: number) => (
-          <CommunityCard key={`${item.id}-${index}`} recipe={item} onClick={() => handleItemClick(item)}/>
-        ))}
+        {filteredContent.map(
+          (item: CommunityRecipeData | CommunityMealkitData, index: number) => (
+            <CommunityCard
+              key={`${item.id}-${index}`}
+              recipe={item}
+              onClick={() => handleItemClick(item)}
+            />
+          )
+        )}
       </>
     );
-  }, [selectedFilter,
-      isRecipesFetching,
-      isMealkitFetching,
-      communityRecipes,
-      communityMealkit,
-      combinedAndSortedData,
-      filterApplied,
-      dietary,
-      mealType,
-      priceRange,
-    ]);
-
+  }, [
+    selectedFilter,
+    isRecipesFetching,
+    isMealkitFetching,
+    communityRecipes,
+    communityMealkit,
+    combinedAndSortedData,
+    filterApplied,
+    dietary,
+    mealType,
+    priceRange,
+  ]);
 
   const navigateToCreateRecipe = () => {
-    router.push('/community/create/recipe');
-  }
+    router.push("/community/create/recipe");
+  };
 
   const navigateToCreateMealkit = () => {
-    router.push('/community/create/mealkit');
-  }
+    router.push("/community/create/mealkit");
+  };
 
   const handleApplyFilter = (filters: any) => {
     setFilterApplied(true);
@@ -271,8 +303,13 @@ function CommunityMobile() {
 
   // user clears filter
   useEffect(() => {
-    if (!dietary.length && !applyDietary && !mealType.length &&
-      priceRange.min === 0 && priceRange.max === 100) {
+    if (
+      !dietary.length &&
+      !applyDietary &&
+      !mealType.length &&
+      priceRange.min === 0 &&
+      priceRange.max === 100
+    ) {
       setFilterApplied(false);
     }
   }, [dietary, applyDietary, mealType, priceRange]);
@@ -310,7 +347,7 @@ function CommunityMobile() {
         {renderContent}
 
         {isFilterVisible && (
-            <FilterOverlay
+          <FilterOverlay
             onClose={() => setIsFilterVisible(false)}
             onApplyFilter={handleApplyFilter}
             dietary={dietary}
@@ -325,7 +362,13 @@ function CommunityMobile() {
             mealTypes={mealTypes}
           />
         )}
-        <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
+        <IonFab
+          className={styles.fabStyle}
+          color="tertiary"
+          slot="fixed"
+          vertical="bottom"
+          horizontal="end"
+        >
           <IonFabButton color="tertiary">
             <IonIcon icon={addOutline}></IonIcon> {/*main button*/}
           </IonFabButton>
