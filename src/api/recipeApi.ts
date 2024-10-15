@@ -1,26 +1,37 @@
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '../contexts/authContext';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "@tanstack/react-query";
+import { useAuth } from "../contexts/authContext";
 
 interface Creator {
   name: string;
   profile_picture: string;
+  userID: number;
 }
 
-export interface Ingredient {
+export interface PreparationType {
   id: number;
+  name: string;
+  additional_price: string;
+  category: number;
+}
+
+// IngredientRecipe[] maybe can be deleted
+
+export interface Ingredient {
   ingredient: {
-    product_id: number;
+    id: number;
     name: string;
     image: string | null;
+    product_id: number;
     unit_id: number;
     unit_size: string;
     price_per_unit: string;
   };
-  preparation_type: {
-    id: number;
-    name: string;
-    additional_price: string;
-  } | null;
+  preparation_type: PreparationType | null;
   quantity: number;
   price: number;
 }
@@ -49,7 +60,6 @@ export interface RecipeData {
   ingredients: Ingredient[];
   total_price: number;
   nutrition_details: NutritionDetails;
-  quantity: number;
 }
 
 export interface CommunityRecipeData {
@@ -70,6 +80,11 @@ export interface CommunityRecipeData {
 
 interface RecipeListParams {
   search: string;
+}
+
+interface LikeRecipeResponse {
+  success: boolean;
+  message: string;
 }
 
 export const useRecipesList = (
@@ -177,7 +192,12 @@ export const useTrendingRecipesList = (): UseQueryResult<
 
     return data.data;
   };
-  return useQuery<CommunityRecipeData[], Error, CommunityRecipeData[], [string]>({
+  return useQuery<
+    CommunityRecipeData[],
+    Error,
+    CommunityRecipeData[],
+    [string]
+  >({
     queryKey: ["trending-recipe.list"],
     queryFn: fetchTrendingRecipe,
     initialData: [],
@@ -214,14 +234,18 @@ export const useCommunityRecipesList = (): UseQueryResult<
 
     return data.data;
   };
-  return useQuery<CommunityRecipeData[], Error, CommunityRecipeData[], [string]>({
+  return useQuery<
+    CommunityRecipeData[],
+    Error,
+    CommunityRecipeData[],
+    [string]
+  >({
     queryKey: ["community-recipe.list"],
     queryFn: fetchCommunityRecipe,
     initialData: [],
     enabled: !!token,
   });
 };
-
 
 export interface IngredientRecipe {
   ingredient: {
@@ -231,11 +255,7 @@ export interface IngredientRecipe {
     unit_size: string;
     description?: string | null;
   };
-  preparation_type: {
-    id: number;
-    name: string;
-    additional_price: string;
-  } | null;
+  preparation_type: PreparationType | number | null;
   quantity: number;
   price: number;
 }
@@ -285,86 +305,216 @@ export interface CreateRecipePayload {
     meal_type: number;
     instructions: string[];
   };
-  ingredients: IngredientRecipe[];
+  ingredients: Ingredient[];
   dietary_details: string[];
-  image: File | null;
+  image: string | null;
 }
 
 interface RecipeCreationResponse {
   success: boolean;
   message: string;
-  data: {
-    id: number;
-    creator: {
-      name: string;
-      profile_picture: string | null;
-    };
-    name: string;
-    description: string;
-    serving_size: number;
-    meal_type: string;
-    cooking_time: number;
-    instructions: string[];
-    created_at: string;
-    updated_at: string;
-    is_customized: boolean;
-    image: string | null;
-    dietary_details: string[];
-    ingredients: Ingredient[];
-    total_price: number;
-    nutrition_details: null | any;
-  };
+  data: RecipeData;
 }
 
 export const useCreateRecipe = (options?: {
-  onSuccess?: (data: RecipeCreationResponse) => void;}) => {
+  onSuccess?: (data: RecipeCreationResponse) => void;
+}) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<RecipeCreationResponse, Error, CreateRecipePayload>({
     mutationFn: async (payload) => {
-      const token = getToken() || '';
+      const token = getToken() || "";
       const formData = new FormData();
 
       // Append recipe data
-      formData.append('recipe', JSON.stringify(payload.recipe));
+      formData.append("recipe", JSON.stringify(payload.recipe));
 
       // Append ingredients data
-      formData.append('ingredients', JSON.stringify(payload.ingredients));
+      formData.append("ingredients", JSON.stringify(payload.ingredients));
 
       // Append dietary details
-      formData.append('dietary_details', JSON.stringify(payload.dietary_details));
+      formData.append(
+        "dietary_details",
+        JSON.stringify(payload.dietary_details)
+      );
 
       // Append image if it exists
       if (payload.image) {
-        formData.append('image', payload.image);
+        formData.append("image", payload.image);
       }
 
-      const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type header, let the browser set it with the boundary
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        "http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // Don't set Content-Type header, let the browser set it with the boundary
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to create recipe');
+        throw new Error("Failed to create recipe");
       }
 
       const data: RecipeCreationResponse = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to create recipe');
+        throw new Error(data.message || "Failed to create recipe");
       }
 
       return data;
     },
     onSuccess: (data) => {
       // Invalidate or refetch queries related to recipes after a successful mutation
-      queryClient.invalidateQueries({queryKey: ['recipes']});
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
       options?.onSuccess?.(data);
+    },
+  });
+};
+
+export const useLikeRecipe = (options?: {
+  onSuccess?: (data: LikeRecipeResponse) => void;
+}) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<LikeRecipeResponse, Error, number>({
+    mutationFn: async (recipeId: number) => {
+      const token = getToken() || "";
+      const response = await fetch(
+        `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/like/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to like recipe");
+      }
+
+      const data: LikeRecipeResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to like recipe");
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["community-recipe.list"] });
+      options?.onSuccess?.(data);
+    },
+  });
+};
+
+export const usePreparationTypeList = (
+  categoryId: number
+): UseQueryResult<PreparationType[], Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || '';
+
+  const fetchPreparationTypes = async (): Promise<PreparationType[]> => {
+    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/preparation-type/${categoryId}/`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch preparation types');
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch preparation types');
+    }
+
+    return data.data;
+  };
+
+  return useQuery<PreparationType[], Error, PreparationType[], [string, number]>({
+    queryKey: ['preparationType.list', categoryId],
+    queryFn: fetchPreparationTypes,
+    initialData: [],
+    enabled: !!token && !!categoryId,
+  });
+};
+
+interface Comment {
+  id: number;
+  recipe?: number;
+  mealkit?: number;
+  user_details: any;
+  comment: string;
+  commented_at: string;
+  is_creator: boolean;
+}
+
+interface CommentResponse {
+  success: boolean;
+  message: string;
+  data: Comment[];
+}
+
+export const useAddRecipeComment = (recipeId: number) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CommentResponse, Error, { comment: string }>({
+    mutationFn: async ({ comment }) => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comment/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipeComments', recipeId] });
+    },
+  });
+};
+
+export const useRecipeComments = (recipeId: number) => {
+  const { getToken } = useAuth();
+
+  return useQuery<Comment[], Error>({
+    queryKey: ['recipeComments', recipeId],
+    queryFn: async () => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comments/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+
+      const data: CommentResponse = await response.json();
+      return data.data;
     },
   });
 };

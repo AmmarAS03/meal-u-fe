@@ -61,7 +61,7 @@ const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {
     	  <div className={styles.cards}>
           {cartData.recipes.length ? (
             cartData.recipes.map((data, index) => (
-    	        <CollapsibleRecipeCard key={index} data={data}/>
+    	        <CollapsibleRecipeCard key={index} data={data} isFromMealkit={false}/>
     	    ))
           ) : <div className={styles.empty}>You have no recipes in your cart.</div>
               }

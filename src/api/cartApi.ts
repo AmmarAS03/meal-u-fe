@@ -6,8 +6,6 @@ import {
 } from "@tanstack/react-query";
 import { useAuth } from "../contexts/authContext";
 import { ProductData } from "./productApi";
-import { RecipeData } from "./recipeApi";
-import { MealkitData } from "./mealkitApi";
 
 // Interfaces for the API response structure
 
@@ -15,6 +13,7 @@ interface Ingredient {
   id: number;
   name: string;
   image: string | null;
+  product_id: number;
   unit_id: number;
   unit_size: string;
   price_per_unit: string;
@@ -24,11 +23,14 @@ interface PreparationType {
   id: number;
   name: string;
   additional_price: string;
+  category: number;
 }
 
 export interface RecipeIngredient {
+  id: number;
   ingredient: Ingredient;
   preparation_type: PreparationType | null;
+  quantity: number;
   price: number;
 }
 
@@ -36,25 +38,34 @@ export interface CartProduct {
   id: number;
   product: ProductData;
   quantity: number;
+  total_price: number;
 }
 
 export interface CartRecipe {
   id: number;
-  recipe: RecipeData;
+  recipe: number;
+  name: string;
+  image: string;
   quantity: number;
+  ingredients: RecipeIngredient[];
+  dietary_details: string[];
+  total_price: number;
 }
 
-export interface CartItem {
+export interface CartMealkit {
   id: number;
-  product: ProductData;
+  mealkit: number;
+  name: string;
+  image: string;
   quantity: number;
+  recipes: CartRecipe[];
   total_price: number;
 }
 
 export interface CartData {
-  products: CartItem[];
-  recipes: RecipeData[];
-  mealkits: MealkitData[];
+  products: CartProduct[];
+  recipes: CartRecipe[];
+  mealkits: CartMealkit[];
   total_item: number;
   total_price: number;
 }
@@ -101,21 +112,57 @@ export const useCart = (): UseQueryResult<CartData, Error> => {
 
 // Update cart
 interface UpdateCartItemPayload {
-  item_type: "recipe" | "product" | "mealkit";
+  item_type: "recipe" | "product" | "mealkit" | "ingredient";
   item_id: number;
   quantity: number;
 }
 
 interface DeleteCartItemPayload {
-  item_type: "recipe" | "product" | "mealkit";
+  item_type: "product";
   cart_product_id: number;
 }
 
-interface AddCartItemPayload {
-  item_type: "recipe" | "product" | "mealkit";
-  product_id: number;
+interface AddMealkitPayload {
+  item_type: "mealkit";
+  item_data: {
+    mealkit_id: number;
+    recipes: {
+      recipe_id: number;
+      quantity: number;
+      recipe_ingredients: {
+        ingredient_id: number;
+        preparation_type_id: number | null;
+        quantity: number;
+      }[];
+    }[];
+  };
   quantity: number;
 }
+
+interface AddRecipePayload {
+  item_type: "recipe";
+  quantity: number;
+  recipe_id: number;
+  recipe_ingredients: {
+    ingredient_id: number;
+    preparation_type_id: number | null;
+    quantity: number;
+  }[];
+}
+
+interface AddProductPayload {
+  item_type: "product";
+  quantity: number;
+  product_id: number;
+}
+
+// interface AddCartItemPayload {
+//   item_type: "recipe" | "product" | "mealkit";
+//   product_id: number;
+//   quantity: number;
+// }
+
+type AddCartItemPayload = AddMealkitPayload | AddRecipePayload | AddProductPayload;
 
 export const useAddCartItem = () => {
   const { getToken } = useAuth();
@@ -137,13 +184,13 @@ export const useAddCartItem = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update cart item");
+        throw new Error("Failed to add cart item");
       }
 
       const data: CartResponse = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || "Failed to update cart item");
+        throw new Error(data.message || "Failed to add cart item");
       }
 
       return data.data;
@@ -211,13 +258,13 @@ export const useDeleteCartItem = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete cart item");
+        throw new Error("Failed to delete cart product");
       }
 
       const data: CartResponse = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || "Failed to delete cart item");
+        throw new Error(data.message || "Failed to delete cart product");
       }
 
       return data.data;
@@ -227,3 +274,125 @@ export const useDeleteCartItem = () => {
     },
   });
 };
+
+interface DeleteCartIngredientPayload {
+  item_type: "ingredient";
+  cart_ingredient_id: number;
+}
+
+export const useDeleteCartIngredient = () => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CartData, Error, DeleteCartIngredientPayload>({
+    mutationFn: async (payload) => {
+      const token = getToken() || "";
+      const response = await fetch(
+        "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete cart ingredient");
+      }
+
+      const data: CartResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to delete cart ingredient");
+      }
+
+      return data.data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["cart"], data);
+    },
+  });
+};
+
+interface DeleteCartRecipePayload {
+  item_type: "recipe";
+  cart_recipe_id: number;
+} 
+
+export const useDeleteCartRecipe = () => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CartData, Error, DeleteCartRecipePayload>({
+    mutationFn: async (payload) => {
+      const token = getToken() || "";
+      const response = await fetch("http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete cart recipe");
+    }
+
+    const data: CartResponse = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to delete cart recipe");
+    }
+
+    return data.data
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["cart"], data);
+    }
+  });
+};
+
+interface DeleteCartMealkitPayload {
+  item_type: "mealkit";
+  cart_mealkit_id: number;
+}
+
+export const useDeleteCartMealkit = () => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CartData, Error, DeleteCartMealkitPayload>({
+    mutationFn: async (payload) => {
+      const token = getToken() || "";
+      const response = await fetch("http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete cart mealkit");
+    }
+
+    const data: CartResponse = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to delete cart mealkit");
+    }
+
+    return data.data
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["cart"], data);
+    }
+  });
+}
