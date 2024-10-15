@@ -347,3 +347,70 @@ export const usePreparationTypeList = (
     enabled: !!token && !!categoryId,
   });
 };
+
+interface Comment {
+  id: number;
+  recipe?: number;
+  mealkit?: number;
+  user: number;
+  comment: string;
+  commented_at: string;
+  is_creator: boolean;
+}
+
+interface CommentResponse {
+  success: boolean;
+  message: string;
+  data: Comment[];
+}
+
+export const useAddRecipeComment = (recipeId: number) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<CommentResponse, Error, { comment: string }>({
+    mutationFn: async ({ comment }) => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comment/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipeComments', recipeId] });
+    },
+  });
+};
+
+export const useRecipeComments = (recipeId: number) => {
+  const { getToken } = useAuth();
+
+  return useQuery<Comment[], Error>({
+    queryKey: ['recipeComments', recipeId],
+    queryFn: async () => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comments/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+
+      const data: CommentResponse = await response.json();
+      return data.data;
+    },
+  });
+};
