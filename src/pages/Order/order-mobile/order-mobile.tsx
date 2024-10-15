@@ -15,7 +15,7 @@ import LocationIcon from "../../../../public/icon/location-icon";
 import SearchIcon from "../../../../public/icon/search-icon";
 import FloatCartIcon from "../../../../public/icon/float-cart-icon";
 import FilterIcon from "../../../../public/icon/filter";
-import FilterOverlay from "../../../components/FilterOverlay";
+import FilterOverlayOld from '../../../components/FilterOverlay/filterOverlayOld';
 import { addCircleOutline, removeCircleOutline } from "ionicons/icons";
 import IconInput from "../../../components/icon-input";
 import { useMealkitList, MealkitData } from "../../../api/mealkitApi";
@@ -250,7 +250,7 @@ function OrderMobile() {
         </div>
         {isFilterVisible && (
           <div className="filter">
-            <FilterOverlay />
+            <FilterOverlayOld />
           </div>
         )}
         <div

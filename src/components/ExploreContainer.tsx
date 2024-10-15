@@ -1,6 +1,6 @@
 import './ExploreContainer.css';
 import FilterIcon from "../../public/icon/filter"
-import FilterOverlay from './FilterOverlay';
+import FilterOverlayOld from './FilterOverlay/filterOverlayOld';
 import { IonButton, IonIcon }  from '@ionic/react';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
        </div>
     ) : (
       <div className='filter'>
-        <FilterOverlay/>
+        <FilterOverlayOld />
       </div>
   )}
     </>

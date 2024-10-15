@@ -9,7 +9,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
-import FilterOverlay from "../../../components/FilterOverlay";
+import FilterOverlayOld from '../../../components/FilterOverlay/filterOverlayOld';
 import {
   useMealkitList,
   MealkitData,
@@ -214,7 +214,7 @@ function HomeMobile() {
 
         {isFilterVisible && (
           <div className="filter">
-            <FilterOverlay />
+            <FilterOverlayOld />
           </div>
         )}
       </IonContent>
