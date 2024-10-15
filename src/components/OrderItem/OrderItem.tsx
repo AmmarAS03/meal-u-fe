@@ -1,20 +1,33 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import BagIcon from '../../../public/icon/bag-icon';
 
 interface OrderItemProps {
+  id: number;
   status: string;
   title: string;
   date: string;
   isCurrent: boolean;
 }
 
-const OrderItem: React.FC<OrderItemProps> = ({ status, title, date, isCurrent }) => {
+const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurrent }) => {
+  const history = useHistory();
+  
   const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
+  const handleClick = () => {
+    if (status === 'pending') {
+      history.push(`/payment-options/${id}`);
+    }
+  };
+
   return (
-    <div className="flex items-center bg-white rounded-xl p-3 mb-3 shadow-sm">
+    <div 
+      className={`flex items-center bg-white rounded-xl p-3 mb-3 shadow-sm ${status === 'pending' ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+      onClick={handleClick}
+    >
       <div className="w-12 h-12 bg-gray-100 rounded-lg mr-3 flex items-center justify-center">
         <BagIcon />
       </div>

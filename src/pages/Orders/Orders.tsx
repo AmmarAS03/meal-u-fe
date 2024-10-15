@@ -78,6 +78,7 @@ const Orders: React.FC = () => {
                 group.orders.map((order, orderIndex) => (
                   <OrderItem
                     key={orderIndex}
+                    id={order.id}
                     status={order.order_status}
                     title={order.item_names.map(item => `${item.name} (x${item.quantity})`).join(', ')}
                     date={formatDate(order.created_at)}
