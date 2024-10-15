@@ -14,7 +14,7 @@ import {
   IonInput,
   IonToast,
 } from '@ionic/react';
-import { timeOutline, cubeOutline, locationOutline, closeOutline } from 'ionicons/icons';
+import { timeOutline, cubeOutline, locationOutline, closeOutline, bicycleOutline, basketOutline, lockClosedOutline } from 'ionicons/icons';
 import { useOrderDetails, useUpdateOrderStatusToCompleted } from '../../api/orderApi';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -150,7 +150,7 @@ const DeliveryStatus: React.FC = () => {
             {statusPoints >= 6 && (
               <div className="flex items-start relative">
                 <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-[#7862FC] bg-dashed" style={{backgroundSize: '1px 8px'}}></div>
-                <IonIcon icon={cubeOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
+                <IonIcon icon={lockClosedOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
                 <div>
                   <h3 className="font-semibold text-[#0A2533]">Order is stored on your locker</h3>
                   <p className="text-[#97A2B0]">Please use the QR code to unlock</p>
@@ -160,7 +160,7 @@ const DeliveryStatus: React.FC = () => {
             {statusPoints >= 5 && (
               <div className="flex items-start relative">
                 <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-[#7862FC] bg-dashed" style={{backgroundSize: '1px 8px'}}></div>
-                <IonIcon icon={timeOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
+                <IonIcon icon={bicycleOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
                 <div>
                   <h3 className="font-semibold text-[#0A2533]">Your order is being sent to</h3>
                   <p className="text-[#97A2B0]">{order.delivery_details[0].delivery_location.name}, {order.delivery_details[0].delivery_location.branch}</p>
@@ -170,7 +170,7 @@ const DeliveryStatus: React.FC = () => {
             {statusPoints >= 4 && (
               <div className="flex items-start relative">
                 <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-[#7862FC] bg-dashed" style={{backgroundSize: '1px 8px'}}></div>
-                <IonIcon icon={cubeOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
+                <IonIcon icon={bicycleOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
                 <div>
                   <h3 className="font-semibold text-[#0A2533]">Driver is picking up your order</h3>
                   <p className="text-[#97A2B0]">From our warehouse</p>
@@ -180,7 +180,7 @@ const DeliveryStatus: React.FC = () => {
             {statusPoints >= 3 && (
               <div className="flex items-start relative">
                 <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-[#7862FC] bg-dashed" style={{backgroundSize: '1px 8px'}}></div>
-                <IonIcon icon={cubeOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
+                <IonIcon icon={basketOutline} className="text-[#7862FC] w-6 h-6 mr-3 flex-shrink-0 z-10 bg-white" />
                 <div>
                   <h3 className="font-semibold text-[#0A2533]">Order is being prepared</h3>
                   <p className="text-[#97A2B0]">Preparing order</p>

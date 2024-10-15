@@ -263,7 +263,7 @@ interface Comment {
   id: number;
   recipe?: number;
   mealkit?: number;
-  user: number;
+  user: any;
   comment: string;
   commented_at: string;
   is_creator: boolean;

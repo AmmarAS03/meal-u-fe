@@ -243,9 +243,9 @@ const RecipeDetails: React.FC = () => {
                         comments.map((comment) => (
                             <div key={comment.id} className="bg-white rounded-lg p-4 shadow-sm">
                                 <div className="flex items-center mb-2">
-                                    <img src="/img/no-photo.png" alt="User" className="w-8 h-8 rounded-full mr-2" />
+                                    <img src={comment.user.profile_picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
                                     <div>
-                                        <p className="font-semibold">{comment.is_creator ? 'Author' : 'User'}</p>
+                                        <p className="font-semibold">{comment.is_creator ? 'Author' : comment.user.name}</p>
                                         <p className="text-xs text-gray-500">{new Date(comment.commented_at).toLocaleString()}</p>
                                     </div>
                                 </div>
