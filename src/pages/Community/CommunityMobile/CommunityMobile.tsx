@@ -10,7 +10,8 @@ import {
   IonFab,
   IonFabButton,
   IonFabList,
-  IonIcon
+  IonIcon,
+  IonBackdrop
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
 import FilterOverlay from "../../../components/FilterOverlay";
@@ -132,6 +133,7 @@ function CommunityMobile() {
           // check if all selected dietary names are included in the item's dietary_details
           return selectedDietaryNames.every(name => item.dietary_details.includes(name));
         })
+      }
       // if meal type filters applied
       if (mealType.length > 0) {
         filteredDataFiltered = filteredDataFiltered.filter(item => {
@@ -156,6 +158,13 @@ function CommunityMobile() {
           return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
         })
       }
+      
+      if (filteredDataFiltered.length === 0) {
+        return (
+          <div className="flex items-center justify-center h-4/5">
+            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
+          </div>
+        );
       }
     }
 
@@ -250,9 +259,21 @@ function CommunityMobile() {
         </div>
 
         {renderContent()}
-
+        <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
+          <IonFabButton>
+            <IonIcon icon={addOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabList side="top">
+            <IonFabButton color="dark" onClick={navigateToCreateRecipe}>
+              <IonIcon icon={restaurantOutline}></IonIcon>
+            </IonFabButton>
+            <IonFabButton color="dark" onClick={navigateToCreateMealkit}>
+              <IonIcon icon={gift}></IonIcon>
+            </IonFabButton>
+          </IonFabList>
+        </IonFab>
         {isFilterVisible && (
-          <FilterOverlay
+            <FilterOverlay
             onClose={() => setIsFilterVisible(false)}
             onApplyFilter={handleApplyFilter}
             dietary={dietary}
@@ -267,19 +288,6 @@ function CommunityMobile() {
             mealTypes={mealTypes}
           />
         )}
-        <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton>
-            <IonIcon icon={addOutline}></IonIcon>
-          </IonFabButton>
-          <IonFabList side="top">
-            <IonFabButton color="dark" onClick={navigateToCreateRecipe}>
-              <IonIcon icon={restaurantOutline}></IonIcon>
-            </IonFabButton>
-            <IonFabButton color="dark" onClick={navigateToCreateMealkit}>
-              <IonIcon icon={gift}></IonIcon>
-            </IonFabButton>
-          </IonFabList>
-        </IonFab>
       </IonContent>
     </IonPage>
   );

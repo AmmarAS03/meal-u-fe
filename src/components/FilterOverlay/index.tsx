@@ -1,6 +1,5 @@
 import React, { Dispatch } from 'react';
-import { IonButton, IonCheckbox, IonChip, IonIcon, IonLabel, IonRange } from '@ionic/react';
-import { close } from 'ionicons/icons';
+import { IonButton, IonCheckbox, IonChip, IonLabel, IonRange } from '@ionic/react';
 import styles from './overlay.module.css';
 import { DietaryDetail, MealType } from '../../api/productApi';
 
@@ -57,9 +56,6 @@ const FilterOverlay = ({
 
   return (
     <div className={styles.mainContainer}>
-      <button className={styles.closeButton} onClick={onClose}>
-        <IonIcon icon={close} />
-      </button>
       <div className={styles.mainSection}>
         <div className={styles.subsection}>
           <div className={styles.subsectionTitle}>Dietary Requirements</div>

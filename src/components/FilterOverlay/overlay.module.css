@@ -53,3 +53,82 @@
         max-width: 90%;
     }
 }
+
+.checkbox::part(label) {
+    color: black;
+}
+
+ion-button {
+    --ion-color-primary: #7862FC;
+}
+
+.mainButton ion-button {
+    --background: #7862FC;
+    --background-activated: #B9AEFF;
+}
+
+
+.nodesContainer {
+    align-items: center;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+}
+
+.priceRangeSlider {
+    --bar-height: 4px;
+    --knob-size: 20px;
+    --pin-background: #042628;
+    --bar-background: #a0a0a0;
+    --bar-background-active: #042628;
+    --knob-background: #042628;
+    --pin-color: #042628;
+
+    /* Override Ionic's primary color directly */
+    --ion-color-primary: #042628;
+    
+    width: 100%;
+}
+
+.priceRangeLabel {
+    color: black;
+}
+
+.screen {
+    align-items: flex-end;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.subsection {
+    align-items: center;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: fit-content;
+    justify-content: center;
+    width: 100%;
+}
+
+.subsection ion-range {
+    --bar-background: #a0a0a0;
+    --bar-background-active: var(--ion-color-primary);
+    --knob-background: var(--ion-color-primary);
+    --pin-background: var(--ion-color-primary);
+    --pin-color: var(--ion-color-primary-contrast);
+    padding: 0 20px;
+}
+
+.subsectionTitle {
+    align-self: stretch;
+    color: black;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    word-wrap: break-word;
+}

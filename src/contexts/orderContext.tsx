@@ -42,7 +42,6 @@ interface OrderContextProps {
   getUnitFromId: (id: number) => string | undefined;
   meal_types: MealType[] | undefined;
   getMealTypeFromId: (id: number) => string | undefined;
-
   deliveryDateFilter: string | null;
   setDeliveryDateFilter: (date: string | null) => void;
   filters: Filters;
