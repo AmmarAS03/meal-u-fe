@@ -37,6 +37,9 @@ function CommunityMobile() {
     setIsFilterVisible((prev) => !prev);
   }, []);
 
+
+  const router = useIonRouter();
+
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
 
@@ -44,12 +47,24 @@ function CommunityMobile() {
     setSelectedFilter(button);
   }, []);
 
+  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData) => {
+    if ('cooking_time' in item || 'meal_type' in item) {
+      // It's a recipe
+      router.push(`/recipe-details/${item.id}`);
+    } else {
+      // It's a mealkit
+      router.push(`/mealkit-details/${item.id}`);
+    }
+  }, [router]);
+
   const combinedAndSortedData = useMemo(() => {
     const combined = [...communityRecipes, ...communityMealkit];
     return combined.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [communityRecipes, communityMealkit]);
+
+  console.log("MEALKIT COMMUNITY",communityMealkit)
 
   const renderContent = useMemo(() => {
 
@@ -149,14 +164,13 @@ function CommunityMobile() {
     return (
       <>
         {contentToRender.map((item: CommunityRecipeData | CommunityMealkitData, index: number) => (
-          <CommunityCard key={`${item.id}-${index}`} recipe={item}/>
+          <CommunityCard key={`${item.id}-${index}`} recipe={item} onClick={() => handleItemClick(item)}/>
         ))}
       </>
     );
   }, [selectedFilter, isRecipesFetching, isMealkitFetching, communityRecipes, communityMealkit, combinedAndSortedData]);
 
 
-  const router = useIonRouter();
   const navigateToCreateRecipe = () => {
     router.push('/community/create/recipe');
   }

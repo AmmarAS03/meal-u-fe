@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 import { RecipeData } from './recipeApi';
 
@@ -88,6 +88,10 @@ export interface CommunityMealkitData {
   likes_count: number;
   comments_count: number;
   price: number;
+}
+interface LikeMealkitResponse {
+  success: boolean;
+  message: string;
 }
 
 export const useMealkitList = (params: MealkitListParams): UseQueryResult<MealkitData[], Error> => {
@@ -230,5 +234,42 @@ export const useCommunityMealkitList = (): UseQueryResult<
     queryFn: fetchCommunityMealkit,
     initialData: [],
     enabled: !!token,
+  });
+};
+
+export const useLikeMealkit = (options?: {
+  onSuccess?: (data: LikeMealkitResponse) => void;
+}) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<LikeMealkitResponse, Error, number>({
+    mutationFn: async (mealkitId: number) => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/like/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like mealkit');
+      }
+
+      const data: LikeMealkitResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to like mealkit');
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({queryKey: ['mealkits']});
+      queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
+      options?.onSuccess?.(data);
+    },
   });
 };
