@@ -77,6 +77,23 @@ interface MealkitListParams {
   search: string;
 }
 
+export interface CommunityMealkitData {
+  id: number;
+  creator: Creator;
+  name: string;
+  description: string;
+  created_at: string;
+  image: string;
+  dietary_details: string[];
+  likes_count: number;
+  comments_count: number;
+  price: number;
+}
+interface LikeMealkitResponse {
+  success: boolean;
+  message: string;
+}
+
 export const useMealkitList = (params: MealkitListParams): UseQueryResult<MealkitData[], Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
@@ -181,6 +198,80 @@ export const useTrendingMealkitList = (): UseQueryResult<MealkitData[], Error> =
     enabled: !!token,
   });
 };
+
+export const useCommunityMealkitList = (): UseQueryResult<
+  CommunityMealkitData[],
+  Error
+> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchCommunityMealkit = async (): Promise<CommunityMealkitData[]> => {
+    const url =
+      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch mealkits");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch recipes");
+    }
+
+    return data.data;
+  };
+  return useQuery<CommunityMealkitData[], Error, CommunityMealkitData[], [string]>({
+    queryKey: ["community-mealkit.list"],
+    queryFn: fetchCommunityMealkit,
+    initialData: [],
+    enabled: !!token,
+  });
+};
+
+export const useLikeMealkit = (options?: {
+  onSuccess?: (data: LikeMealkitResponse) => void;
+}) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<LikeMealkitResponse, Error, number>({
+    mutationFn: async (mealkitId: number) => {
+      const token = getToken() || '';
+      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/like/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like mealkit');
+      }
+
+      const data: LikeMealkitResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to like mealkit');
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({queryKey: ['mealkit.list']});
+      queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
+      options?.onSuccess?.(data);
+    },
+  });
+};  
 
 export interface CreateMealkitPayload {
   image: string | null;

@@ -10,6 +10,8 @@ import {
   IonIcon,
   IonButton,
   useIonRouter,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import LocationIcon from "../../../../public/icon/location-icon";
 import SearchIcon from "../../../../public/icon/search-icon";
@@ -42,7 +44,7 @@ function OrderMobile() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [currentLocation, setCurrentLocation] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [totalItem, setTotalItem] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const { data: mealkits = [], isFetching: isMealkitsFetching } =
@@ -74,13 +76,10 @@ function OrderMobile() {
     );
   };
 
-  const { data: location = [], isFetching: isLocationFetching } =
+  const { data: locations = [], isFetching: isLocationFetching } =
     useLocationList();
 
-  if (!isLocationFetching && location && !currentLocation) {
-    const firstLocation = location[0].name;
-    setCurrentLocation(firstLocation);
-  }
+  console.log(location);
 
   const updateTotals = useCallback(() => {
     if (cart) {
@@ -199,6 +198,16 @@ function OrderMobile() {
   const filteredRecipes = filterItems(recipes, searchValue);
   const filteredProducts = filterItems(product, searchValue);
 
+  useEffect(() => {
+    if (!isLocationFetching && locations.length > 0 && !selectedLocation) {
+      setSelectedLocation(locations[0].id.toString());
+    }
+  }, [isLocationFetching, locations, selectedLocation]);
+
+  const handleLocationChange = (e: CustomEvent) => {
+    setSelectedLocation(e.detail.value);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -217,13 +226,26 @@ function OrderMobile() {
               display: "flex",
               flexDirection: "row",
               gap: 2,
-              alignItems: "flex-end",
+              alignItems: "center",
             }}
           >
             <LocationIcon />
-            <p style={{ fontSize: "14px", fontWeight: "500" }}>
-              {currentLocation}
-            </p>
+            <IonSelect
+              value={selectedLocation}
+              placeholder="Select Location"
+              onIonChange={handleLocationChange}
+              interface="popover"
+              style={{ fontSize: "14px", fontWeight: "500" }}
+            >
+              {locations.map((location: LocationData) => (
+                <IonSelectOption
+                  key={location.id}
+                  value={location.id.toString()}
+                >
+                  {location.name} - {location.branch}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
           </div>
         </div>
 

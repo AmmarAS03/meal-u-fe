@@ -4,13 +4,16 @@ import { useAuth } from '../contexts/authContext';
 export interface LocationData {
   id: number;
   name: string;
-  branch: string,
-  address_line1: string,
-  address_line2: string,
-  city: string,
-  postal_code: string,
-  country: string,
-  details: string
+  branch: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  country: string;
+  postal_code: string;
+  delivery_fee: string;
+  details: string;
+  latitude: string;
+  longitude: string;
 }
 
 const fetchLocation = async (token: string): Promise<LocationData[]> => {
