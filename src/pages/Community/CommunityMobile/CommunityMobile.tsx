@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   IonHeader,
   IonContent,
@@ -18,6 +18,10 @@ import {
   CommunityRecipeData,
   useCommunityRecipesList,
 } from "../../../api/recipeApi";
+import {
+  CommunityMealkitData,
+  useCommunityMealkitList,
+} from "../../../api/mealkitApi";
 import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import HomeImageCard from "../../../components/HomeImageCard";
@@ -30,26 +34,63 @@ import {
   gift,
 } from 'ionicons/icons';
 
-import styles from './CommunityMobile.module.css'
+import styles from './CommunityMobile.module.css';
+import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
+import { useOrder } from "../../../contexts/orderContext";
+
 
 function CommunityMobile() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const { data: trendingRecipes = [], isFetching: isRecipesFetching } =
-    useCommunityRecipesList();
+  const [filterApplied, setFilterApplied] = useState(false);
+  const [dietary, setDietary] = useState<number[]>([]);
+  const [applyDietary, setApplyDietary] = useState(false);
+  const [mealType, setMealType] = useState<number[]>([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 100 });
 
-  const handleFilter = () => {
-    setIsFilterVisible(!isFilterVisible);
-  };
+  const { data: communityRecipes = [], isFetching: isRecipesFetching } =
+    useCommunityRecipesList();
+  const { data: communityMealkit = [], isFetching: isMealkitFetching } =
+    useCommunityMealkitList();
+  const { data: dietaryRequirements = [] } = useDietaryDetails();
+  const { data: mealTypes = [] } = useMealTypeList();
+  const { meal_types } = useOrder();
+
+  const router = useIonRouter();
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
 
-  const handleButtonClick = (button: string) => {
-    setSelectedFilter(button);
-  };
+  const handleFilter = useCallback(() => {
+    setIsFilterVisible((prev) => !prev);
+  }, []);
 
-  const renderContent = () => {
-    if (isRecipesFetching) {
+  const handleButtonClick = useCallback((button: string) => {
+    setSelectedFilter(button);
+  }, []);
+
+  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData) => {
+    if ('cooking_time' in item || 'meal_type' in item) {
+      // It's a recipe
+      router.push(`/recipe-details/${item.id}`);
+    } else {
+      // It's a mealkit
+      router.push(`/mealkit-details/${item.id}`);
+    }
+  }, [router]);
+
+  const combinedAndSortedData = useMemo(() => {
+    const combined = [...communityRecipes, ...communityMealkit];
+    return combined.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [communityRecipes, communityMealkit]);
+
+
+  console.log("MEALKIT COMMUNITY",communityMealkit)
+
+  const renderContent = useMemo(() => {
+
+    if (isRecipesFetching || isMealkitFetching) {
       return (
         <>
           <SkeletonCommunityCard />
@@ -59,117 +100,161 @@ function CommunityMobile() {
       );
     }
 
-    if (selectedFilter === "Creators") {
-      return (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginTop: "20px",
-            gap: "5px",
-          }}
-        >
-          <h3 style={{ fontSize: "14px", fontWeight: "500" }}>
-            This week's spotlight
-          </h3>
-          <div style={{ overflowX: "auto", width: "100%" }}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                minWidth: "min-content",
-                gap: 10,
-              }}
+    let contentToRender;
+
+    switch (selectedFilter) {
+      case "Recipe":
+        contentToRender = communityRecipes;
+        break;
+      case "Mealkits":
+        contentToRender = communityMealkit;
+        break;
+      case "All":
+        contentToRender = combinedAndSortedData;
+        break;
+      case "Creators":
+        return (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: "20px",
+              gap: "5px",
+            }}
+          >
+            <h3 style={{ fontSize: "14px", fontWeight: "500" }}>
+              This week's spotlight
+            </h3>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                  gap: 10,
+                }}
+              >
+                <HomeImageCard />
+                <HomeImageCard />
+                <HomeImageCard />
+              </div>
+            </div>
+
+            <h3
+              style={{ fontSize: "14px", fontWeight: "500", marginTop: "20px" }}
             >
-              <HomeImageCard />
-              <HomeImageCard />
-              <HomeImageCard />
+              Popular Gluten Free Creators
+            </h3>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                }}
+              >
+                {communityRecipes.map((recipe: CommunityRecipeData) => (
+                  <CreatorCommunityCard key={recipe.id} item={recipe} />
+                ))}
+              </div>
+            </div>
+
+            <h3
+              style={{ fontSize: "14px", fontWeight: "500", marginTop: "10px" }}
+            >
+              Popular Vegan Creator
+            </h3>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                }}
+              >
+                {communityRecipes.map((recipe: CommunityRecipeData) => (
+                  <CreatorCommunityCard key={recipe.id} item={recipe} />
+                ))}
+              </div>
             </div>
           </div>
-
-          <h3
-            style={{ fontSize: "14px", fontWeight: "500", marginTop: "20px" }}
-          >
-            Popular Gluten Free Creators
-          </h3>
-          {isRecipesFetching ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {[...Array(5)].map((_, index) => (
-                  <SkeletonCreatorCommunityCard key={index} />
-                ))}
-              </div>
-            </div>
-          ) : trendingRecipes.length > 0 ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {trendingRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p>No recipes found.</p>
-          )}
-
-          <h3
-            style={{ fontSize: "14px", fontWeight: "500", marginTop: "10px" }}
-          >
-            Popular Vegan Creator
-          </h3>
-          {isRecipesFetching ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {[...Array(5)].map((_, index) => (
-                  <SkeletonCreatorCommunityCard key={index} />
-                ))}
-              </div>
-            </div>
-          ) : trendingRecipes.length > 0 ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {trendingRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p>No recipes found.</p>
-          )}
-        </div>
-      );
+        );
+      default:
+        return <p>No content to display.</p>;
     }
 
-    return trendingRecipes.map((recipe) => (
-      <CommunityCard key={recipe.id} recipe={recipe} />
-    ));
-  };
+    let filteredContent = contentToRender;
+    
+    if (filterApplied) {
+      // if dietary requirements filter applied
+      if (dietary.length > 0) {
+        filteredContent = contentToRender.filter(item => {
+          // get the names of the selected dietary requirements
+          const selectedDietaryNames = dietary
+          .map(id => dietaryRequirements.find(dr => dr.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
 
-  const router = useIonRouter();
+          // check if all selected dietary names are included in the item's dietary_details
+          return selectedDietaryNames.every(name => item.dietary_details.includes(name));
+        })
+      }
+      // if meal type filters applied
+      if (mealType.length > 0) {
+        filteredContent = filteredContent.filter(item => {
+          // get the names of the selected meal types
+          const selectedMealTypes = mealType
+          .map(id => meal_types?.find(mt => mt.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
+
+          // check if all selected meal types are included in the item's meal types
+          if ('cooking_time' in item) { // recipe
+            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
+          } else if ('meal_types' in item) { // mealkit
+            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          } else {
+            return false;
+          }
+        });
+      }
+      // if price range filters applied
+      if (priceRange.min !== 0 || priceRange.max !== 100) {
+        filteredContent = filteredContent.filter(item => {
+          // field 'price' on mealkit, field 'total_price' on recipe
+          const itemPrice = ('cooking_time' in item) ? item.total_price : item.price;
+          return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
+        })
+      }
+
+      // if no content matches the filter
+      if (filteredContent.length === 0) {
+        return (
+          <div className="flex items-center justify-center h-4/5">
+            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
+          </div>
+        );
+      }
+
+    }
+
+    return (
+      <>
+        {filteredContent.map((item: CommunityRecipeData | CommunityMealkitData, index: number) => (
+          <CommunityCard key={`${item.id}-${index}`} recipe={item} onClick={() => handleItemClick(item)}/>
+        ))}
+      </>
+    );
+  }, [selectedFilter,
+      isRecipesFetching,
+      isMealkitFetching,
+      communityRecipes,
+      communityMealkit,
+      combinedAndSortedData,
+      filterApplied,
+      dietary,
+      mealType,
+      priceRange,
+    ]);
+
 
   const navigateToCreateRecipe = () => {
     router.push('/community/create/recipe');
@@ -178,6 +263,19 @@ function CommunityMobile() {
   const navigateToCreateMealkit = () => {
     router.push('/community/create/mealkit');
   }
+
+  const handleApplyFilter = (filters: any) => {
+    setFilterApplied(true);
+    setIsFilterVisible(false);
+  };
+
+  // user clears filter
+  useEffect(() => {
+    if (!dietary.length && !applyDietary && !mealType.length &&
+      priceRange.min === 0 && priceRange.max === 100) {
+      setFilterApplied(false);
+    }
+  }, [dietary, applyDietary, mealType, priceRange]);
 
   return (
     <IonPage>
@@ -209,15 +307,26 @@ function CommunityMobile() {
           </IonButton>
         </div>
 
-        {renderContent()}
+        {renderContent}
 
         {isFilterVisible && (
-          <div className="filter">
-            <FilterOverlay />
-          </div>
+            <FilterOverlay
+            onClose={() => setIsFilterVisible(false)}
+            onApplyFilter={handleApplyFilter}
+            dietary={dietary}
+            setDietary={setDietary}
+            applyDietary={applyDietary}
+            setApplyDietary={setApplyDietary}
+            meals={mealType}
+            setMeals={setMealType}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            dietaryRequirements={dietaryRequirements}
+            mealTypes={mealTypes}
+          />
         )}
         <IonFab className={styles.fabStyle} color="tertiary" slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton>
+          <IonFabButton color="tertiary">
             <IonIcon icon={addOutline}></IonIcon> {/*main button*/}
           </IonFabButton>
           <IonFabList side="top">
