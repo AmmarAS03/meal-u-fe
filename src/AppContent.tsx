@@ -45,7 +45,7 @@ const AppContent: React.FC = () => {
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/community/creator-profile/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;

@@ -37,7 +37,7 @@ import {
 import { useQueries } from "@tanstack/react-query";
 import styles from './CommunityMobile.module.css';
 import { useDietaryDetails } from "../../../api/productApi";
-import { useTrendingCreators } from "../../../api/userApi";
+import { TrendingCreatorProfile, useTrendingCreators } from "../../../api/userApi";
 
 
 function CommunityMobile() {
@@ -63,19 +63,18 @@ function CommunityMobile() {
     setSelectedFilter(button);
   }, []);
 
-  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData) => {
+  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData | TrendingCreatorProfile) => {
     if ('cooking_time' in item || 'meal_type' in item) {
       // It's a recipe
       router.push(`/recipe-details/${item.id}`);
+    } else if ('email' in item) {
+      // It's a creator
+      router.push(`/community/creator-profile/${item.id}`);
     } else {
       // It's a mealkit
       router.push(`/mealkit-details/${item.id}`);
     }
   }, [router]);
-
-  const handleCreatorClick = useCallback((id: number) => {
-    router.push(`community/creator-profile/${id}`);
-  }, [router]); 
 
   const combinedAndSortedData = useMemo(() => {
     const combined = [...communityRecipes, ...communityMealkit];
@@ -83,6 +82,7 @@ function CommunityMobile() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [communityRecipes, communityMealkit]);
+
 
   const renderContent = useMemo(() => {
 
@@ -153,7 +153,7 @@ function CommunityMobile() {
                             }}
                           >
                             {trendingCreatorsMap[dietaryDetail.id].map((creator) => (
-                              <CreatorCommunityCard key={creator.id} item={creator} />
+                              <CreatorCommunityCard key={creator.id} item={creator} onClick={() => handleItemClick(creator)}/>
                             ))}
                           </div>
                         </div>
