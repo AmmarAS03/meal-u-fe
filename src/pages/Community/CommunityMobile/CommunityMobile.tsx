@@ -27,19 +27,14 @@ import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import HomeImageCard from "../../../components/HomeImageCard";
 import CreatorCommunityCard from "../../../components/CreatorCommunityCard/CreatorCommunityCard";
-import SkeletonCreatorCommunityCard from "../../../components/CreatorCommunityCard/SkeletonCreatorCommunityCard";
-import RecipeIcon from "../../../../public/icon/recipe-icon";
 import {
   addOutline,
   restaurantOutline,
   gift,
 } from 'ionicons/icons';
-
-import { useQueries } from "@tanstack/react-query";
 import styles from './CommunityMobile.module.css';
 import { TrendingCreatorProfile, useTrendingCreators } from "../../../api/userApi";
 
-import styles from './CommunityMobile.module.css';
 import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
 import { useOrder } from "../../../contexts/orderContext";
 
@@ -57,9 +52,8 @@ function CommunityMobile() {
     useCommunityRecipesList();
   const { data: communityMealkit = [], isFetching: isMealkitFetching } =
     useCommunityMealkitList();
-
-  const { data: dietaryDetails = [] } = useDietaryDetails();
-  const { trendingCreatorsMap, isLoading: isCreatorsLoading, isError } = useTrendingCreators();
+  const { trendingCreatorsMap, isLoading: isCreatorsLoading, isError } = 
+    useTrendingCreators();
 
   const handleFilter = useCallback(() => {
     setIsFilterVisible((prev) => !prev);
@@ -73,10 +67,6 @@ function CommunityMobile() {
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
-
-  const handleFilter = useCallback(() => {
-    setIsFilterVisible((prev) => !prev);
-  }, []);
 
   const handleButtonClick = useCallback((button: string) => {
     setSelectedFilter(button);
@@ -156,7 +146,7 @@ function CommunityMobile() {
             </div>
             
             <div>
-              {dietaryDetails.map((dietaryDetail) => (
+              {dietaryRequirements.map((dietaryDetail) => (
                 <div key={dietaryDetail.id}>
                   {trendingCreatorsMap[dietaryDetail.id].length > 0 && (
                     <div>
