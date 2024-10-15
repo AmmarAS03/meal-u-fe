@@ -56,10 +56,6 @@ function CommunityMobile() {
 
   const router = useIonRouter();
 
-  console.log("TOPCREATOR: ", topCreator);
-
-  console.log("FETCHING STATUS: ", isTopCreatorFetching)
-
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
 

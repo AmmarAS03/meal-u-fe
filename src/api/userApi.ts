@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
+import { MealkitData } from './mealkitApi';
+import { RecipeData } from './recipeApi';
 
 interface UserProfile {
   id: number;
@@ -32,11 +34,17 @@ interface Recipe {
   }
   
 interface LikedRecipe {
-recipe: Recipe;
+recipe: RecipeData;
 liked_at: string;
 }
 
+interface LikedMealkit {
+  mealkit: MealkitData;
+  liked_at: string;
+  }
+
 interface LikedRecipesResponse {
+  liked_mealkits: LikedMealkit[]
 liked_recipes: LikedRecipe[];
 }
 
