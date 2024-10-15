@@ -210,7 +210,7 @@ interface MealkitCreationResponse {
     description: string;
     dietary_details: string[];
     total_price: number;
-    recipes: RecipeData[];
+    recipes: Recipe[];
   };
 }
 

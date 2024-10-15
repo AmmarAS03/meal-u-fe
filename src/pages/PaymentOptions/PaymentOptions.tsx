@@ -16,7 +16,6 @@ import {
 import { chevronForward } from 'ionicons/icons';
 import { useUpdateOrderStatusToPaid } from '../../api/orderApi';
 import { useHistory, useParams } from 'react-router-dom';
-import { useHistory } from 'react-router-dom';
 
 const PaymentOptions: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -28,7 +27,6 @@ const PaymentOptions: React.FC = () => {
           }, 100);
         }
       });
-    const history = useHistory();
 
     const changeStatusToPaid = () => {
         mutate(parseInt(id));
