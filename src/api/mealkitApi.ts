@@ -85,6 +85,7 @@ export interface CommunityMealkitData {
   created_at: string;
   image: string;
   dietary_details: string[];
+  meal_types: string[];
   likes_count: number;
   comments_count: number;
   price: number;
