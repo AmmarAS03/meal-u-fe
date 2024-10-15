@@ -1,114 +1,55 @@
-.bottomButtons {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin-bottom: 5px;
-}
-
-.checkbox::part(label) {
-    color: black;
-}
-
-ion-button {
-    --ion-color-primary: #7862FC;
-}
-
-.mainButton ion-button {
-    --background: #7862FC;
-    --background-activated: #B9AEFF;
-}
-
 .mainContainer {
-    align-items: center;
-    border-radius: 32px 32px 0 0;
-    bottom: 0;
-    box-shadow: 0px -10px 40px rgba(100.78, 122.98, 154.06, 0.10);
-    color: white;
-    display: inline-flex;
-    flex-direction: column;
-    gap: 10;
-    height: fit-content;
-    justify-content: center;
-    max-height: 90vh;
     position: fixed;
-    width: 375px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+    background-color: white;
+    border-radius: 32px 32px 0 0;
+    box-shadow: 0px -10px 40px rgba(100.78, 122.98, 154.06, 0.10);
+    color: black;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 1000;
 }
 
 .mainSection {
-    align-items: center;
-    align-self: center;
-    display: inline-flex;
-    flex-direction: column;
-    gap: 22px;
-    height: fit-content;
-    justify-content: flex-start;
-    left: 15px;
-    margin-top: 45px;
-    top: 46px;
-    width: 100%;
+    padding: 20px;
+    padding-bottom: 80px; /* Space for bottom buttons */
 }
 
-.nodesContainer {
-    align-items: center;
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-    width: 100%;
+.closeButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
 }
 
-.priceRangeSlider {
-    --bar-height: 4px;
-    --knob-size: 20px;
-    --pin-background: #042628;
-    --bar-background: #a0a0a0;
-    --bar-background-active: #042628;
-    --knob-background: #042628;
-    --pin-color: #042628;
-
-    /* Override Ionic's primary color directly */
-    --ion-color-primary: #042628;
-    
-    width: 100%;
-}
-
-.priceRangeLabel {
-    color: black;
-}
-
-.screen {
-    align-items: flex-end;
+.bottomButtons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    height: 100%;
-    justify-content: center;
-    width: 100%;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: white;
+    box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.subsection {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    height: fit-content;
-    justify-content: center;
-    width: 100%;
-}
-
-.subsection ion-range {
-    --bar-background: #a0a0a0;
-    --bar-background-active: var(--ion-color-primary);
-    --knob-background: var(--ion-color-primary);
-    --pin-background: var(--ion-color-primary);
-    --pin-color: var(--ion-color-primary-contrast);
-    padding: 0 20px;
-}
-
-.subsectionTitle {
-    align-self: stretch;
-    color: black;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: center;
-    word-wrap: break-word;
+@media (min-width: 768px) {
+    .mainContainer {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 375px;
+        max-width: 90%;
+    }
 }
