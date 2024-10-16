@@ -50,7 +50,6 @@ function UserMobile() {
   } = useUserProfile();
   const [activeIcon, setActiveIcon] = useState("grid");
 
-  console.log(user)
   const creatorId = user ? user.id : 0;
   const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } =
     useRecipesByCreator(creatorId);
@@ -175,6 +174,29 @@ function UserMobile() {
               {user.first_name} {user.last_name}
             </h2>
             <p style={{ margin: "0 0 15px 0", color: "#000" }}>{user.email}</p>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                marginBottom: "15px",
+              }}
+            >
+              {user.dietary_requirements.map((requirement) => (
+                <span
+                  key={requirement.id}
+                  style={{
+                    backgroundColor: "#e0e0e0",
+                    borderRadius: "15px",
+                    padding: "5px 10px",
+                    margin: "5px",
+                    fontSize: "14px",
+                  }}
+                >
+                  {requirement.name}
+                </span>
+              ))}
+            </div>
             <IonButton
               color="primary"
               style={{
@@ -253,8 +275,8 @@ function UserMobile() {
             </>
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
-              <div style={{ width: "100%" }}>
-                <CommunityCard key={item.id} recipe={item} />
+              <div style={{ width: "100%" }} key={item.id}>
+                <CommunityCard recipe={item} />
               </div>
             ))
           ) : (

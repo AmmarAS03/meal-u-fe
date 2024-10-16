@@ -74,6 +74,8 @@ interface UpdateUserProfilePayload {
   last_name?: string;
   email?: string;
   image?: File | string;
+  gender?: string;
+  dietary_requirements?: number[];
 }
 
 interface UpdateUserProfileResponse {
@@ -124,25 +126,25 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
       const token = getToken() || '';
       const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
 
-      const formData = new FormData();
-      if (updatedProfile.first_name) formData.append('first_name', updatedProfile.first_name);
-      if (updatedProfile.last_name) formData.append('last_name', updatedProfile.last_name);
-      if (updatedProfile.email) formData.append('email', updatedProfile.email);
+      // Prepare the body as a JSON object
+      const body = {
+        first_name: updatedProfile.first_name,
+        last_name: updatedProfile.last_name,
+        email: updatedProfile.email,
+        gender: updatedProfile.gender,
+        dietary_requirements: updatedProfile.dietary_requirements,
+      };
 
-      if (updatedProfile.image) {
-        if (updatedProfile.image instanceof File) {
-          formData.append('image', updatedProfile.image);
-        } else {
-          formData.append('image', updatedProfile.image);
-        }
-      }
+      // Log the body being sent
+      console.log("Request body being sent:", body);
 
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -152,6 +154,9 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
 
       const data: UpdateUserProfileResponse = await response.json();
 
+      // Log the response data
+      console.log("Update profile response data:", data);
+
       if (!data.success) {
         throw new Error(data.message || 'Failed to update profile');
       }
@@ -160,7 +165,7 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user.profile'], data);
-      queryClient.invalidateQueries({queryKey: ['user.profile']});
+      queryClient.invalidateQueries({ queryKey: ['user.profile'] });
     },
     onError: (error) => {
       console.error('Error updating profile:', error);
