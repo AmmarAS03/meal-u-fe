@@ -79,8 +79,6 @@ function OrderMobile() {
   const { data: locations = [], isFetching: isLocationFetching } =
     useLocationList();
 
-  console.log(location);
-
   const updateTotals = useCallback(() => {
     if (cart) {
       setTotalItem(cart.total_item);

@@ -120,8 +120,6 @@ function UserMobile() {
   if (isUserLoading) return <p>Loading...</p>;
   if (userError) return <p>Error loading profile.</p>;
 
-  console.log(user);
-
   return (
     <IonPage>
       <IonHeader>
