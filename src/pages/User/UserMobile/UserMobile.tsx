@@ -50,6 +50,7 @@ function UserMobile() {
   } = useUserProfile();
   const [activeIcon, setActiveIcon] = useState("grid");
 
+  console.log(user)
   const creatorId = user ? user.id : 0;
   const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } =
     useRecipesByCreator(creatorId);
@@ -60,7 +61,6 @@ function UserMobile() {
   const { data: likedRecipesData, isFetching: isLikedFetching } =
     useLikedRecipes();
 
-  console.log("LIKED", likedRecipesData);
   useIonViewDidEnter(() => {
     refetchUser();
   });
