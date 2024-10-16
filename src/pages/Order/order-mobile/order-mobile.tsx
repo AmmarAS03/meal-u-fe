@@ -41,9 +41,11 @@ import {
   useDeliveryLocations,
 } from "../../../api/deliveryApi";
 import FilterOverlay from "../../../components/FilterOverlay";
+import { useDietary, DietaryProvider } from "../../../contexts/dietaryContext";
 
 function OrderMobile() {
   const queryClient = useQueryClient();
+  const { checkDietaryCompatibility, showIncompatibleFoodWarning } = useDietary();
   const { category } = useParams<{ category: string }>();
   const { setDeliveryDetails, fillDeliveryLocationDetails } = useOrder();
   const router = useIonRouter();
@@ -53,7 +55,6 @@ function OrderMobile() {
   const [applyDietary, setApplyDietary] = useState(false);
   const [mealType, setMealType] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100 });
-
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
@@ -109,8 +110,30 @@ function OrderMobile() {
     setIsFilterVisible(!isFilterVisible);
   };
 
-  const increment = (productId: number) => {
-    const cartItem = getCartItem(productId);
+  const increment = (product: ProductData) => {
+    const cartItem = getCartItem(product.id);
+    
+    // Check if the product is compatible with the user's dietary requirements
+    const isCompatible = checkDietaryCompatibility(product.dietary_details);
+  
+    if (!isCompatible) {
+      showIncompatibleFoodWarning(
+        () => {
+          // User confirmed to add the item despite the warning
+          addToCart(product, cartItem);
+        },
+        () => {
+          // User cancelled adding the item
+          console.log('User cancelled adding incompatible food to cart');
+        }
+      );
+    } else {
+      // If compatible, add to cart directly
+      addToCart(product, cartItem);
+    }
+  };
+  
+  const addToCart = (product: ProductData, cartItem: any) => {
     if (cartItem) {
       const newQuantity = cartItem.quantity + 1;
       updateCartItem.mutate(
@@ -130,7 +153,7 @@ function OrderMobile() {
       addCartItem.mutate(
         {
           item_type: "product",
-          product_id: productId,
+          product_id: product.id,
           quantity: 1,
         },
         {
@@ -597,7 +620,7 @@ function OrderMobile() {
                     </div>
                     <IonIcon
                       icon={addCircleOutline}
-                      onClick={() => increment(product.id)}
+                      onClick={() => increment(product)}
                       style={{ fontSize: "24px", cursor: "pointer" }}
                     />
                   </div>

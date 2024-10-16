@@ -22,9 +22,11 @@ import LongRecipeCard from '../../components/LongRecipeCard/LongRecipeCard';
 import { fetchMealkitDetails, MealkitDetailsData, useAddMealkitComment, useMealkitComments } from '../../api/mealkitApi';
 import { useAuth } from '../../contexts/authContext';
 import { useAddCartItem } from '../../api/cartApi';
+import { DietaryProvider, useDietary } from '../../contexts/dietaryContext';
 
 const MealkitDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const { checkDietaryCompatibility, showIncompatibleFoodWarning } = useDietary();
     const [mealkit, setMealkit] = useState<MealkitDetailsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -85,35 +87,52 @@ const MealkitDetails: React.FC = () => {
 
     const handleAddToCart = () => {
         if (!mealkit) return;
-
+      
+        const isCompatible = checkDietaryCompatibility(mealkit.dietary_details);
+      
+        if (!isCompatible) {
+          showIncompatibleFoodWarning(
+            () => {
+              addToCart();
+            },
+            () => {
+              console.log('User cancelled adding incompatible mealkit to cart');
+            }
+          );
+        } else {
+          addToCart();
+        }
+      };
+      
+      const addToCart = () => {
         const payload = {
-            item_type: 'mealkit' as const,
-            item_data: {
-                mealkit_id: parseInt(id, 10),
-                recipes: mealkit.recipes.map(recipe => ({
-                    recipe_id: recipe.id,
-                    quantity: 1,
-                    recipe_ingredients: recipe.ingredients.map(ingredient => ({
-                        ingredient_id: ingredient.ingredient.id,
-                        preparation_type_id: ingredient.preparation_type?.id || null,
-                        quantity: 1,
-                    })),
-                })),
-            },
-            quantity: 1,
+          item_type: 'mealkit' as const,
+          item_data: {
+            mealkit_id: parseInt(id, 10),
+            recipes: mealkit!.recipes.map(recipe => ({
+              recipe_id: recipe.id,
+              quantity: 1,
+              recipe_ingredients: recipe.ingredients.map(ingredient => ({
+                ingredient_id: ingredient.ingredient.id,
+                preparation_type_id: ingredient.preparation_type?.id || null,
+                quantity: 1,
+              })),
+            })),
+          },
+          quantity: 1,
         };
-
+      
         addCartItem.mutate(payload, {
-            onSuccess: () => {
-                setToastMessage('Mealkit added to cart successfully');
-                setShowToast(true);
-            },
-            onError: (error) => {
-                setToastMessage(`Failed to add mealkit to cart: ${error.message}`);
-                setShowToast(true);
-            },
+          onSuccess: () => {
+            setToastMessage('Mealkit added to cart successfully');
+            setShowToast(true);
+          },
+          onError: (error) => {
+            setToastMessage(`Failed to add mealkit to cart: ${error.message}`);
+            setShowToast(true);
+          },
         });
-    };
+      };
 
     if (loading) {
         return (
