@@ -24,23 +24,16 @@ import { useLocationList } from "../../../api/locationApi";
 import { useParams } from "react-router-dom";
 import HomeItemCard from "../../../components/HomeCard/HomeItemCard";
 import NotifIcon from "../../../../public/icon/notif-icon";
-import HomeImageCard from "../../../components/HomeImageCard";
+import HomeImageCard from "../../../components/HomeImageCard/HomeImageCard";
 import SkeletonHomeItemCard from "../../../components/HomeCard/SkeletonHomeItemCard";
+import { useTopCreatorsByDietary } from "../../../api/creatorApi";
+import SkeletonHomeImageCard from "../../../components/HomeImageCard/SkeletonImageCard";
 
 function HomeMobile() {
   const { category } = useParams<{ category: string }>();
   const router = useIonRouter();
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState("");
-  const { data: mealkits = [], isFetching: isMealkitsFetching } =
-    useMealkitList({
-      search: selectedCategory,
-    });
-  const { data: recipes = [], isFetching: isRecipesFetching } = useRecipesList({
-    search: category,
-  });
 
   const { data: trendingRecipes = [], isFetching: isTrendingRecipesFetching } =
     useTrendingRecipesList();
@@ -55,33 +48,15 @@ function HomeMobile() {
     setCurrentLocation(firstLocation);
   }
 
-  const handleFilter = () => {
-    setIsFilterVisible(!isFilterVisible);
-  };
+  const { data: topCreator = [], isFetching: isTopCreatorFetching } =
+    useTopCreatorsByDietary();
 
   const handleMealkitClick = (mealkitId: number) => {
     router.push(`/mealkit-details/${mealkitId}`);
   };
 
-  // To do di filter based on selected
-  const filterItems = (items: any[], searchTerm: string) => {
-    return items.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  };
-
   const handleRecipeClick = (recipeId: number) => {
     router.push(`/recipe-details/${recipeId}`);
-  };
-
-  const filteredMealkits = filterItems(mealkits, searchValue);
-  const filteredRecipes = filterItems(recipes, searchValue);
-
-  const [selectedFilter, setSelectedFilter] = useState("All");
-  const buttons = ["All", "Recipe", "Mealkits", "Creators"];
-
-  const handleButtonClick = (button: any) => {
-    setSelectedFilter(button);
   };
 
   return (
@@ -107,20 +82,48 @@ function HomeMobile() {
             marginTop: "20px",
           }}
         >
-          <div style={{ overflowX: "auto", width: "100%" }}>
+          {isTrendingRecipesFetching ? (
+            // Show skeleton loading state outside the overflow div
             <div
               style={{
                 display: "flex",
                 flexDirection: "row",
-                minWidth: "min-content",
                 gap: 10,
+                marginBottom: 10,
               }}
             >
-              <HomeImageCard />
-              <HomeImageCard />
-              <HomeImageCard />
+              {Array.from({ length: 3 }).map((_, index) => (
+                <SkeletonHomeImageCard key={index} />
+              ))}
             </div>
-          </div>
+          ) : (
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                  gap: 10,
+                }}
+              >
+                {topCreator.length > 0 ? (
+                  // Render HomeImageCards with topCreator data
+                  topCreator.map((item) => (
+                    <HomeImageCard
+                      key={item.dietary_detail.id}
+                      creatorImage={item.top_creator.image}
+                      creatorName={`${item.top_creator.first_name} ${item.top_creator.last_name}`}
+                      dietaryName={item.dietary_detail.name}
+                      recipeCount={item.top_creator.recipe_count}
+                    />
+                  ))
+                ) : (
+                  // Show message if no data
+                  <p>No top creators found.</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div
@@ -175,20 +178,26 @@ function HomeMobile() {
             display: "flex",
             flexDirection: "column",
             marginTop: "15px",
-            marginBottom: "50px"
+            marginBottom: "50px",
           }}
         >
           <p style={{ fontSize: "16px", fontWeight: "600" }}>
             Trending Mealkits
           </p>
           {isTrendingMealkitFetching ? (
-             <div style={{ overflowX: "auto", width: "100%" }}>
-             <div style={{ display: "flex", flexDirection: "row", minWidth: "min-content" }}>
-               {[...Array(5)].map((_, index) => (
-                 <SkeletonHomeItemCard key={index} />
-               ))}
-             </div>
-           </div>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  minWidth: "min-content",
+                }}
+              >
+                {[...Array(5)].map((_, index) => (
+                  <SkeletonHomeItemCard key={index} />
+                ))}
+              </div>
+            </div>
           ) : trendingMealkit.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div

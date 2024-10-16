@@ -4,6 +4,7 @@ import CommentIcon from "../../../public/icon/comment-icon";
 import { formatDistanceToNow } from "date-fns";
 import {useLikeRecipe} from "../../../src/api/recipeApi";
 import {useLikeMealkit} from "../../../src/api/mealkitApi";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Creator {
   name: string;
@@ -24,6 +25,7 @@ interface CommunityRecipeData {
   total_price?: number;
   likes_count: number;
   comments_count: number;
+  is_like?: boolean;
 }
 
 interface CommunityCardProps {
@@ -34,6 +36,8 @@ interface CommunityCardProps {
 const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
   const likeRecipeMutation = useLikeRecipe();
   const likeMealkitMutation = useLikeMealkit();
+
+  const queryClient = useQueryClient();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -49,6 +53,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
     mutation.mutate(recipe.id, {
       onSuccess: () => {
         console.log(`${isRecipe ? 'Recipe' : 'Mealkit'} liked successfully`);
+        queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
+        queryClient.invalidateQueries({ queryKey: ["recipes"] });
+        queryClient.invalidateQueries({ queryKey: ["community-recipe.list"] });
+        queryClient.invalidateQueries({ queryKey: ['user.likedRecipes'] });
       },
       onError: (error) => {
         console.error(`Failed to like ${isRecipe ? 'recipe' : 'mealkit'}:`, error);
@@ -120,7 +128,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
           <div className="flex items-center space-x-4">
             <button className="flex items-center" onClick={handleLike}>
               <div className="flex items-center w-6 h-6 mr-1">
-                <LoveIcon />
+                <LoveIcon liked={recipe.is_like}/>
               </div>
               <span className="text-xs text-gray-700">
                 {recipe.likes_count}

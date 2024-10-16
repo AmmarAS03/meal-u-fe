@@ -36,11 +36,16 @@ import ItemCard from "../../../components/ItemCard/ItemCard";
 import { useQueryClient } from "@tanstack/react-query";
 import SkeletonOrderCard from "../../../components/ItemCard/SkeletonItemCard";
 import SkeletonProductItem from "../../../components/ProductCard/SkeletonProductCard";
+import {
+  DeliveryLocation,
+  useDeliveryLocations,
+} from "../../../api/deliveryApi";
 import FilterOverlay from "../../../components/FilterOverlay";
 
 function OrderMobile() {
   const queryClient = useQueryClient();
   const { category } = useParams<{ category: string }>();
+  const { setDeliveryDetails, fillDeliveryLocationDetails } = useOrder();
   const router = useIonRouter();
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [filterApplied, setFilterApplied] = useState(false);
@@ -87,7 +92,7 @@ function OrderMobile() {
   };
 
   const { data: locations = [], isFetching: isLocationFetching } =
-    useLocationList();
+    useDeliveryLocations();
 
   const updateTotals = useCallback(() => {
     if (cart) {
@@ -290,11 +295,22 @@ function OrderMobile() {
   useEffect(() => {
     if (!isLocationFetching && locations.length > 0 && !selectedLocation) {
       setSelectedLocation(locations[0].id.toString());
+      setDeliveryDetails((prev) => ({
+        ...prev,
+        deliveryLocation: locations[0].id,
+      }));
+      fillDeliveryLocationDetails(locations[0].id);
     }
   }, [isLocationFetching, locations, selectedLocation]);
 
   const handleLocationChange = (e: CustomEvent) => {
+    const locationId = parseInt(e.detail.value, 10);
     setSelectedLocation(e.detail.value);
+    setDeliveryDetails((prev) => ({
+      ...prev,
+      deliveryLocation: locationId,
+    }));
+    fillDeliveryLocationDetails(locationId);
   };
 
   const handleApplyFilter = (filters: any) => {
@@ -339,7 +355,7 @@ function OrderMobile() {
               interface="popover"
               style={{ fontSize: "14px", fontWeight: "500" }}
             >
-              {locations.map((location: LocationData) => (
+              {locations.map((location: DeliveryLocation) => (
                 <IonSelectOption
                   key={location.id}
                   value={location.id.toString()}

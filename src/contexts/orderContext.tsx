@@ -1,12 +1,35 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { DeliveryLocation, DeliveryTimeSlot, OrderCreationResponse, useCreateOrder, useDeliveryLocations, useDeliveryTimeSlots } from "../api/deliveryApi";
-import { useCreateRecipe, CreateRecipePayload, usePreparationTypeList, PreparationType } from '../api/recipeApi';
-import { formatDate } from '../pages/MyCart/MyCart-Mobile';
-import { UnitData, useUnitList, ProductData, MealType, useMealTypeList } from '../api/productApi';
-import { CategoryData, useCategoriesList } from '../api/categoryApi';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  DeliveryLocation,
+  DeliveryTimeSlot,
+  OrderCreationResponse,
+  useCreateOrder,
+  useDeliveryLocations,
+  useDeliveryTimeSlots,
+} from "../api/deliveryApi";
+import {
+  useCreateRecipe,
+  CreateRecipePayload,
+  usePreparationTypeList,
+  PreparationType,
+} from "../api/recipeApi";
+import { formatDate } from "../pages/MyCart/MyCart-Mobile";
+import {
+  UnitData,
+  useUnitList,
+  ProductData,
+  MealType,
+  useMealTypeList,
+} from "../api/productApi";
+import { CategoryData, useCategoriesList } from "../api/categoryApi";
 import { useQueries } from "@tanstack/react-query";
-import { useAuth } from '../contexts/authContext';
-
+import { useAuth } from "../contexts/authContext";
 
 interface Filters {
   deliveryDate: string | null;
@@ -24,18 +47,25 @@ interface OrderContextProps {
     deliveryTime: number;
     deliveryDate: Date;
   };
-  setDeliveryDetails: React.Dispatch<React.SetStateAction<{ // TODO: ganti implementation-nya jadi pas checkout aja
-    deliveryLocation: number;
-    deliveryTime: number;
-    deliveryDate: Date;
-  }>>;
+  setDeliveryDetails: React.Dispatch<
+    React.SetStateAction<{
+      // TODO: ganti implementation-nya jadi pas checkout aja
+      deliveryLocation: number;
+      deliveryTime: number;
+      deliveryDate: Date;
+    }>
+  >;
   allDeliveryLocations: DeliveryLocation[] | undefined;
   deliveryLocationDetails: DeliveryLocation;
-  setDeliveryLocationDetails: React.Dispatch<React.SetStateAction<DeliveryLocation>>;
+  setDeliveryLocationDetails: React.Dispatch<
+    React.SetStateAction<DeliveryLocation>
+  >;
   fillDeliveryLocationDetails: (id: number) => void;
   allDeliveryTimeSlots: DeliveryTimeSlot[] | undefined;
   deliveryTimeSlotDetails: DeliveryTimeSlot;
-  setDeliveryTimeSlotDetails: React.Dispatch<React.SetStateAction<DeliveryTimeSlot>>;
+  setDeliveryTimeSlotDetails: React.Dispatch<
+    React.SetStateAction<DeliveryTimeSlot>
+  >;
   fillDeliveryTimeSlotDetails: (id: number) => void;
   units: UnitData[] | undefined;
   getUnitId: (product: ProductData) => number;
@@ -48,6 +78,7 @@ interface OrderContextProps {
   filters: Filters;
   setFilter: (filterName: keyof Filters, value: string | number | null) => void;
   clearFilters: () => void;
+  updateDeliveryLocation: (locationId: number) => void;
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
@@ -55,15 +86,17 @@ const OrderContext = createContext<OrderContextProps | undefined>(undefined);
 export const useOrder = () => {
   const context = useContext(OrderContext);
   if (!context) {
-    throw new Error('useOrder must be used within an OrderProvider');
+    throw new Error("useOrder must be used within an OrderProvider");
   }
   return context;
 };
 
-export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   // const { mutate: createOrder } = useCreateOrder();
   const createOrderMutation = useCreateOrder();
-  const { mutate: createRecipe} = useCreateRecipe();
+  const { mutate: createRecipe } = useCreateRecipe();
   const { data: allDeliveryLocations } = useDeliveryLocations();
   const { data: allDeliveryTimeSlots } = useDeliveryTimeSlots();
 
@@ -72,7 +105,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     deliveryTime: -1,
     deliveryDate: new Date(),
   });
-  
+
   const [deliveryLocationDetails, setDeliveryLocationDetails] = useState({
     id: -1,
     name: "",
@@ -89,10 +122,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const fillDeliveryLocationDetails = (id: number) => {
-    const data = allDeliveryLocations?.find(location => location.id === id);
+    const data = allDeliveryLocations?.find((location) => location.id === id);
     if (data) {
       setDeliveryLocationDetails({
-        id: id,
+        id: data.id,
         name: data.name,
         branch: data.branch,
         address_line1: data.address_line1,
@@ -106,7 +139,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         latitude: data.latitude,
       });
     }
-  }
+  };
 
   const [deliveryTimeSlotDetails, setDeliveryTimeSlotDetails] = useState({
     id: -1,
@@ -117,7 +150,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const fillDeliveryTimeSlotDetails = (id: number) => {
-    const data = allDeliveryTimeSlots?.find(timeslot => timeslot.id === id);
+    const data = allDeliveryTimeSlots?.find((timeslot) => timeslot.id === id);
     if (data) {
       setDeliveryTimeSlotDetails({
         id: id,
@@ -127,47 +160,48 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         cut_off: data.cut_off,
       });
     }
-  }
-
+  };
 
   const handleOrderCreation = async () => {
     const { deliveryLocation, deliveryTime, deliveryDate } = deliveryDetails;
     try {
       const result = await createOrderMutation.mutateAsync({
-            delivery_location: deliveryLocation,
-            delivery_time: deliveryTime,
-            delivery_date: formatDate(deliveryDate), 
-          });
+        delivery_location: deliveryLocation,
+        delivery_time: deliveryTime,
+        delivery_date: formatDate(deliveryDate),
+      });
       return result;
     } catch (error) {
-      console.error('Error creating order:', error);
-    };
+      console.error("Error creating order:", error);
+    }
   };
 
   const handleRecipeCreation = (payload: CreateRecipePayload) => {
     createRecipe(payload);
-  }
+  };
 
   const { data: units } = useUnitList();
   const getUnitId = (product: ProductData) => {
-  const data = units!.find(unit => unit.name === product.unit_id);
+    const data = units!.find((unit) => unit.name === product.unit_id);
     return data!.id;
-  }
+  };
   // get unit from unit_id
   const getUnitFromId = (id: number) => {
     const data = units?.find((unit) => unit.id === id);
     return data?.name;
-  }
+  };
 
   const { data: meal_types } = useMealTypeList();
 
-  const getMealTypeFromId =  (id: number) => {
-    const data = meal_types?.find(type => type.id === id);
+  const getMealTypeFromId = (id: number) => {
+    const data = meal_types?.find((type) => type.id === id);
     return data?.name;
-  }
+  };
 
   // New state for filter
-  const [deliveryDateFilter, setDeliveryDateFilter] = useState<string | null>(null);
+  const [deliveryDateFilter, setDeliveryDateFilter] = useState<string | null>(
+    null
+  );
   // New state for filters
   const [filters, setFilters] = useState<Filters>({
     deliveryDate: null,
@@ -177,8 +211,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   // Function to set individual filters
-  const setFilter = (filterName: keyof Filters, value: string | number | null) => {
-    setFilters(prevFilters => ({
+  const setFilter = (
+    filterName: keyof Filters,
+    value: string | number | null
+  ) => {
+    setFilters((prevFilters) => ({
       ...prevFilters,
       [filterName]: value,
     }));
@@ -193,9 +230,17 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       orderStatus: null,
     });
   };
-    
+
   // categories and preparation types
   const { data: categories } = useCategoriesList();
+
+  const updateDeliveryLocation = (locationId: number) => {
+    setDeliveryDetails((prev) => ({
+      ...prev,
+      deliveryLocation: locationId,
+    }));
+    fillDeliveryLocationDetails(locationId);
+  };
 
   return (
     <OrderContext.Provider
@@ -222,8 +267,9 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         filters,
         setFilter,
         clearFilters,
-      }
-    }>
+        updateDeliveryLocation,
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );

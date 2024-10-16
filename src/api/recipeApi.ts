@@ -76,6 +76,7 @@ export interface CommunityRecipeData {
   total_price: number;
   likes_count: number;
   comments_count: number;
+  is_like: boolean;
 }
 
 interface RecipeListParams {

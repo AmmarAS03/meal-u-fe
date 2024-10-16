@@ -97,6 +97,7 @@ export interface CommunityMealkitData {
   likes_count: number;
   comments_count: number;
   price: number;
+  is_like: boolean
 }
 interface LikeMealkitResponse {
   success: boolean;
