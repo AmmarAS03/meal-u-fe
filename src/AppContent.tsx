@@ -10,7 +10,7 @@ import Tab2 from "./pages/Community";
 import Tab4 from "./pages/Orders/Orders";
 import Tab5 from "./pages/Tab-5/Tab5";
 import MyCart from "./pages/MyCart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SubPage from "./pages/Tab-1/Sub-Page-1/sub-page-1";
 import RecipeDetails from "./pages/RecipeDetails/RecipeDetails";
 import ProductDetails from "./pages/ProductDetails/ProductDetails";
@@ -40,10 +40,21 @@ import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
 import AllOrders from "./pages/Warehouse/Orders";
 import CreatorProfile from "./pages/Community/CreatorProfile";
 import DeliveryStatus from "./pages/DeliveryStatus/DeliveryStatus";
+import DesktopNavbar from "./components/NavigationBar/DesktopNavbar";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const shouldShowTabs = () => {
     const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
@@ -69,6 +80,7 @@ const AppContent: React.FC = () => {
           <Navbar />
         </IonHeader>
       )}
+      {isAuthenticated && isDesktop && <DesktopNavbar />}
       <IonContent>
         {isAuthenticated ? (
           <>
@@ -105,7 +117,7 @@ const AppContent: React.FC = () => {
                 <Redirect to="/home" />
               </Route>
             </IonRouterOutlet>
-            {shouldShowTabs() && <Navbar />}
+            {(!isDesktop && shouldShowTabs()) && <Navbar />}
           </>
         ) : (
           <IonRouterOutlet>
