@@ -64,6 +64,8 @@ export interface UserProfile {
   image: string | null;
   voucher_credits: string;
   profile: null | any;
+  gender: string;
+  dietary_requirements: [];
 }
 
 
