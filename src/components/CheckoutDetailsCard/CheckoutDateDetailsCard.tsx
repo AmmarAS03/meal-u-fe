@@ -3,6 +3,7 @@ import styles from './checkout.module.css';
 import { useState } from 'react';
 import { useOrder } from '../../contexts/orderContext';
 import DateModal from '../../pages/MyCart/MyCart-Mobile/DateModal';
+import { format } from 'date-fns';
 
 interface CheckoutDetailsCardProps {
 }
@@ -13,12 +14,15 @@ const CheckoutDateDetailsCard: React.FC<CheckoutDetailsCardProps> = () => {
     return (
       <>
       <div className={styles.card}>
-          <div className={styles.card_2_contents}>
+          <div className={styles.row_two_columns}>
             <div className={styles.column}>
-              <IonText>{deliveryDetails ? deliveryDetails.deliveryDate.toString() : "Haven't set"}</IonText>
+              <IonText>{deliveryDetails ? format(deliveryDetails.deliveryDate, 'PPPP') : "Haven't set"}</IonText>
+            </div>
+            <div className={styles.column}>
+              <DateModal />
             </div>
 
-              <DateModal />
+              {/* <DateModal /> */}
           </div>
         </div>
       </>
