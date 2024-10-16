@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   IonBackButton,
   IonButtons,
@@ -17,13 +17,13 @@ import LocationIcon from "../../../../public/icon/location-icon";
 import SearchIcon from "../../../../public/icon/search-icon";
 import FloatCartIcon from "../../../../public/icon/float-cart-icon";
 import FilterIcon from "../../../../public/icon/filter";
-import FilterOverlayOld from "../../../components/FilterOverlay/filterOverlayOld";
 import { addCircleOutline, removeCircleOutline } from "ionicons/icons";
 import IconInput from "../../../components/icon-input";
 import { useMealkitList, MealkitData } from "../../../api/mealkitApi";
 import { RecipeData, useRecipesList } from "../../../api/recipeApi";
-import { ProductData, useProductList } from "../../../api/productApi";
+import { ProductData, useProductList, useDietaryDetails, useMealTypeList } from "../../../api/productApi";
 import { LocationData, useLocationList } from "../../../api/locationApi";
+import { useOrder } from "../../../contexts/orderContext";
 import {
   useCart,
   CartData,
@@ -36,12 +36,19 @@ import ItemCard from "../../../components/ItemCard/ItemCard";
 import { useQueryClient } from "@tanstack/react-query";
 import SkeletonOrderCard from "../../../components/ItemCard/SkeletonItemCard";
 import SkeletonProductItem from "../../../components/ProductCard/SkeletonProductCard";
+import FilterOverlay from "../../../components/FilterOverlay";
 
 function OrderMobile() {
   const queryClient = useQueryClient();
   const { category } = useParams<{ category: string }>();
   const router = useIonRouter();
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [filterApplied, setFilterApplied] = useState(false);
+  const [dietary, setDietary] = useState<number[]>([]);
+  const [applyDietary, setApplyDietary] = useState(false);
+  const [mealType, setMealType] = useState<number[]>([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 100 });
+
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
@@ -61,6 +68,9 @@ function OrderMobile() {
     data: CartData | undefined;
     isFetching: boolean;
   };
+  const { data: dietaryRequirements = [] } = useDietaryDetails();
+  const { data: mealTypes = [] } = useMealTypeList();
+  const { meal_types } = useOrder();
 
   const updateCartItem = useUpdateCartItem();
   const deleteCartItem = useDeleteCartItem();
@@ -78,8 +88,6 @@ function OrderMobile() {
 
   const { data: locations = [], isFetching: isLocationFetching } =
     useLocationList();
-
-  console.log(location);
 
   const updateTotals = useCallback(() => {
     if (cart) {
@@ -198,6 +206,87 @@ function OrderMobile() {
   const filteredRecipes = filterItems(recipes, searchValue);
   const filteredProducts = filterItems(product, searchValue);
 
+  function filterContent(content: any): any {
+    let finalContent = content;
+
+    if (!filterApplied) {
+      return content;
+    } else {
+      // dietary requirements filter applied
+      if (dietary.length > 0) {
+        finalContent = content.filter((item: any) => {
+          const selectedDietaryNames = dietary
+          .map(id => dietaryRequirements.find(dr => dr.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
+
+          // check if all selected dietary names are included in the item's dietary_details
+          return selectedDietaryNames.every(name => item.dietary_details.includes(name));
+        })
+      }
+
+      // if meal type filters applied
+      if (mealType.length > 0) {
+        finalContent = content.filter((item: any) => {
+          // get the names of the selected meal types
+          const selectedMealTypes = mealType
+          .map(id => meal_types?.find(mt => mt.id === id)?.name)
+          .filter((name): name is string => name !== undefined);
+
+          // check if all selected meal types are included in the item's meal types
+          if ('cooking_time' in item) { // recipe
+            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
+          } else if ('meal_types' in item) { // mealkit
+            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
+          } else {
+            return false;
+          }
+        });
+      }
+
+      // if price range filters applied
+      if (priceRange.min !== 0 || priceRange.max !== 100) {
+        finalContent = content.filter((item: any) => {
+          // field 'price' on mealkit, field 'total_price' on recipe
+          const itemPrice = ('cooking_time' in item) ? item.total_price : item.price;
+          return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
+        })
+      }
+
+      // if no content matches the filter
+      if (finalContent.length === 0) {
+        return (
+          <div className="flex items-center justify-center h-4/5">
+            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
+          </div>
+        );
+      }
+
+      return finalContent;
+    }
+  }
+
+  // filter contents 
+  const [finalMealkits, setFinalMealkits] = useState<any[]|null>(null);
+  const [finalRecipes, setFinalRecipes] = useState<any[]|null>(null);
+  const [finalProducts, setFinalProducts] = useState<any[]|null>(null);
+
+
+  useEffect(() => {
+    setFinalMealkits(filterContent(filteredMealkits));
+    setFinalRecipes(filterContent(filteredRecipes));
+    setFinalProducts(filterContent(filteredProducts));
+
+  }, [isRecipesFetching,
+    isMealkitsFetching,
+    filteredMealkits,
+    filteredRecipes,
+    filteredProducts,
+    filterApplied,
+    dietary,
+    mealType,
+    priceRange,
+  ])
+
   useEffect(() => {
     if (!isLocationFetching && locations.length > 0 && !selectedLocation) {
       setSelectedLocation(locations[0].id.toString());
@@ -207,6 +296,19 @@ function OrderMobile() {
   const handleLocationChange = (e: CustomEvent) => {
     setSelectedLocation(e.detail.value);
   };
+
+  const handleApplyFilter = (filters: any) => {
+    setFilterApplied(true);
+    setIsFilterVisible(false);
+  };
+
+  // user clears filter
+  useEffect(() => {
+    if (!dietary.length && !applyDietary && !mealType.length &&
+      priceRange.min === 0 && priceRange.max === 100) {
+      setFilterApplied(false);
+    }
+  }, [dietary, applyDietary, mealType, priceRange]);
 
   return (
     <IonPage>
@@ -266,14 +368,29 @@ function OrderMobile() {
             width="300px"
             value={searchValue}
           />
+
+          {/* FILTER BUTTON */}
           <IonButton size="small" onClick={handleFilter}>
             <FilterIcon />
           </IonButton>
         </div>
+
+        {/* FILTER*/}
         {isFilterVisible && (
-          <div className="filter">
-            <FilterOverlayOld />
-          </div>
+            <FilterOverlay
+            onClose={() => setIsFilterVisible(false)}
+            onApplyFilter={handleApplyFilter}
+            dietary={dietary}
+            setDietary={setDietary}
+            applyDietary={applyDietary}
+            setApplyDietary={setApplyDietary}
+            meals={mealType}
+            setMeals={setMealType}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            dietaryRequirements={dietaryRequirements}
+            mealTypes={mealTypes}
+          />
         )}
         <div
           style={{
@@ -297,7 +414,7 @@ function OrderMobile() {
                 ))}
               </div>
             </div>
-          ) : filteredMealkits.length > 0 ? (
+          ) : finalMealkits!.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
                 style={{
@@ -306,7 +423,7 @@ function OrderMobile() {
                   minWidth: "min-content",
                 }}
               >
-                {filteredMealkits.map((mealkit: MealkitData) => (
+                {finalMealkits!.map((mealkit: MealkitData) => (
                   <ItemCard
                     key={mealkit.id}
                     item={mealkit}
@@ -336,7 +453,7 @@ function OrderMobile() {
                 ))}
               </div>
             </div>
-          ) : filteredRecipes.length > 0 ? (
+          ) : finalRecipes!.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
                 style={{
@@ -345,7 +462,7 @@ function OrderMobile() {
                   minWidth: "min-content",
                 }}
               >
-                {filteredRecipes.map((recipe: RecipeData) => (
+                {finalRecipes!.map((recipe: RecipeData) => (
                   <ItemCard
                     key={recipe.id}
                     item={recipe}
@@ -376,8 +493,8 @@ function OrderMobile() {
               <SkeletonProductItem />
               <SkeletonProductItem />
             </>
-          ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product: ProductData) => {
+          ) : finalProducts!.length > 0 ? (
+            finalProducts!.map((product: ProductData) => {
               const cartItem = getCartItem(product.id);
               const cartQuantity = cartItem ? cartItem.quantity : 0;
               return (
