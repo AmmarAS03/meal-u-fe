@@ -1,6 +1,6 @@
 import React, { useReducer, useState, useEffect } from 'react';
 import { IonBackButton, IonButton, IonButtons, IonCheckbox, IonChip, IonContent, IonHeader, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
-import { useRecipesList } from '../../../../api/recipeApi';
+import { useRecipesByCreator, useRecipesList } from '../../../../api/recipeApi';
 import { useUserProfile } from '../../../../api/userApi';
 import { CreateMealkitPayload, useCreateMealkit } from '../../../../api/mealkitApi';
 import { useDietaryDetails } from '../../../../api/productApi';
@@ -40,8 +40,8 @@ const mealkitReducer = (state: CreateMealkitPayload, action: MealkitAction): Cre
 const CreateMealkit: React.FC = () => {
   const history = useHistory();
   const [state, dispatch] = useReducer(mealkitReducer, initialState);
-  const { data: recipes = [], isFetching: isRecipesFetching } = useRecipesList({ search: "" });
   const { data: userProfile } = useUserProfile();
+  const { data: usersRecipes = [], isFetching: isRecipesFetching } = useRecipesByCreator(userProfile!.id);
   const { data: dietaryDetails } = useDietaryDetails();
   const { mutate: handleMealkitCreation } = useCreateMealkit({
     onSuccess: (data) => {
@@ -55,10 +55,6 @@ const CreateMealkit: React.FC = () => {
   const router = useIonRouter();
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
   const [photo, setPhoto] = useState<string | null>(null);
-
-  const usersRecipes = recipes.filter(
-    (recipe) => recipe.creator.userID === userProfile?.id
-  );
 
   const handleCreateMealkit = () => {
     if (selectedRecipes.length === 0) {
@@ -108,6 +104,21 @@ const CreateMealkit: React.FC = () => {
     router.push('/community/create/recipe');
   }
 
+  const noRecipeRender = () => {
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="w-full max-w-md text-center">
+          <IonText>
+            It looks like you don't have a recipe yet. Create one to start building your meal kit!
+          </IonText>
+          <div className="mt-4">
+            <IonButton onClick={navigateToCreateRecipe}>Create Recipe</IonButton>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <IonPage>
       <IonHeader>
@@ -119,7 +130,10 @@ const CreateMealkit: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <div className="w-full max-w-md mx-auto">
+        {usersRecipes.length === 0 ? (
+          noRecipeRender()
+        ) : (
+          <div className="w-full max-w-md mx-auto">
           <div className="mb-4">
             <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
               Mealkit Photo
@@ -213,6 +227,7 @@ const CreateMealkit: React.FC = () => {
             Create Mealkit
           </IonButton>
         </div>
+        )}
       </IonContent>
     </IonPage>
   );
