@@ -31,8 +31,8 @@ import SkeletonCreatorCommunityCard from "../../../components/CreatorCommunityCa
 import RecipeIcon from "../../../../public/icon/recipe-icon";
 import {
   addOutline,
-  restaurantOutline,
-  gift,
+  bookOutline,
+  cubeOutline,
 } from 'ionicons/icons';
 import styles from './CommunityMobile.module.css';
 import { TrendingCreatorProfile, useTrendingCreators } from "../../../api/userApi";
@@ -373,10 +373,10 @@ function CommunityMobile() {
           </IonFabButton>
           <IonFabList side="top">
             <IonFabButton color="dark" onClick={navigateToCreateRecipe}>
-              <IonIcon icon={restaurantOutline}></IonIcon>
+              <IonIcon icon={bookOutline}></IonIcon>
             </IonFabButton>
             <IonFabButton color="dark" onClick={navigateToCreateMealkit}>
-              <IonIcon icon={gift}></IonIcon>
+              <IonIcon icon={cubeOutline}></IonIcon>
             </IonFabButton>
           </IonFabList>
         </IonFab>
