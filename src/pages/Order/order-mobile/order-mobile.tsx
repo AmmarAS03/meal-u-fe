@@ -281,12 +281,7 @@ function OrderMobile() {
     setFinalRecipes(filterContent(filteredRecipes));
     setFinalProducts(filterContent(filteredProducts));
 
-  }, [isRecipesFetching,
-    isMealkitsFetching,
-    filteredMealkits,
-    filteredRecipes,
-    filteredProducts,
-    filterApplied,
+  }, [filterApplied,
     dietary,
     mealType,
     priceRange,

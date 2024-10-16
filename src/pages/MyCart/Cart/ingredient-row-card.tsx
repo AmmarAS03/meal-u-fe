@@ -46,6 +46,11 @@ const IngredientRowCard: React.FC<IngredientRowCardProps> = ({ data }) => {
     }
   };
 
+  useEffect(() => {
+    setPrice(data.total_price);
+  }, [data.total_price, data]);
+
+  console.log("data: ", data);
   return (
     <div className={styles.card}>
       <div className={styles.row_card_content}>
@@ -71,13 +76,18 @@ const IngredientRowCard: React.FC<IngredientRowCardProps> = ({ data }) => {
             </p>
           </div>
           <div className={styles.dietary_details}>
-            {data.product.dietary_details?.map((item, index) => (
+            {data.product.dietary_details?.slice(0, 2).map((item, index) => (
               <div key={index} className={styles.node}>
                 {item}
               </div>
             ))}
+            {data.product.dietary_details.length > 2 && (
+              <div className={styles.node}>
+                +{data.product.dietary_details.length - 2}
+              </div>
+            )}
           </div>
-          <div className={styles.price}>${data.product.total_price}</div>
+          <div className={styles.price}>${price}</div>
         </div>
         <div className={styles.column}>
           <div className={styles.quantity}>

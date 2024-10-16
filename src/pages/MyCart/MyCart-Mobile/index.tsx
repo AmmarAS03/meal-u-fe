@@ -71,6 +71,7 @@ const MyCartMobile: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
+        <div className="mb-40">
         <Cart subTotal={subTotal} setSubTotal={setSubTotal}/>
 
         {cartNotEmpty ? (
@@ -90,6 +91,7 @@ const MyCartMobile: React.FC = () => {
           </>
         ) : null
         }
+        </div>
         
       </IonContent>
     </IonPage>

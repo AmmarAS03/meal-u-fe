@@ -92,7 +92,7 @@ import {
   
     return (
       <IonButton expand="block" onClick={openModal}>
-        Open Date Picker
+        Set
       </IonButton>
     );
   }

@@ -128,11 +128,16 @@ const CollapsibleRecipeCard: React.FC<CollapsibleRecipeCardProps> = ({data, isFr
             </p>
           </div>
           <div className={styles.dietary_details}>
-            {Object.values(data.dietary_details).map((detail, index) => (
+            {Object.values(data.dietary_details).slice(0, 2).map((detail, index) => (
               <div key={index} className={styles.node}>
                 {detail}
               </div>
             ))}
+            {Object.values(data.dietary_details).length > 2 && (
+                <div className={styles.node}>
+                  +{Object.values(data.dietary_details).length - 2}
+                </div>
+              )}
           </div>
           <div className={styles.price}>${data.total_price}</div>
         </div>
