@@ -100,7 +100,7 @@ const OrderWeb: React.FC = () => {
             placeholder="Search"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="w-full px-4 py-2 rounded-full border border-gray-300 mb-6"
+            className="w-full px-4 py-2 bg-white rounded-full border border-gray-300 mb-6"
           />
 
           <p className="text-gray-600 mb-6">Displaying results for "{searchValue || selectedCategory}"</p>
