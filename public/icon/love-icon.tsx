@@ -3,13 +3,13 @@ import React from "react";
 interface LoveIconProps {
   color?: string;
   selectedColor?: string;
-  selected?: boolean;
+  liked?: boolean;
 }
 
 const LoveIcon: React.FC<LoveIconProps> = ({
   color = "#97A2B0",
   selectedColor = "#7862FC",
-  selected = false,
+  liked = false,
 }) => {
   return (
     <svg
@@ -17,7 +17,7 @@ const LoveIcon: React.FC<LoveIconProps> = ({
       width="18"
       height="19"
       viewBox="0 0 18 19"
-      fill="none"
+      fill={liked? "#c22335": "none"}
     >
       <path
         fill-rule="evenodd"

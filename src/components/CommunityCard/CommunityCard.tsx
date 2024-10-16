@@ -24,6 +24,7 @@ interface CommunityRecipeData {
   total_price?: number;
   likes_count: number;
   comments_count: number;
+  is_like?: boolean;
 }
 
 interface CommunityCardProps {
@@ -120,7 +121,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
           <div className="flex items-center space-x-4">
             <button className="flex items-center" onClick={handleLike}>
               <div className="flex items-center w-6 h-6 mr-1">
-                <LoveIcon />
+                <LoveIcon liked={recipe.is_like}/>
               </div>
               <span className="text-xs text-gray-700">
                 {recipe.likes_count}

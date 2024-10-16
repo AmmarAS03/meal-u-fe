@@ -26,6 +26,8 @@ liked_at: string;
 }
 
 interface LikedMealkit {
+  comments_count: any;
+  likes_count: any;
   mealkit: MealkitData;
   liked_at: string;
   }

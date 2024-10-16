@@ -35,6 +35,7 @@ type CombinedItemData = {
   total_price?: number;
   likes_count: number;
   comments_count: number;
+  is_like?: boolean;
   type: "recipe" | "mealkit";
 };
 
@@ -59,6 +60,8 @@ function UserMobile() {
   const { data: likedRecipesData, isFetching: isLikedFetching } =
     useLikedRecipes();
 
+  
+  console.log("LIKED",likedRecipesData)
   useIonViewDidEnter(() => {
     refetchUser();
   });
@@ -83,23 +86,29 @@ function UserMobile() {
       image: item.image,
       dietary_details: item.dietary_details || [],
       total_price: item.total_price,
-      likes_count: item.likes_count || 0,
+      likes_count: item.likes_count ?? 0,
       comments_count: item.comments_count || 0,
+      is_like: item.is_like || false,
       type: type,
     };
   };
 
-  const likedItems = useMemo(() => {
-    if (!likedRecipesData) return [];
-    return [
-      ...(likedRecipesData.liked_recipes?.map((item) =>
-        transformItemData(item.recipe, "recipe")
-      ) || []),
-      ...(likedRecipesData.liked_mealkits?.map((item) =>
-        transformItemData(item.mealkit, "mealkit")
-      ) || []),
-    ];
-  }, [likedRecipesData]);
+const likedItems = useMemo(() => {
+  if (!likedRecipesData) return [];
+  return [
+    ...(likedRecipesData.liked_recipes?.map((item) =>
+      transformItemData(item.recipe, "recipe")
+    ) || []),
+    ...(likedRecipesData.liked_mealkits?.map((item) =>
+      transformItemData({
+        ...item.mealkit,
+        likes_count: item.likes_count,
+        comments_count: item.comments_count,
+        is_like: true
+      }, "mealkit")
+    ) || []),
+  ];
+}, [likedRecipesData]);
 
   const filteredItems = useMemo(() => {
     if (activeIcon === "grid") {
