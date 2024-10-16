@@ -21,6 +21,8 @@ interface Recipe {
   }
   
 interface LikedRecipe {
+comments_count: any;
+likes_count: any;
 recipe: RecipeData;
 liked_at: string;
 }

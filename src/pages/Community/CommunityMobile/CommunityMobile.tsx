@@ -341,6 +341,8 @@ function CommunityMobile() {
         </div>
 
         {renderContent}
+        <div style={{marginBottom: "60px"}}/>
+
 
         {isFilterVisible && (
           <FilterOverlay
