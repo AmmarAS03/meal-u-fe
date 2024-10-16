@@ -4,6 +4,7 @@ import CommentIcon from "../../../public/icon/comment-icon";
 import { formatDistanceToNow } from "date-fns";
 import {useLikeRecipe} from "../../../src/api/recipeApi";
 import {useLikeMealkit} from "../../../src/api/mealkitApi";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Creator {
   name: string;
@@ -36,6 +37,8 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
   const likeRecipeMutation = useLikeRecipe();
   const likeMealkitMutation = useLikeMealkit();
 
+  const queryClient = useQueryClient();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return formatDistanceToNow(date, { addSuffix: true });
@@ -50,6 +53,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
     mutation.mutate(recipe.id, {
       onSuccess: () => {
         console.log(`${isRecipe ? 'Recipe' : 'Mealkit'} liked successfully`);
+        queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
+        queryClient.invalidateQueries({ queryKey: ["recipes"] });
+        queryClient.invalidateQueries({ queryKey: ["community-recipe.list"] });
+        queryClient.invalidateQueries({ queryKey: ['user.likedRecipes'] });
       },
       onError: (error) => {
         console.error(`Failed to like ${isRecipe ? 'recipe' : 'mealkit'}:`, error);
