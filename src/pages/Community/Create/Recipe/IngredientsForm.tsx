@@ -126,7 +126,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           unit_size: product.unit_size,
           description: product.description,
         },
-        preparation_type: null,
+        preparation_type: 0,
         quantity: 1,
         price: Number(product.price_per_unit),
       };

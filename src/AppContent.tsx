@@ -38,6 +38,7 @@ import DeliveryBatchDetails from "./pages/Courier/DeliveryBatchDetails/DeliveryB
 import Dashboard from "./pages/Warehouse/Dashboard/Dashboard";
 import OrderDetail from "./pages/Warehouse/OrderDetail/OrderDetail";
 import AllOrders from "./pages/Warehouse/Orders";
+import CreatorProfile from "./pages/Community/CreatorProfile";
 import DeliveryStatus from "./pages/DeliveryStatus/DeliveryStatus";
 
 const AppContent: React.FC = () => {
@@ -45,8 +46,8 @@ const AppContent: React.FC = () => {
   const location = useLocation();
 
   const shouldShowTabs = () => {
-    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader' ];
-    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/order-status/'];
+    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options'];
+    const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/order-status/', '/community/creator-profile/'];
 
     if (noTabRoutes.includes(location.pathname)) {
       return false;
@@ -80,6 +81,7 @@ const AppContent: React.FC = () => {
               <Route exact path="/community" component={Tab2} />
               <Route path="/community/create/recipe" component={CreateRecipe} />
               <Route path="/community/create/mealkit" component={CreateMealkit} />
+              <Route path="/community/creator-profile/:id" component={CreatorProfile} />
               <Route path="/tab4" component={Orders} />
               <Route path="/user" component={User} />
               <Route path="/edit-profile" component={EditProfile} />
