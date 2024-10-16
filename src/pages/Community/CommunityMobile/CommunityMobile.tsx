@@ -10,7 +10,8 @@ import {
   IonFab,
   IonFabButton,
   IonFabList,
-  IonIcon
+  IonIcon,
+  IonCard
 } from "@ionic/react";
 import FilterIcon from "../../../../public/icon/filter";
 import FilterOverlay from "../../../components/FilterOverlay";
@@ -26,17 +27,17 @@ import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import HomeImageCard from "../../../components/HomeImageCard";
 import CreatorCommunityCard from "../../../components/CreatorCommunityCard/CreatorCommunityCard";
-import SkeletonCreatorCommunityCard from "../../../components/CreatorCommunityCard/SkeletonCreatorCommunityCard";
-import RecipeIcon from "../../../../public/icon/recipe-icon";
 import {
   addOutline,
   restaurantOutline,
   gift,
 } from 'ionicons/icons';
-
 import styles from './CommunityMobile.module.css';
+import { TrendingCreatorProfile, useTrendingCreators } from "../../../api/userApi";
+
 import { useDietaryDetails, useMealTypeList } from "../../../api/productApi";
 import { useOrder } from "../../../contexts/orderContext";
+
 
 
 function CommunityMobile() {
@@ -51,6 +52,13 @@ function CommunityMobile() {
     useCommunityRecipesList();
   const { data: communityMealkit = [], isFetching: isMealkitFetching } =
     useCommunityMealkitList();
+  const { trendingCreatorsMap, isLoading: isCreatorsLoading, isError } = 
+    useTrendingCreators();
+
+  const handleFilter = useCallback(() => {
+    setIsFilterVisible((prev) => !prev);
+  }, []);
+
   const { data: dietaryRequirements = [] } = useDietaryDetails();
   const { data: mealTypes = [] } = useMealTypeList();
   const { meal_types } = useOrder();
@@ -60,18 +68,17 @@ function CommunityMobile() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const buttons = ["All", "Recipe", "Mealkits", "Creators"];
 
-  const handleFilter = useCallback(() => {
-    setIsFilterVisible((prev) => !prev);
-  }, []);
-
   const handleButtonClick = useCallback((button: string) => {
     setSelectedFilter(button);
   }, []);
 
-  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData) => {
+  const handleItemClick = useCallback((item: CommunityRecipeData | CommunityMealkitData | TrendingCreatorProfile) => {
     if ('cooking_time' in item || 'meal_type' in item) {
       // It's a recipe
       router.push(`/recipe-details/${item.id}`);
+    } else if ('email' in item) {
+      // It's a creator
+      router.push(`/community/creator-profile/${item.id}`);
     } else {
       // It's a mealkit
       router.push(`/mealkit-details/${item.id}`);
@@ -85,12 +92,9 @@ function CommunityMobile() {
     );
   }, [communityRecipes, communityMealkit]);
 
-
-  console.log("MEALKIT COMMUNITY",communityMealkit)
-
   const renderContent = useMemo(() => {
 
-    if (isRecipesFetching || isMealkitFetching) {
+    if (isRecipesFetching || isMealkitFetching || isCreatorsLoading) {
       return (
         <>
           <SkeletonCommunityCard />
@@ -119,6 +123,7 @@ function CommunityMobile() {
               display: "flex",
               flexDirection: "column",
               marginTop: "20px",
+              marginBottom: "50px",
               gap: "5px",
             }}
           >
@@ -139,43 +144,32 @@ function CommunityMobile() {
                 <HomeImageCard />
               </div>
             </div>
-
-            <h3
-              style={{ fontSize: "14px", fontWeight: "500", marginTop: "20px" }}
-            >
-              Popular Gluten Free Creators
-            </h3>
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {communityRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
-            </div>
-
-            <h3
-              style={{ fontSize: "14px", fontWeight: "500", marginTop: "10px" }}
-            >
-              Popular Vegan Creator
-            </h3>
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {communityRecipes.map((recipe: CommunityRecipeData) => (
-                  <CreatorCommunityCard key={recipe.id} item={recipe} />
-                ))}
-              </div>
+            
+            <div>
+              {dietaryRequirements.map((dietaryDetail) => (
+                <div key={dietaryDetail.id}>
+                  {trendingCreatorsMap[dietaryDetail.id].length > 0 && (
+                    <div>
+                      <h3>Popular {dietaryDetail.name} Creators</h3>
+                      <div>
+                        <div style={{ overflowX: "auto", width: "100%" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              minWidth: "min-content",
+                            }}
+                          >
+                            {trendingCreatorsMap[dietaryDetail.id].map((creator) => (
+                              <CreatorCommunityCard key={creator.id} item={creator} onClick={() => handleItemClick(creator)}/>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         );

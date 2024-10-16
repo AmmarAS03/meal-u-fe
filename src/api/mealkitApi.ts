@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
+interface CommunityCreator {
+  name: string;
+  profile_picture: string;
+}
+
 interface Creator {
+  id: number;
   name: string;
   profile_picture: string;
 }
@@ -81,7 +87,7 @@ interface MealkitListParams {
 
 export interface CommunityMealkitData {
   id: number;
-  creator: Creator;
+  creator: CommunityCreator;
   name: string;
   description: string;
   created_at: string;
