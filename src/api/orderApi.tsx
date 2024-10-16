@@ -107,58 +107,62 @@ export interface OrderStatusResponse {
     success: boolean;
     message: string;
     data: string;
-  }
-  
-  export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void; }) => {
-    const { getToken } = useAuth();
-    const queryClient = useQueryClient();
-  
-    return useMutation<OrderStatusResponse, Error, number>({
-      mutationFn: async (orderId) => {
-        const token = getToken() || '';
-        const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/paid/`, {
+}
+
+export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void }) => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation<OrderStatusResponse, Error, { orderId: number; useVoucher: boolean }>({
+    mutationFn: async ({ orderId, useVoucher }) => {
+      const token = getToken() || '';
+      const response = await fetch(
+        `http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/paid/`,
+        {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update order status to paid');
+          body: JSON.stringify({ use_voucher: useVoucher }), // Adding the request body here
         }
-  
-        const data: OrderStatusResponse = await response.json();
-  
-        if (!data.success) {
-          throw new Error(data.message || 'Failed to update order status to paid');
-        }
-  
-        return data;
-      },
-      onSuccess: (data) => {
-        queryClient.invalidateQueries({queryKey: ['orders']});
-        options?.onSuccess?.();
-      }
-    })
-  }
+      );
 
-  export interface UserOrders {
-    id: number;
-    order_status: string;
-    delivery_details: CreateOrderPayload;
-    item_names: Array<{ name: string; quantity: number }>;
-    created_at: string;
-    updated_at: string;
-    total: string;
-    delivery_proof_photo?: string | null;
-    user_id: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-        image: string | null;
-    };
+      if (!response.ok) {
+        throw new Error('Failed to update order status to paid');
+      }
+
+      const data: OrderStatusResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update order status to paid');
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      options?.onSuccess?.();
+    },
+  });
+};
+
+export interface UserOrders {
+  id: number;
+  order_status: string;
+  delivery_details: CreateOrderPayload;
+  item_names: Array<{ name: string; quantity: number }>;
+  created_at: string;
+  updated_at: string;
+  total: string;
+  delivery_proof_photo?: string | null;
+  user_id: {
+      id: number;
+      first_name: string;
+      last_name: string;
+      email: string;
+      image: string | null;
+  };
 }
 
 export const useGetUserOrders = (): UseQueryResult<UserOrders[], Error> => {

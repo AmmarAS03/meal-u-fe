@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     IonPage,
     IonHeader,
@@ -16,20 +16,31 @@ import {
 import { chevronForward } from 'ionicons/icons';
 import { useUpdateOrderStatusToPaid } from '../../api/orderApi';
 import { useHistory, useParams } from 'react-router-dom';
+import VoucherCard from './VoucherCard';
 
 const PaymentOptions: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const history = useHistory();
-    const { mutate } = useUpdateOrderStatusToPaid({
+    const updateOrderStatus = useUpdateOrderStatusToPaid({
         onSuccess: () => {
           setTimeout(() => {
             history.push('/tab4'); 
           }, 100);
         }
       });
+    const [useVoucher, setUseVoucher] = useState(false);
+
+    // const { mutate } = useUpdateOrderStatusToPaid({
+    //     onSuccess: () => {
+    //       setTimeout(() => {
+    //         history.push('/tab4'); 
+    //       }, 100);
+    //     }
+    //   });
 
     const changeStatusToPaid = () => {
-        mutate(parseInt(id));
+        // mutate(parseInt(id));
+        updateOrderStatus.mutate({ orderId: parseInt(id), useVoucher: useVoucher})
     }
 
     const handlePayLater = () => {
@@ -70,7 +81,9 @@ const PaymentOptions: React.FC = () => {
                     </button>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-[#0A2533] mb-4 px-4">Other Payment Method</h2>
+                    <VoucherCard useVoucher={useVoucher} setUseVoucher={setUseVoucher} />
+
+                    {/* <h2 className="text-2xl font-bold text-[#0A2533] mb-4 px-4">Other Payment Method</h2>
                     <PaymentMethodCard
                         icon="/payment/mastercard-visa.svg"
                         name="Mastercard/VISA"
@@ -85,7 +98,7 @@ const PaymentOptions: React.FC = () => {
                         icon="/payment/money.svg"
                         name="Cash on Delivery"
                         details="Pay in Cash"
-                    />
+                    /> */}
                 </div>
                 <div className="fixed bottom-0 left-0 right-0 bg-white p-4 z-50 flex flex-col w-full items-center gap-2.5 rounded-t-3xl">
                     <button 

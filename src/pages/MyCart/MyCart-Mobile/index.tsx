@@ -46,15 +46,15 @@ const MyCartMobile: React.FC = () => {
     }
   }, [deliveryDetails.deliveryLocation])
 
-  useEffect(() => {
-    console.log("delivery location: ", deliveryDetails.deliveryLocation)
-    console.log("delivery time: ", deliveryDetails.deliveryTime)
-    console.log("delivery date: ", deliveryDetails.deliveryDate)
-  }, [deliveryDetails])
+  // useEffect(() => {
+  //   console.log("delivery location: ", deliveryDetails.deliveryLocation)
+  //   console.log("delivery time: ", deliveryDetails.deliveryTime)
+  //   console.log("delivery date: ", deliveryDetails.deliveryDate)
+  // }, [deliveryDetails])
   
   useEffect(() => {
     const calculateTotal = () => {
-        const newTotal = subTotal + 10;
+        const newTotal = subTotal + parseInt(deliveryLocationDetails.delivery_fee);
         setTotal(newTotal);
     };
     calculateTotal();
