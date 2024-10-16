@@ -30,6 +30,7 @@ import {
 import { CategoryData, useCategoriesList } from "../api/categoryApi";
 import { useQueries } from "@tanstack/react-query";
 import { useAuth } from "../contexts/authContext";
+import { max, parse } from "date-fns";
 
 interface Filters {
   deliveryDate: string | null;
@@ -62,6 +63,7 @@ interface OrderContextProps {
   >;
   fillDeliveryLocationDetails: (id: number) => void;
   allDeliveryTimeSlots: DeliveryTimeSlot[] | undefined;
+  latestTimeSlot: DeliveryTimeSlot | null;
   deliveryTimeSlotDetails: DeliveryTimeSlot;
   setDeliveryTimeSlotDetails: React.Dispatch<
     React.SetStateAction<DeliveryTimeSlot>
@@ -99,6 +101,27 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
   const { mutate: createRecipe } = useCreateRecipe();
   const { data: allDeliveryLocations } = useDeliveryLocations();
   const { data: allDeliveryTimeSlots } = useDeliveryTimeSlots();
+
+  // delivery time slot with the latest cut off time
+  const [latestTimeSlot, setLatestTimeSlot] = useState<DeliveryTimeSlot|null>(null);
+  
+  useEffect(() => {
+    if (allDeliveryTimeSlots) {
+      const cutOffValues = allDeliveryTimeSlots.map(slot =>
+        parse(slot.cut_off, "HH:mm:ss", new Date())
+      );
+      const latestCutOff = max(cutOffValues);
+  
+      const newLatestTimeSlot = allDeliveryTimeSlots.find(
+        (slot) =>
+          parse(slot.cut_off, "HH:mm:ss", new Date()).getTime() === latestCutOff.getTime()
+      );
+  
+      if (newLatestTimeSlot) {
+        setLatestTimeSlot(newLatestTimeSlot);
+      }
+    }
+  }, [allDeliveryTimeSlots]);
 
   const [deliveryDetails, setDeliveryDetails] = useState({
     deliveryLocation: -1,
@@ -254,6 +277,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
         fillDeliveryLocationDetails,
         allDeliveryLocations,
         allDeliveryTimeSlots,
+        latestTimeSlot,
         deliveryTimeSlotDetails,
         setDeliveryTimeSlotDetails,
         fillDeliveryTimeSlotDetails,
