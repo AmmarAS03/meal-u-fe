@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export interface CategoryData {
   id: number;
   name: string;
@@ -8,7 +10,7 @@ export interface CategoryData {
 }
 
 const fetchCategories = async (token: string): Promise<CategoryData[]> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/categories/', {
+  const response = await fetch(`${apiBaseUrl}/groceries/categories/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

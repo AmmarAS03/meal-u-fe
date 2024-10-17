@@ -4,6 +4,8 @@ import { useMutation, UseMutationResult, useQuery, useQueries, useQueryClient, U
 import { useAuth } from "../contexts/authContext";
 import { DietaryDetail, useDietaryDetails } from "./productApi";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export interface UserProfile {
   id: number;
   email: string;
@@ -89,7 +91,7 @@ export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
   const token = getToken() || '';
 
   const fetchUserProfile = async (): Promise<UserProfile> => {
-    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+    const url = `${apiBaseUrl}/users/user-profile/`;
 
     const response = await fetch(url, {
       headers: {
@@ -124,7 +126,7 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
   return useMutation<UserProfile, Error, UpdateUserProfilePayload>({
     mutationFn: async (updatedProfile) => {
       const token = getToken() || '';
-      const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+      const url = `${apiBaseUrl}/users/user-profile/`;
 
       // Prepare the body as a JSON object
       const body = {
@@ -178,7 +180,7 @@ export const useCreatorProfile = (userId: number): UseQueryResult<UserProfile, E
   const token = getToken() || "";
 
   const fetchCreatorProfile = async (): Promise<UserProfile> => {
-    const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/users/creator-profile/${userId}`, {
+    const response = await fetch(`${apiBaseUrl}/users/creator-profile/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -226,7 +228,7 @@ export const useTrendingCreators = () => {
     const token = getToken();
     if (!token) throw new Error('Token missing');
 
-    const url = `https://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-creator/?dietary_details=${encodeURIComponent(dietaryDetailId as number)}`;
+    const url = `${apiBaseUrl}/community/trending-creator/?dietary_details=${encodeURIComponent(dietaryDetailId as number)}`;
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -275,7 +277,7 @@ export const useTrendingCreators = () => {
     const token = getToken() || '';
   
     const fetchLikedRecipes = async (): Promise<LikedRecipesResponse> => {
-      const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/community/user-likes/';
+      const url = `${apiBaseUrl}/community/user-likes/`;
   
       const response = await fetch(url, {
         headers: {
