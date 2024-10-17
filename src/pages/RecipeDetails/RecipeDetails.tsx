@@ -38,6 +38,7 @@ import {
   RecipeData,
   useAddRecipeComment,
   useRecipeComments,
+  useRecipeStats,
 } from "../../api/recipeApi";
 import { useAuth } from "../../contexts/authContext";
 import { BsPencilSquare } from "react-icons/bs";
@@ -53,6 +54,7 @@ const RecipeDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const { data: recipeStats, isFetching: isRecipeStatsFetching } = useRecipeStats(parseInt(id));
 
   const { getToken } = useAuth();
   const token = getToken();
@@ -212,7 +214,7 @@ const RecipeDetails: React.FC = () => {
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
                 <IonIcon icon={heartOutline} className="w-6 h-6" />
-                <IonText>N/A</IonText>
+                <IonText>{recipeStats?.likes_count}</IonText>
               </div>
               <div className="flex items-center gap-2">
                 <IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
