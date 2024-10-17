@@ -65,6 +65,9 @@ function UserMobile() {
   } = useUserProfile() as {data: User | undefined, isLoading: boolean, error: any, refetch: any};
   const [activeIcon, setActiveIcon] = useState("grid");
 
+
+  console.log("DATA USER",user)
+
   const creatorId = user ? user.id : 0;
   const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } =
     useRecipesByCreator(creatorId);
