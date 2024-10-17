@@ -68,8 +68,8 @@ export const useProductList = (params: ProductListParams): UseQueryResult<Produc
 
   const fetchProduct = async (): Promise<ProductData[]> => {
     const url = params.search && params.search !== "Show All"
-      ? `http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/?search=${encodeURIComponent(params.search)}`
-      : 'http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/';
+      ? `https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/?search=${encodeURIComponent(params.search)}`
+      : 'https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/';
 
     const response = await fetch(url, {
       headers: {
@@ -103,7 +103,7 @@ export const fetchProductDetails = async (productId: number, token: string): Pro
     throw new Error('No authentication token available');
   }
 
-  const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/product/${productId}/`, {
+  const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/product/${productId}/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -132,7 +132,7 @@ export const useDietaryDetails = (): UseQueryResult<DietaryDetail[], Error> => {
   const token = getToken() || '';
 
   const fetchDietaryDetails = async (): Promise<DietaryDetail[]> => {
-    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/dietary-details/';
+    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/dietary-details/';
 
     const response = await fetch(url, {
       headers: {
@@ -171,7 +171,7 @@ export const useUnitList = (): UseQueryResult<UnitData[], Error> => {
   const token = getToken() || '';
 
   const fetchUnits = async (): Promise<UnitData[]> => {
-    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/units';
+    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/units';
 
     const response = await fetch(url, {
       headers: {
@@ -210,7 +210,7 @@ export const useMealTypeList = (): UseQueryResult<MealType[], Error> => {
   const token = getToken() || '';
 
   const fetchMealTypes = async (): Promise<MealType[]> => {
-    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/meal-types';
+    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/community/meal-types';
 
     const response = await fetch(url, {
       headers: {

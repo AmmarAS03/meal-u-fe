@@ -82,7 +82,7 @@ export const useCart = (): UseQueryResult<CartData, Error> => {
 
   const fetchCart = async (): Promise<CartData> => {
     const response = await fetch(
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -172,7 +172,7 @@ export const useAddCartItem = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
         {
           method: "POST",
           headers: {
@@ -209,7 +209,7 @@ export const useUpdateCartItem = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
         {
           method: "PUT",
           headers: {
@@ -246,7 +246,7 @@ export const useDeleteCartItem = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
         {
           method: "DELETE",
           headers: {
@@ -288,7 +288,7 @@ export const useDeleteCartIngredient = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
         {
           method: "DELETE",
           headers: {
@@ -329,7 +329,7 @@ export const useDeleteCartRecipe = () => {
   return useMutation<CartData, Error, DeleteCartRecipePayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch("http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      const response = await fetch("https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
       {
         method: "DELETE",
         headers: {
@@ -369,7 +369,7 @@ export const useDeleteCartMealkit = () => {
   return useMutation<CartData, Error, DeleteCartMealkitPayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch("http://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      const response = await fetch("https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
       {
         method: "DELETE",
         headers: {

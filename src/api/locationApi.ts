@@ -17,7 +17,7 @@ export interface LocationData {
 }
 
 const fetchLocation = async (token: string): Promise<LocationData[]> => {
-  const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-locations/', {
+  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-locations/', {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
