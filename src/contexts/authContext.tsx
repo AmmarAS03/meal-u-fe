@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/auth/login/', {
+      const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
