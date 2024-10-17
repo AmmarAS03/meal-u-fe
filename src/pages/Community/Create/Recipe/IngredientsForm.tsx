@@ -4,6 +4,7 @@ import {
   useCallback,
   useRef,
   useEffect,
+  SetStateAction,
 } from "react";
 import {
   IonCard,
@@ -126,7 +127,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           unit_size: product.unit_size,
           description: product.description,
         },
-        preparation_type: 0,
+        preparation_type: null,
         quantity: 1,
         price: Number(product.price_per_unit),
       };
@@ -212,7 +213,11 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     const category = categories?.find((category) => category.name === product?.category_id)
     return category!.id;
   }
-  
+
+  function getPrepTypeNameFromId(productId: number, prepTypeId: number): string {
+    const data = prepTypeMap[getCategoryIdFromProductId(productId)].find((prepType) => prepType.id === prepTypeId);
+    return data!.name;
+  }  
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -258,47 +263,48 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
               <IonCardSubtitle>{ingredient.ingredient.name}</IonCardSubtitle>
             </IonCardHeader>
             <IonCardContent>
-            <div className="flex items-center gap-x-3">
-                    <div className="flex-auto">
-                      <IonInput
-                        type="number"
-                        value={ingredient.ingredient.unit_size}
-                        placeholder="Amount"
-                        onIonChange={(e) =>
-                          handleAmountChange(ingredient.ingredient.product_id, e.detail.value!)
-                        }
-                        fill="outline"
-                      />
-                    </div>
-                    <div className="flex-none">
-                      <IonText>
-                        Unit: {getUnitFromId(ingredient.ingredient.unit_id)}
-                      </IonText>
-                    </div>
-                    <div className="flex-none">
-                      <IonChip
-                        onClick={() => handleIngredientRemove(ingredient.ingredient.product_id)}
-                        color="danger"
-                      >
-                        <IonLabel>Remove</IonLabel>
-                      </IonChip>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-x-3 mt-2">
-              <IonSelect
-                value={ingredient.preparation_type}
-                placeholder="Select preparation type"
-                onIonChange={(e) => handlePrepTypeChange(ingredient.ingredient.product_id, e.detail.value)}
-              >
-                <IonSelectOption value={null}>None</IonSelectOption>
-                {ingredient && 
-                 prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)]?.map((prepType) => (
-                  <IonSelectOption key={prepType.id} value={prepType.name}>
-                    {prepType.name}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
-            </div>
+              <div className="flex items-center gap-x-3">
+                <div className="flex-auto">
+                  <IonInput
+                    type="number"
+                    value={ingredient.ingredient.unit_size}
+                    placeholder="Amount"
+                    onIonChange={(e) =>
+                      handleAmountChange(ingredient.ingredient.product_id, e.detail.value!)
+                    }
+                    fill="outline"
+                  />
+                </div>
+                <div className="flex-none">
+                  <IonText>
+                    Unit: {getUnitFromId(ingredient.ingredient.unit_id)}
+                  </IonText>
+                </div>
+                <div className="flex-none">
+                  <IonChip
+                    onClick={() => handleIngredientRemove(ingredient.ingredient.product_id)}
+                    color="danger"
+                  >
+                    <IonLabel>Remove</IonLabel>
+                  </IonChip>
+                </div>
+              </div>
+              <div className="flex items-center gap-x-3 mt-2">
+                { prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)].length > 0 && (
+                  <IonSelect
+                  value={ingredient.preparation_type}
+                  placeholder={ingredient.preparation_type ? getPrepTypeNameFromId(ingredient.ingredient.product_id, ingredient.preparation_type) : "Select preparation type"}
+                  onIonChange={(e) => handlePrepTypeChange(ingredient.ingredient.product_id, e.detail.value)}
+                  >
+                    {ingredient && 
+                      prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)]?.map((prepType) => (
+                    <IonSelectOption key={prepType.id} value={prepType.name}>
+                      {prepType.name}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+                )}
+              </div>
             </IonCardContent>
           </IonCard>
         ))}

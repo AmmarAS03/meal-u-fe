@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { CreateRecipePayload } from '../../../../api/recipeApi';
+import { useOrder } from '../../../../contexts/orderContext';
+import { useDietary } from '../../../../contexts/dietaryContext';
+import { useDietaryDetails } from '../../../../api/productApi';
 
 interface OverviewProps {
   state: CreateRecipePayload;
@@ -7,7 +10,13 @@ interface OverviewProps {
 
 const Overview: React.FC<OverviewProps> = ({ state }) => {
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const { getMealTypeFromId, getUnitFromId } = useOrder();
+  const { data: dietaryRequirements } = useDietaryDetails();
 
+  const findDietaryFromId = (id: number) => {
+    const data = dietaryRequirements?.find((item) => item.id === id);
+    return data?.name;
+  }
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
@@ -21,8 +30,8 @@ const Overview: React.FC<OverviewProps> = ({ state }) => {
             <p className="mb-2"><span className="font-semibold">Name:</span> {state.recipe.name}</p>
             <p className="mb-2"><span className="font-semibold">Description:</span> {state.recipe.description}</p>
             <p className="mb-2"><span className="font-semibold">Cooking Time:</span> {state.recipe.cooking_time} minutes</p>
-            <p className="mb-2"><span className="font-semibold">Serving Size:</span> {state.recipe.serving_size}</p>
-            <p className="mb-2"><span className="font-semibold">Meal Type:</span> {state.recipe.meal_type}</p>
+            <p className="mb-2"><span className="font-semibold">Serving Size:</span> {state.recipe.serving_size} portions</p>
+            <p className="mb-2"><span className="font-semibold">Meal Type:</span> {getMealTypeFromId(state.recipe.meal_type)}</p>
           </div>
         );
       case 'cooking':
@@ -41,7 +50,7 @@ const Overview: React.FC<OverviewProps> = ({ state }) => {
           <div className="p-4 bg-gray-50">
             <ul className="list-disc list-inside">
               {state.ingredients.map((ingredient, index) => (
-                <li key={index} className="mb-1">{ingredient.ingredient.name} - {ingredient.ingredient.unit_size} {ingredient.ingredient.unit_id}</li>
+                <li key={index} className="mb-1">{ingredient.ingredient.name} - {ingredient.ingredient.unit_size} {getUnitFromId(ingredient.ingredient.unit_id)}</li>
               ))}
             </ul>
           </div>
@@ -51,7 +60,7 @@ const Overview: React.FC<OverviewProps> = ({ state }) => {
           <div className="p-4 bg-gray-50">
             <ul className="list-disc list-inside">
               {state.dietary_details.map((detail, index) => (
-                <li key={index} className="mb-1">{detail}</li>
+                <li key={index} className="mb-1">{findDietaryFromId(parseInt(detail))}</li>
               ))}
             </ul>
           </div>

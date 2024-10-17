@@ -256,7 +256,7 @@ export interface IngredientRecipe {
     unit_size: string;
     description?: string | null;
   };
-  preparation_type: PreparationType | number | null;
+  preparation_type: number | null;
   quantity: number;
   price: number;
 }
@@ -306,7 +306,7 @@ export interface CreateRecipePayload {
     meal_type: number;
     instructions: string[];
   };
-  ingredients: Ingredient[];
+  ingredients: IngredientRecipe[];
   dietary_details: string[];
   image: string | null;
 }
