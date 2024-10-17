@@ -1,6 +1,8 @@
 import { useQuery, UseQueryResult, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 interface DeliveryLocation {
   id: number;
   name: string;
@@ -77,7 +79,7 @@ interface OrdersResponse {
     const token = getToken() || '';
   
     const fetchOrders = async (): Promise<OrdersByDate> => {
-      const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/warehouse/', {
+      const response = await fetch(`${apiBaseUrl}/orders/warehouse/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -109,7 +111,7 @@ interface OrdersResponse {
     return useMutation<UpdateOrderStatusResponse, Error, number>({
       mutationFn: async (orderId: number) => {
         const token = getToken() || '';
-        const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivering/`, {
+        const response = await fetch(`${apiBaseUrl}/orders/${orderId}/status/delivering/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -140,7 +142,7 @@ interface OrdersResponse {
         const formData = new FormData();
         formData.append('photo_proof', photoProof);
   
-        const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivered/`, {
+        const response = await fetch(`${apiBaseUrl}/orders/${orderId}/status/delivered/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

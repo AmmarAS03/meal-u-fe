@@ -127,7 +127,7 @@ const CreateRecipe: React.FC = () => {
       state.recipe.serving_size > 0 &&
       
       // Instructions section
-      state.recipe.instructions.length > 0 &&
+      // state.recipe.instructions.length > 0 &&
       
       // Ingredients section
       state.ingredients.length > 0 &&

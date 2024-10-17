@@ -7,6 +7,8 @@ import {
 import { useAuth } from "../contexts/authContext";
 import { ProductData } from "./productApi";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 // Interfaces for the API response structure
 
 interface Ingredient {
@@ -81,14 +83,11 @@ export const useCart = (): UseQueryResult<CartData, Error> => {
   const token = getToken() || "";
 
   const fetchCart = async (): Promise<CartData> => {
-    const response = await fetch(
-      "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${apiBaseUrl}/cart/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch cart");
@@ -171,17 +170,14 @@ export const useAddCartItem = () => {
   return useMutation<CartData, Error, AddCartItemPayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch(
-        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/cart/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to add cart item");
@@ -208,17 +204,14 @@ export const useUpdateCartItem = () => {
   return useMutation<CartData, Error, UpdateCartItemPayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch(
-        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/cart/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update cart item");
@@ -246,7 +239,7 @@ export const useDeleteCartItem = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        `${apiBaseUrl}/cart/`,
         {
           method: "DELETE",
           headers: {
@@ -288,7 +281,7 @@ export const useDeleteCartIngredient = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+        `${apiBaseUrl}/cart/`,
         {
           method: "DELETE",
           headers: {
@@ -329,7 +322,7 @@ export const useDeleteCartRecipe = () => {
   return useMutation<CartData, Error, DeleteCartRecipePayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch("https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      const response = await fetch(`${apiBaseUrl}/cart/`,
       {
         method: "DELETE",
         headers: {
@@ -369,7 +362,7 @@ export const useDeleteCartMealkit = () => {
   return useMutation<CartData, Error, DeleteCartMealkitPayload>({
     mutationFn: async (payload) => {
       const token = getToken() || "";
-      const response = await fetch("https://meal-u-api.nafisazizi.com:8001/api/v1/cart/",
+      const response = await fetch(`${apiBaseUrl}/cart/`,
       {
         method: "DELETE",
         headers: {

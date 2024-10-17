@@ -1,6 +1,8 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 interface DeliveryLocation {
   id: number;
   name: string;
@@ -118,7 +120,7 @@ export interface WarehouseOrdersData {
 }
 
 const fetchWarehouseOrders = async (token: string): Promise<WarehouseOrdersData> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/warehouse/', {
+  const response = await fetch(`${apiBaseUrl}/orders/warehouse/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -149,7 +151,7 @@ export const useWarehouseOrders = (): UseQueryResult<WarehouseOrdersData, Error>
 };
 
 const fetchOrderDetails = async (token: string, orderId: number): Promise<OrderDetailsData> => {
-  const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/order-details/${orderId}/`, {
+  const response = await fetch(`${apiBaseUrl}/orders/order-details/${orderId}/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

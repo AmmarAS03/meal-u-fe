@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export interface LocationData {
   id: number;
   name: string;
@@ -17,7 +19,7 @@ export interface LocationData {
 }
 
 const fetchLocation = async (token: string): Promise<LocationData[]> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-locations/', {
+  const response = await fetch(`${apiBaseUrl}/orders/delivery-locations/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
