@@ -32,9 +32,10 @@ interface Creator {
 interface CommunityCardProps {
   recipe: CombinedItemData | CommunityRecipeData | CommunityMealkitData;
   onClick?: () => void;
+  onLike?: () => void; 
 }
 
-const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
+const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick, onLike}) => {
   const likeRecipeMutation = useLikeRecipe();
   const likeMealkitMutation = useLikeMealkit();
 
@@ -58,7 +59,11 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
         queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
         queryClient.invalidateQueries({ queryKey: ["recipes"] });
         queryClient.invalidateQueries({ queryKey: ["community-recipe.list"] });
+        queryClient.invalidateQueries({ queryKey: ["mealkit"] });
         queryClient.invalidateQueries({ queryKey: ['user.likedRecipes'] });
+        if (onLike) {
+          onLike();
+        }
       },
       onError: (error) => {
         console.error(`Failed to like ${isRecipe ? 'recipe' : 'mealkit'}:`, error);

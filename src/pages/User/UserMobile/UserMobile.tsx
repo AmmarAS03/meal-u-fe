@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   IonHeader,
   IonContent,
@@ -74,7 +74,7 @@ function UserMobile() {
     data: communityRecipes = [],
     isFetching: isCommunityRecipesFetching,
   } = useCommunityRecipesList();
-  const { data: likedRecipesData, isFetching: isLikedFetching } =
+  const { data: likedRecipesData, isFetching: isLikedFetching, refetch: refetchLikedRecipes } =
     useLikedRecipes();
 
   useIonViewDidEnter(() => {
@@ -141,12 +141,15 @@ function UserMobile() {
       const userRecipeIds = new Set(userRecipes.map((recipe) => recipe.id));
       return communityRecipes
         .filter((recipe) => userRecipeIds.has(recipe.id))
-        .map((recipe) => transformItemData(recipe, "recipe"));
+        .map((recipe) => transformItemData(recipe, "recipe"))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (activeIcon === "heart") {
       return likedItems;
     }
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
+
+  console.log(filteredItems)
 
   const handleEditProfile = () => {
     history.push("/edit-profile");
@@ -173,6 +176,13 @@ function UserMobile() {
       console.error('Logout failed:', error);
     }
   };
+
+  const handleLikeUpdate = useCallback(() => {
+    refetchLikedRecipes();
+    // Optionally, you might want to refetch other data as well
+    // For example, if the like count affects the community recipes list:
+    // refetchCommunityRecipes();
+  }, [refetchLikedRecipes]);
 
   return (
     <IonPage>
@@ -320,7 +330,7 @@ function UserMobile() {
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div style={{ width: "100%" }} key={item.id}>
-                <CommunityCard recipe={item} onClick={() => navigateToContent(item)}/>
+                <CommunityCard recipe={item} onClick={() => navigateToContent(item)} onLike={handleLikeUpdate}/>
               </div>
             ))
           ) : (
