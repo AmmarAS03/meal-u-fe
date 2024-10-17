@@ -41,6 +41,8 @@ import AllOrders from "./pages/Warehouse/Orders";
 import CreatorProfile from "./pages/Community/CreatorProfile";
 import DeliveryStatus from "./pages/DeliveryStatus/DeliveryStatus";
 import DesktopNavbar from "./components/NavigationBar/DesktopNavbar";
+import SignUp from "./pages/SignUp/SignUp";
+import AddCardPage from "./pages/AddCard/AddCard";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -57,7 +59,7 @@ const AppContent: React.FC = () => {
   }, []);
 
   const shouldShowTabs = () => {
-    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options', '/edit-profile'];
+    const noTabRoutes = ['/categories', '/mycart', '/login', '/qr-reader', '/payment-options', '/edit-profile', '/signup', '/add-card'];
     const noTabPrefixes = ['/order/', '/product-details/', '/recipe-details/', '/payment-options/', '/mealkit-details/', '/courier/delivery/', '/courier/pickup/', '/courier/confirm-pickup/', '/courier/confirm-delivery/', '/community/create/', '/order-status/', '/community/creator-profile/'];
 
     if (noTabRoutes.includes(location.pathname)) {
@@ -102,6 +104,7 @@ const AppContent: React.FC = () => {
               <Route path="/recipe-details/:id" component={RecipeDetails} />
               <Route path="/product-details/:id" component={ProductDetails} />
               <Route path="/payment-options/:id" component={PaymentOptions} />
+              <Route path="/add-card" component={AddCardPage} />
               <Route path="/courier/home" component={CourierHome} />
               <Route path="/courier/:type/:id" component={CourierDelivery} />
               <Route path="/courier/confirm-pickup/:type/:id" component={ConfirmPickup} />
@@ -122,6 +125,7 @@ const AppContent: React.FC = () => {
         ) : (
           <IonRouterOutlet>
             <Route path="/login" component={Login} />
+            <Route path="/signup" component={SignUp} />
             <Route exact path="/">
               <Redirect to="/login" />
             </Route>
