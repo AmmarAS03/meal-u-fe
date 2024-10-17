@@ -30,7 +30,7 @@ import {
 import { CategoryData, useCategoriesList } from "../api/categoryApi";
 import { useQueries } from "@tanstack/react-query";
 import { useAuth } from "../contexts/authContext";
-import { max, parse } from "date-fns";
+import { addDays, isPast, max, parse } from "date-fns";
 import { useGetUserOrders } from "../api/orderApi";
 
 interface Filters {
@@ -136,7 +136,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
   const [deliveryDetails, setDeliveryDetails] = useState({
     deliveryLocation: -1,
     deliveryTime: -1,
-    deliveryDate: new Date(),
+    deliveryDate: addDays(new Date(), 1),
   });
 
   const [deliveryLocationDetails, setDeliveryLocationDetails] = useState({

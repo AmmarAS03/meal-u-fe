@@ -22,18 +22,15 @@ const ModalDate = ({ dismiss }: { dismiss: (data?: Date | null, role?: string) =
   
   const today = new Date();
   const tomorrow = addDays(today, 1);
-  const [minDate, setMinDate] = useState(today);
+  const [minDate, setMinDate] = useState(tomorrow);
   
   // find timeslot with the latest cutoff time
   if (latestTimeSlot) {
     const latestCutOffToday = parse(latestTimeSlot.cut_off, "HH:mm:ss", today);
     const isCurrentTimePast = isPast(latestCutOffToday);
-    if (isCurrentTimePast) {
-      setMinDate(tomorrow);
+    if (!isCurrentTimePast) {
+      setMinDate(today);
     }
-  } else {
-    // set min date to tomorrow to be safe
-    setMinDate(tomorrow);
   }
 
   const formattedMinDate = format(minDate, "yyyy-MM-dd'T'HH:mm:ss");
@@ -67,20 +64,22 @@ const ModalDate = ({ dismiss }: { dismiss: (data?: Date | null, role?: string) =
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <div className="w-full">
-          <IonLabel>Pick Delivery Date</IonLabel>
-          <IonDatetime
-            ref={inputRef}
-            presentation="date"
-            min={formattedMinDate} // set min date according to current time
-            onIonChange={(e) => {
-              const value = e.detail.value;
-              if (typeof value === 'string') {
-                const dateValue = new Date(value);
-                setSelectedDate(dateValue);
-              }
-            }}
-          />
+        <div className="w-full h-full flex justify-center">
+          <div className="flex flex-col items-center">
+            <IonLabel>Pick Delivery Date</IonLabel>
+            <IonDatetime
+              ref={inputRef}
+              presentation="date"
+              min={formattedMinDate}
+              onIonChange={(e) => {
+                const value = e.detail.value;
+                if (typeof value === 'string') {
+                  const dateValue = new Date(value);
+                  setSelectedDate(dateValue);
+                }
+              }}
+            />
+          </div>
         </div>
       </IonContent>
     </IonPage>
@@ -107,8 +106,8 @@ function DateModal() {
   }
 
   return (
-    <IonButton expand="block" onClick={openModal}>
-      Open Date Picker
+    <IonButton color="light" expand="block" onClick={openModal}>
+      Set
     </IonButton>
   );
 }
