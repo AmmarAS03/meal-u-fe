@@ -265,9 +265,6 @@ const MealkitDetails: React.FC = () => {
                     >
                         {addCartItem.isPending ? 'Adding...' : `Add Mealkit to cart ($${mealkit.total_price.toFixed(2)})`}
                     </button>
-                    <div className="w-12 h-12 flex items-center justify-center font-sans">
-                        <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
-                    </div>
                 </div>
                 <IonToast
                     isOpen={showToast}

@@ -390,9 +390,6 @@ const RecipeDetails: React.FC = () => {
               ? "Adding..."
               : `Add Recipe to cart ($${recipe.total_price.toFixed(2)})`}
           </button>
-          <div className="w-12 h-12 flex items-center justify-center font-sans">
-            <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
-          </div>
         </div>
       </IonContent>
       <IonToast
