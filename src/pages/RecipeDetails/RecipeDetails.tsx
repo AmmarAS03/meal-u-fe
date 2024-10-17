@@ -54,8 +54,6 @@ const RecipeDetails: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  console.log(recipe);
-
   const { getToken } = useAuth();
   const token = getToken();
   const addCartItem = useAddCartItem();

@@ -31,6 +31,7 @@ import { CategoryData, useCategoriesList } from "../api/categoryApi";
 import { useQueries } from "@tanstack/react-query";
 import { useAuth } from "../contexts/authContext";
 import { max, parse } from "date-fns";
+import { useGetUserOrders } from "../api/orderApi";
 
 interface Filters {
   deliveryDate: string | null;
@@ -81,6 +82,7 @@ interface OrderContextProps {
   setFilter: (filterName: keyof Filters, value: string | number | null) => void;
   clearFilters: () => void;
   updateDeliveryLocation: (locationId: number) => void;
+  currentOrdersCount: number;
 }
 
 const OrderContext = createContext<OrderContextProps | undefined>(undefined);
@@ -101,6 +103,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
   const { mutate: createRecipe } = useCreateRecipe();
   const { data: allDeliveryLocations } = useDeliveryLocations();
   const { data: allDeliveryTimeSlots } = useDeliveryTimeSlots();
+  const [currentOrdersCount, setCurrentOrdersCount] = useState(0);
+  const { data: orders } = useGetUserOrders();
 
   // delivery time slot with the latest cut off time
   const [latestTimeSlot, setLatestTimeSlot] = useState<DeliveryTimeSlot|null>(null);
@@ -121,7 +125,13 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
         setLatestTimeSlot(newLatestTimeSlot);
       }
     }
-  }, [allDeliveryTimeSlots]);
+    if (orders) {
+      const count = orders.filter(order => 
+        ['pending', 'paid', 'preparing', 'ready to deliver', 'delivering', 'delivered', 'picked_up'].includes(order.order_status)
+      ).length;
+      setCurrentOrdersCount(count);
+    }
+  }, [allDeliveryTimeSlots, orders]);
 
   const [deliveryDetails, setDeliveryDetails] = useState({
     deliveryLocation: -1,
@@ -292,6 +302,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
         setFilter,
         clearFilters,
         updateDeliveryLocation,
+        currentOrdersCount
       }}
     >
       {children}

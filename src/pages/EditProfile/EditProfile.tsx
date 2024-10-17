@@ -6,11 +6,14 @@ import {
   IonTitle,
   IonPage,
   IonAvatar,
+  IonLabel,
   IonInput,
   IonItem,
   IonButton,
   IonIcon,
   IonImg,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import {
   personOutline,
@@ -18,8 +21,10 @@ import {
   arrowBackOutline,
   cloudUploadOutline,
   cameraOutline,
+  checkmarkOutline,
 } from "ionicons/icons";
 import { useUserProfile, useUpdateUserProfile } from "../../api/userApi";
+import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
 import { useHistory } from "react-router-dom";
 import "./EditProfile.css";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
@@ -28,6 +33,7 @@ type FormData = {
   firstName: string;
   lastName: string;
   email: string;
+  gender: string;
 };
 
 interface PhotoState {
@@ -35,21 +41,39 @@ interface PhotoState {
   file: File | null;
 }
 
+interface DietaryRequirement {
+  id: number;
+  name: string;
+}
+
+interface User {
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender?: string;
+  image?: string;
+  dietary_requirements?: DietaryRequirement[];
+}
+
 const DEFAULT_IMAGE = "/img/no-photo.png";
 
 function EditProfile() {
   const history = useHistory();
-  const { data: user, isLoading, error } = useUserProfile();
+  const { data: user, isLoading, error } = useUserProfile() as { data: User | undefined, isLoading: boolean, error: any };
+  const [dietaryRequirements, setDietaryRequirements] = useState<string[]>([]);
+  const { data: dietaryOptions, isLoading: isLoadingDietary } =
+    useDietaryDetails() as {data: DietaryDetail[], isLoading: boolean};
   const updateUserProfile = useUpdateUserProfile();
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
+    gender: "",
   });
   const [photo, setPhoto] = useState<PhotoState>({ dataUrl: null, file: null });
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
 
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -60,34 +84,58 @@ function EditProfile() {
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
+        gender: user.gender || "",
       });
       setPhoto({ dataUrl: user.image || null, file: null });
+      const initialDietaryRequirements = user.dietary_requirements
+        ? user.dietary_requirements.map((req) => req.name)
+        : [];
+
+      setDietaryRequirements(initialDietaryRequirements);
     }
   }, [user]);
 
   const hasChanges = useMemo(() => {
     if (!user) return false;
+
+    const currentDietaryRequirements = user.dietary_requirements
+      ? user.dietary_requirements.map((req) => req.name)
+      : [];
+
     return (
       formData.firstName !== user.first_name ||
       formData.lastName !== user.last_name ||
       formData.email !== user.email ||
-      photo.file !== null
+      formData.gender !== user.gender ||
+      photo.file !== null ||
+      !arraysEqual(dietaryRequirements, currentDietaryRequirements)
     );
-  }, [formData, photo, user]);
+  }, [formData, photo, dietaryRequirements, user]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  function arraysEqual(arr1: any[], arr2: string | any[]) {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((value, index) => value === arr2[index]);
+  }
   const handleUpdateProfile = async () => {
     if (!hasChanges) return;
 
     setIsUpdating(true);
     try {
+      // Map dietary names to their corresponding IDs
+      const selectedDietaryIds = dietaryOptions
+        .filter((option) => dietaryRequirements.includes(option.name))
+        .map((option) => option.id);
+
       const updatedProfile: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
+        gender: formData.gender,
+        dietary_requirements: selectedDietaryIds,
       };
 
       if (photo.file) {
@@ -95,12 +143,12 @@ function EditProfile() {
       }
 
       await updateUserProfile.mutateAsync(updatedProfile);
-      setToastMessage('Profile updated successfully');
+      setToastMessage("Profile updated successfully");
       setShowToast(true);
       history.push("/user");
     } catch (err) {
       console.error("Error updating profile:", err);
-      setToastMessage('Failed to update profile');
+      setToastMessage("Failed to update profile");
       setShowToast(true);
     } finally {
       setIsUpdating(false);
@@ -113,19 +161,21 @@ function EditProfile() {
         quality: 90,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
-        source: source
+        source: source,
       });
-      
+
       if (image.dataUrl) {
         const response = await fetch(image.dataUrl);
         const blob = await response.blob();
-        const file = new File([blob], "profile_photo.jpg", { type: "image/jpeg" });
-        
+        const file = new File([blob], "profile_photo.jpg", {
+          type: "image/jpeg",
+        });
+
         setPhoto({ dataUrl: image.dataUrl, file: file });
       }
     } catch (error) {
-      console.error('Error capturing photo:', error);
-      setToastMessage('Failed to capture photo');
+      console.error("Error capturing photo:", error);
+      setToastMessage("Failed to capture photo");
       setShowToast(true);
     }
   };
@@ -151,7 +201,7 @@ function EditProfile() {
           <IonTitle>Edit Profile</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent className="ion-padding" scroll-y="true">
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2 text-center">
             Profile Photo
@@ -296,6 +346,50 @@ function EditProfile() {
           </IonItem>
         </div>
 
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Gender
+          </label>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {["female", "male", "leave empty"].map((gender) => (
+              <div
+                key={gender}
+                className={`gender-button ${
+                  formData.gender === gender ? "gender-button-selected" : ""
+                }`}
+                onClick={() => handleInputChange("gender", gender)}
+              >
+                {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                {formData.gender === gender && (
+                  <IonIcon icon={checkmarkOutline} slot="end" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Dietary Requirements
+          </label>
+          <IonItem lines="none" className="select-item">
+            <IonSelect
+              value={dietaryRequirements}
+              placeholder="Select Dietary Requirements"
+              multiple={true}
+              onIonChange={(e) => setDietaryRequirements(e.detail.value)}
+            >
+              {isLoadingDietary ? (
+                <IonSelectOption>Loading...</IonSelectOption>
+              ) : (
+                dietaryOptions.map((option) => (
+                  <IonSelectOption key={option.id} value={option.name}>
+                    {option.name}
+                  </IonSelectOption>
+                ))
+              )}
+            </IonSelect>
+          </IonItem>
+        </div>
         <IonButton
           expand="full"
           color="primary"

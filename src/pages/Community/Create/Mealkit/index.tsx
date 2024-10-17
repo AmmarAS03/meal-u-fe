@@ -45,7 +45,6 @@ const CreateMealkit: React.FC = () => {
   const { data: dietaryDetails } = useDietaryDetails();
   const { mutate: handleMealkitCreation } = useCreateMealkit({
     onSuccess: (data) => {
-      console.log("data id: ", data.data.id);
       setTimeout(() => {
         history.replace(`/mealkit-details/${data.data.id}`);
       }, 100);

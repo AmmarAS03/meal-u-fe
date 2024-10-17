@@ -55,3 +55,36 @@
     font-weight: bold;
     border-radius: 20px;
   }
+
+  .input-item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .input-item-focused {
+    border-color: #6c63ff;
+  }
+  
+  .input-item-blur {
+    border-color: #ccc;
+  }
+  
+  .gender-button {
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .gender-button-selected {
+    border-color: #6c63ff;
+    background-color: #f0f0ff;
+  }
+  
+  .select-item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }

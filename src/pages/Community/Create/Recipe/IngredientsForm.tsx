@@ -132,7 +132,6 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
       };
 
       setSelectedIngredients((prev) => [...prev, newIngredient]);
-      console.log("entered ingridient: ", newIngredient);
       dispatch({
         type: "SET_FIELD",
         field: "ingredients",
@@ -174,9 +173,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           const categoryId = getCategoryIdFromProductId(item.ingredient.product_id);
           if (categoryId) {
             const prepTypes = prepTypeMap[categoryId] || [];
-            console.log("prepTypes: ", prepTypes);
             const selectedPrepType = prepTypes.find((type) => type.name === preptype);
-            console.log("selectedpreptype: ", selectedPrepType);
 
             // calculate the new price
             let newPrice;

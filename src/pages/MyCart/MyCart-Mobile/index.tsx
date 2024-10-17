@@ -42,15 +42,9 @@ const MyCartMobile: React.FC = () => {
   useEffect(() => {
     if (deliveryLocationDetails.id !== -1) {
       setDeliveryFee(parseInt(deliveryLocationDetails.delivery_fee))
-      console.log("delivery fee set");
     }
   }, [deliveryDetails.deliveryLocation])
 
-  // useEffect(() => {
-  //   console.log("delivery location: ", deliveryDetails.deliveryLocation)
-  //   console.log("delivery time: ", deliveryDetails.deliveryTime)
-  //   console.log("delivery date: ", deliveryDetails.deliveryDate)
-  // }, [deliveryDetails])
   
   useEffect(() => {
     const calculateTotal = () => {

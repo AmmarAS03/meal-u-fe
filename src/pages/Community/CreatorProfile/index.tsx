@@ -26,6 +26,7 @@ const CreatorProfile: React.FC = () => {
   const [segment, setSegment] = useState(segments[0]);
   const [contentToRender, setContentToRender] = useState<RecipeData[] | MealkitData[]>(creatorRecipes);
 
+
   console.log(creator);
 
   // const handleSegmentChange = (e: CustomEvent) => {
