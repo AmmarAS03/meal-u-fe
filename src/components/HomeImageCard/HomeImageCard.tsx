@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useIonRouter } from "@ionic/react";
 import RecipeIcon from "../../../public/icon/recipe-icon";
 
 interface HomeImageCardProps {
@@ -7,6 +7,7 @@ interface HomeImageCardProps {
   creatorName: string;
   dietaryName: string;
   recipeCount: number;
+  creatorId: number;
 }
 
 const HomeImageCard: React.FC<HomeImageCardProps> = ({
@@ -14,9 +15,18 @@ const HomeImageCard: React.FC<HomeImageCardProps> = ({
   creatorName,
   dietaryName,
   recipeCount,
+  creatorId,
 }) => {
+  const router = useIonRouter();
+
+  const handleClick = () => {
+    router.push(`/community/creator-profile/${creatorId}`);
+  };
   return (
-    <div className="relative w-[65vw] h-30 rounded-3xl overflow-hidden">
+    <div
+      className="relative w-[65vw] h-30 rounded-3xl overflow-hidden cursor-pointer"
+      onClick={handleClick}
+    >
       {/* Background image */}
       <img
         src="/img/HomeCard.png"
@@ -45,8 +55,8 @@ const HomeImageCard: React.FC<HomeImageCardProps> = ({
 
           {/* Followers */}
           <div className="flex items-center gap-1">
-          <div className="w-4 h-4">
-              <RecipeIcon color="#ffffff"/>
+            <div className="w-4 h-4">
+              <RecipeIcon color="#ffffff" />
             </div>
             <span className="text-white text-sm">{recipeCount}</span>
           </div>
