@@ -173,7 +173,6 @@ const MealkitDetails: React.FC = () => {
                             </IonAvatar>
                             <div>
                                 <IonText className="font-bold text-base text-[#0A2533] block">{mealkit.creator.name}</IonText>
-                                <IonText className="text-sm text-gray-600">Followers: N/A</IonText>
                             </div>
                         </div>
                     </div>

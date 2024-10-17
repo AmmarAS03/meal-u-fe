@@ -198,9 +198,6 @@ const RecipeDetails: React.FC = () => {
                 <IonText className="font-bold text-base block">
                   {recipe.creator.name}
                 </IonText>
-                <IonText className="text-sm text-gray-600">
-                  Followers: N/A
-                </IonText>
               </div>
             </div>
           </div>
