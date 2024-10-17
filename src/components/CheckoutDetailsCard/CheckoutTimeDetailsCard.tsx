@@ -12,7 +12,7 @@ interface CheckoutTimeDetailsCardProps {
 const CheckoutTimeDetailsCard: React.FC<CheckoutTimeDetailsCardProps> = (data) => {
   const { deliveryDetails, setDeliveryDetails, latestTimeSlot } = useOrder();
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
-  const { data: deliveryTimeSlot } = useDeliveryTimeSlots();
+  const { data: deliveryTimeSlot = [] } = useDeliveryTimeSlots();
 
   // make sure the cutoff time of the time shown hasn't passed
   const filteredTimeSlot = deliveryTimeSlot?.filter((item) => isFuture(parse(item.cut_off, "HH:mm:ss", new Date(deliveryDetails.deliveryDate))));
@@ -33,9 +33,13 @@ const CheckoutTimeDetailsCard: React.FC<CheckoutTimeDetailsCardProps> = (data) =
                 deliveryTime: e.detail.value,
               }));
               }}>
-            {filteredTimeSlot?.map((data: any) => (
+            {filteredTimeSlot?.length > 0 ? (
+              filteredTimeSlot?.map((data: any) => (
               <IonSelectOption key={data.id} value={data.id}>{data.end_time}</IonSelectOption>
-            ))}
+            ))
+            ) : (
+              <IonSelectOption>No timeslot available for the selected delivery date. Please pick a different delivery date.</IonSelectOption>
+            )}
           </IonSelect>
         </div>
       </div>
