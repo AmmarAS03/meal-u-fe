@@ -68,10 +68,17 @@ interface LikedRecipesResponse {
   liked_recipes: LikedRecipe[];
 }
 
-export interface UpdateUserProfilePayload {
+export interface UserProfile {
+  id: number;
+  email: string;
   first_name: string;
   last_name: string;
-  image: File | "";
+  is_active: boolean;
+  is_staff: boolean;
+  role: string;
+  image: string | null;
+  voucher_credits: string;
+  profile: null | any;
   gender: string;
   dietary_requirements?: number[];
 }
@@ -114,7 +121,6 @@ export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
     enabled: !!token,
   });
 };
-
 
 export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, UpdateUserProfilePayload> => {
   const { getToken } = useAuth();
@@ -207,7 +213,6 @@ export const useUpdateDietaryRequirements = (): UseMutationResult<UserProfile, E
       if (!data.success) {
         throw new Error(data.message || 'Failed to update dietary requirements');
       }
-
       return data.data;
     },
     onSuccess: (data) => {

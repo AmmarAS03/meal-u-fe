@@ -286,7 +286,7 @@ export const useLikeMealkit = (options?: {
 };  
 
 export interface CreateMealkitPayload {
-  image: File | null;
+  image: string | null;
   mealkit: {
     name: string;
     description: string;

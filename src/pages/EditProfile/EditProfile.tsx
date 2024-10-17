@@ -105,6 +105,7 @@ function EditProfile() {
       formData.gender !== user.gender ||
       dietaryRequirementsChanged ||
       photo.file !== null
+
     );
   }, [formData, photo, user]);
 
@@ -120,6 +121,7 @@ function EditProfile() {
       const profileUpdates: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
+        email: formData.email,
         gender: formData.gender,
       };
 
@@ -144,7 +146,6 @@ function EditProfile() {
           dietary_requirements: formData.dietary_requirements,
         });
       }
-
       setToastMessage("Profile updated successfully");
       setShowToast(true);
       history.push("/user");
