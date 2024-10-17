@@ -24,7 +24,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({ currentStep, onPr
       </button>
       <button
         className={`bg-purple-700 text-white font-bold py-2 px-4 rounded ${
-          currentStep === 4 ? 'opacity-50 cursor-not-allowed' : ''
+          currentStep === 5 ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         type="button"
         onClick={onNext}

@@ -1,12 +1,12 @@
 import React, { useReducer, useState, useEffect } from 'react';
-import { IonBackButton, IonButton, IonButtons, IonCheckbox, IonChip, IonContent, IonHeader, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
-import { useRecipesByCreator, useRecipesList } from '../../../../api/recipeApi';
+import { IonAlert, IonButton, IonButtons, IonCheckbox, IonChip, IonContent, IonHeader, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
+import { useRecipesByCreator } from '../../../../api/recipeApi';
 import { useUserProfile } from '../../../../api/userApi';
 import { CreateMealkitPayload, useCreateMealkit } from '../../../../api/mealkitApi';
 import { useDietaryDetails } from '../../../../api/productApi';
 import { useHistory } from 'react-router-dom';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { cloudUploadOutline } from 'ionicons/icons';
+import { chevronBack, cloudUploadOutline } from 'ionicons/icons';
 
 interface MealkitAction {
   type: string;
@@ -55,6 +55,28 @@ const CreateMealkit: React.FC = () => {
   const router = useIonRouter();
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [anyFieldFilled, setAnyFieldFilled] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
+
+  useEffect(() => {
+    const isValid = Boolean(
+      state.image ||
+      state.mealkit.name ||
+      state.mealkit.description ||
+      state.mealkit.dietary_details.length > 0 ||
+      state.mealkit.recipes.length > 0
+    );
+    setAnyFieldFilled(isValid);
+  }, [state]);
+
+  const handleBackClick = () => {
+    if (anyFieldFilled) {
+      setShowAlert(true);
+    } else {
+      history.replace('/community');
+    }
+  };
 
   const handleCreateMealkit = () => {
     if (selectedRecipes.length === 0) {
@@ -124,7 +146,21 @@ const CreateMealkit: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/tab1" />
+            <IonButton onClick={handleBackClick} className="custom-back-button">
+              <IonIcon icon={chevronBack} slot="start" 
+                style={{
+                  fontSize: '24px',
+                  marginRight: '2px'
+                }}
+              />
+              <span
+                style={{
+                  marginLeft: '2px'
+                }}
+              >
+                Back
+              </span>
+            </IonButton>
           </IonButtons>
           <IonTitle>Create Mealkit</IonTitle>
         </IonToolbar>
@@ -228,6 +264,28 @@ const CreateMealkit: React.FC = () => {
           </IonButton>
         </div>
         )}
+        <IonAlert
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        header="Are you sure you want to leave?"
+        message="Any changes you've made will not be saved."
+        buttons={[
+          {
+            text: 'Stay',
+            role: 'cancel',
+            handler: () => {
+              setShowAlert(false);
+            },
+          },
+          {
+            text: 'Leave',
+            role: 'confirm',
+            handler: () => {
+              history.replace('/community');
+            },
+          },
+        ]}
+      />
       </IonContent>
     </IonPage>
   );

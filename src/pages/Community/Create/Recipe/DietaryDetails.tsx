@@ -1,4 +1,4 @@
-import React, { Dispatch, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { IonChip, IonButton, IonLabel } from "@ionic/react";
 import { RecipeAction } from "./index";
 import { CreateRecipePayload } from '../../../../api/recipeApi';

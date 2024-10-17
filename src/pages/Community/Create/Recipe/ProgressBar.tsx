@@ -5,40 +5,34 @@ interface ProgressBarProps {
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep }) => {
+  const steps = ['General', 'Instructions', 'Ingredients', 'Dietary'];
+
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        {/* Step 1 */}
-        <div className="flex flex-col items-center">
-          <div className={`w-4 h-4 rounded-full ${currentStep >= 1 ? 'bg-purple-700' : 'bg-gray-400'}`}></div>
-          <span className="text-xs mt-2">General</span>
-        </div>
-
-        {/* Dashed Line between Step 1 and Step 2 */}
-        <div className="flex-1 h-0.5 border-dashed border-t-2 border-gray-400"></div>
-
-        {/* Step 2 */}
-        <div className="flex flex-col items-center">
-          <div className={`w-4 h-4 rounded-full ${currentStep >= 2 ? 'bg-purple-700' : 'bg-gray-400'}`}></div>
-          <span className="text-xs mt-2">Instructions</span>
-        </div>
-
-        {/* Dashed Line between Step 2 and Step 3 */}
-        <div className="flex-1 h-0.5 border-dashed border-t-2 border-gray-400"></div>
-
-        {/* Step 3 */}
-        <div className="flex flex-col items-center">
-          <div className={`w-4 h-4 rounded-full ${currentStep >= 3 ? 'bg-purple-700' : 'bg-gray-400'}`}></div>
-          <span className="text-xs mt-2">Ingredients</span>
-        </div>
-
-        {/* Dashed Line between Step 3 and Step 4 */}
-        <div className="flex-1 h-0.5 border-dashed border-t-2 border-gray-400"></div>
-
-        {/* Step 4 */}
-        <div className="flex flex-col items-center">
-          <div className={`w-4 h-4 rounded-full ${currentStep >= 4 ? 'bg-purple-700' : 'bg-gray-400'}`}></div>
-          <span className="text-xs mt-2">Dietary</span>
+    <div className="w-full max-w-md mx-auto mb-5">
+      <div className="relative pt-2">
+        {/* Horizontal line */}
+        <div className="absolute top-4 left-0 w-full h-0.5 bg-gray-300"></div>
+        
+        {/* Steps */}
+        <div className="relative flex justify-between">
+          {steps.map((step, index) => (
+            <div key={step} className="flex flex-col items-center">
+              <div 
+                className={`w-4 h-4 rounded-full border-2 border-white ${
+                  index + 1 === currentStep 
+                    ? 'bg-indigo-600' 
+                    : index + 1 < currentStep 
+                      ? 'bg-indigo-600' 
+                      : 'bg-gray-300'
+                } z-10`}
+              ></div>
+              <span className={`text-xs mt-2 ${
+                index + 1 === currentStep ? 'text-indigo-600 font-medium' : 'text-gray-500'
+              }`}>
+                {step}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
