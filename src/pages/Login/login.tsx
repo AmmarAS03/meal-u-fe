@@ -85,78 +85,80 @@ const Login: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="font-sans">
-        <div className="max-w-6xl mx-auto flex flex-row items-center px-5 p-4 mb-4">
-          {!isMobile && (
-            <div className="flex-1 max-w-1/2 max-h-screen">
-              <img
-                src="/img/login-image.png"
-                alt="login image"
-                className="h-[85vh] rounded-2xl"
-              />
-            </div>
-          )}
-
-          <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
-            <h2 className="text-3xl mb-2.5 font-bold">Login</h2>
+        <div className="flex flex-col min-h-screen">
+          <div className="flex-grow max-w-6xl mx-auto flex flex-row items-center px-5 p-4 mb-4">
             {!isMobile && (
-              <p className="mb-5">Hi, let's jump in! 👋</p>
+              <div className="flex-1 max-w-1/2 max-h-screen">
+                <img
+                  src="/img/login-image.png"
+                  alt="login image"
+                  className="h-fit rounded-2xl"
+                />
+              </div>
             )}
 
-            <form onSubmit={handleSubmit} className="w-full">
-              <div className="mb-5">
-                <IconInput
-                  title="Email Address"
-                  onInputHandleChange={handleEmailChange}
-                  leftIcon={<EmailIcon />}
-                  placeholder="Enter Email Address"
-                  width="100%"
-                />
-              </div>
-
-              <div className="mb-5">
-                <IconInput
-                  title="Password"
-                  onInputHandleChange={handlePasswordChange}
-                  leftIcon={<LockIcon />}
-                  rightIcon={<EyeIcon />}
-                  onRightIconClick={togglePasswordVisibility}
-                  placeholder="Enter Password"
-                  width="100%"
-                  type={showPassword ? "text" : "password"}
-                />
-              </div>
-              {error && (
-                <p className="text-red-500 mb-2.5">{error}</p>
+            <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
+              <h2 className="text-3xl mb-2.5 font-bold">Login</h2>
+              {!isMobile && (
+                <p className="mb-5">Hi, let's jump in! 👋</p>
               )}
+
+              <form onSubmit={handleSubmit} className="w-full">
+                <div className="mb-5">
+                  <IconInput
+                    title="Email Address"
+                    onInputHandleChange={handleEmailChange}
+                    leftIcon={<EmailIcon />}
+                    placeholder="Enter Email Address"
+                    width="100%"
+                  />
+                </div>
+
+                <div className="mb-5">
+                  <IconInput
+                    title="Password"
+                    onInputHandleChange={handlePasswordChange}
+                    leftIcon={<LockIcon />}
+                    rightIcon={<EyeIcon />}
+                    onRightIconClick={togglePasswordVisibility}
+                    placeholder="Enter Password"
+                    width="100%"
+                    type={showPassword ? "text" : "password"}
+                  />
+                </div>
+                {error && (
+                  <p className="text-red-500 mb-2.5">{error}</p>
+                )}
+                <IconButton
+                  text={isLoading ? "Logging in..." : "Login"}
+                  textColor="white"
+                  backgroundColor="#7862FC"
+                  hoverColor="#8A7BFF"
+                  onClick={handleSubmit}
+                  width="100%"
+                />
+              </form>
+
+              <p className="mt-5 self-center text-gray-400">
+                Don't have an account?
+              </p>
+
               <IconButton
-                text={isLoading ? "Logging in..." : "Login"}
+                text="Sign Up"
                 textColor="white"
-                backgroundColor="#7862FC"
-                hoverColor="#8A7BFF"
-                onClick={handleSubmit}
+                backgroundColor="#042628"
+                hoverColor="#314647"
+                onClick={handleSignUp}
                 width="100%"
               />
-            </form>
-
-            <p className="mt-5 self-center text-gray-400">
-              Don't have an account?
-            </p>
-
-            <IconButton
-              text="Sign Up"
-              textColor="white"
-              backgroundColor="#042628"
-              hoverColor="#314647"
-              onClick={handleSignUp}
-              width="100%"
-            />
+            </div>
           </div>
+          {!isMobile && (
+            <footer className="w-full text-center text-sm bg-[#7862FC] text-white p-4">
+              Made with ❤️ by DECOBuilder
+            </footer>
+          )}
         </div>
-        {!isMobile && (
-          <footer className="bottom-0 left-0 right-0 text-center text-sm bg-[#7862FC] text-white p-4">
-            Made with ❤️ by DECOBuilder
-          </footer>
-        )}
       </IonContent>
     </IonPage>
   );
