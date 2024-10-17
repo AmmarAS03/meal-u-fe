@@ -1,6 +1,6 @@
 import { MealkitData } from './mealkitApi';
 import { RecipeData } from './recipeApi';
-import { useMutation, UseMutationResult, useQuery, useQueries, useQueryClient, UseQueryResult, QueryFunction, QueryKey, UseMutationOptions } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery, useQueries, useQueryClient, UseQueryResult, QueryFunction, QueryKey } from '@tanstack/react-query';
 import { useAuth } from "../contexts/authContext";
 import { DietaryDetail, useDietaryDetails } from "./productApi";
 
@@ -14,11 +14,9 @@ export interface UserProfile {
   is_active: boolean;
   is_staff: boolean;
   role: string;
-  image: File | null;
+  image: string | null;
   voucher_credits: string;
-  gender: string;
   profile: any;
-  dietary_requirements: DietaryDetail[]
 }
 
 interface Recipe {
@@ -57,12 +55,29 @@ interface LikedRecipesResponse {
 liked_recipes: LikedRecipe[];
 }
 
-export interface UpdateUserProfilePayload {
+export interface UserProfile {
+  id: number;
+  email: string;
   first_name: string;
   last_name: string;
-  image: File | "";
+  is_active: boolean;
+  is_staff: boolean;
+  role: string;
+  image: string | null;
+  voucher_credits: string;
+  profile: null | any;
   gender: string;
-  dietary_requirements: number[];
+  dietary_requirements: [];
+}
+
+
+interface UpdateUserProfilePayload {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  image?: File | string;
+  gender?: string;
+  dietary_requirements?: number[];
 }
 
 interface UpdateUserProfileResponse {
@@ -104,54 +119,46 @@ export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
   });
 };
 
-export const useUpdateUserProfile = (
-  options?: UseMutationOptions<UpdateUserProfileResponse, Error, UpdateUserProfilePayload>
-): UseMutationResult<UpdateUserProfileResponse, Error, UpdateUserProfilePayload> => {
+export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, UpdateUserProfilePayload> => {
   const { getToken } = useAuth();
-  const token = getToken() || '';
   const queryClient = useQueryClient();
 
-  const updateUserProfile = async (
-    payload: UpdateUserProfilePayload
-  ): Promise<UpdateUserProfileResponse> => {
-    const url = `${apiBaseUrl}/users/user-profile/`;
+  return useMutation<UserProfile, Error, UpdateUserProfilePayload>({
+    mutationFn: async (updatedProfile) => {
+      const token = getToken() || '';
+      const url = `${apiBaseUrl}/users/user-profile/`;
 
-    const formData = new FormData();
-    if (payload.image && typeof payload.image !== 'string') {
-      formData.append('image', payload.image);
-    }
+      // Prepare the body as a JSON object
+      const body = {
+        first_name: updatedProfile.first_name,
+        last_name: updatedProfile.last_name,
+        email: updatedProfile.email,
+        gender: updatedProfile.gender,
+        dietary_requirements: updatedProfile.dietary_requirements,
+      };
 
-    const rawPayload = {
-      first_name: payload.first_name,
-      last_name: payload.last_name,
-      gender: payload.gender,
-      dietary_requirements: payload.dietary_requirements,
-    };
-    formData.append('data', JSON.stringify(rawPayload));
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update profile: ${errorText}`);
+      }
 
-    if (!response.ok) {
-      throw new Error('Failed to update user profile');
-    }
+      const data: UpdateUserProfileResponse = await response.json();
 
-    const data: UpdateUserProfileResponse = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update profile');
+      }
 
-    if (!data.success) {
-      throw new Error(data.message || 'Failed to update user profile');
-    }
-
-    return data;
-  };
-
-  return useMutation<UpdateUserProfileResponse, Error, UpdateUserProfilePayload>({
-    mutationFn: updateUserProfile,
+      return data.data;
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(['user.profile'], data);
       queryClient.invalidateQueries({ queryKey: ['user.profile'] });
@@ -159,7 +166,6 @@ export const useUpdateUserProfile = (
     onError: (error) => {
       console.error('Error updating profile:', error);
     },
-    ...options,
   });
 };
 

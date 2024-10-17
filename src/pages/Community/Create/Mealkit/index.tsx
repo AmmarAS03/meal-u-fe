@@ -53,8 +53,7 @@ const CreateMealkit: React.FC = () => {
 
   const router = useIonRouter();
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
   const [anyFieldFilled, setAnyFieldFilled] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -116,12 +115,6 @@ const CreateMealkit: React.FC = () => {
     dispatch({ type: 'SET_FIELD', field: 'dietary_details', value: updatedDietaryDetails });
   }
 
-  const [toast, setToast] = useState({
-    isOpen: false,
-    message: '',
-    isError: false
-  });
-
   const uploadPhoto = async () => {
     try {
       const image = await Camera.getPhoto({
@@ -130,32 +123,11 @@ const CreateMealkit: React.FC = () => {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos
       });
-
-      if (!image.dataUrl) {
-        throw new Error('No image data received');
-      }
-
-      const response = await fetch(image.dataUrl);
-      const blob = await response.blob();
-      const photoFile = new File([blob], "mealkit_image.jpg", { type: "image/jpeg" });
       
-      setPhoto(photoFile);
-      setPhotoUrl(image.dataUrl || null);
-      dispatch({type: "SET_FIELD", field: "image", value: photoFile});
-
-      setToast({
-        isOpen: true,
-        message: 'Image uploaded successfully',
-        isError: false
-      });
-
+      setPhoto(image.dataUrl || null);
+      dispatch({type: "SET_FIELD", field: "image", value: image.dataUrl});
     } catch (error) {
       console.error('Error uploading photo:', error);
-      setToast({
-        isOpen: true,
-        message: error instanceof Error ? error.message : 'Failed to upload photo',
-        isError: true
-      });
     }
   };
 
@@ -203,7 +175,6 @@ const CreateMealkit: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-      <div className="w-full max-w-2xl mx-auto pb-20">
         {usersRecipes.length === 0 ? (
           noRecipeRender()
         ) : (
@@ -214,8 +185,8 @@ const CreateMealkit: React.FC = () => {
             </IonLabel>
             <div className="flex justify-center">
               <div className="w-full max-w-md rounded-lg mb-4 border-4 border-dashed border-[#7862FC] p-2">
-                {photoUrl ? (
-                  <IonImg src={photoUrl} alt="Mealkit Photo" className="w-full rounded-lg shadow-lg" />
+                {photo ? (
+                  <IonImg src={photo} alt="Mealkit Photo" className="w-full rounded-lg shadow-lg" />
                 ) : (
                   <div className="grid grid-cols-1 justify-items-center items-center py-20">
                     <p>No image selected</p>
@@ -337,7 +308,6 @@ const CreateMealkit: React.FC = () => {
           },
         ]}
       />
-      </div>
       </IonContent>
     </IonPage>
   );
