@@ -44,6 +44,7 @@ import { useAuth } from "../../contexts/authContext";
 import { BsPencilSquare } from "react-icons/bs";
 import { useAddCartItem } from "../../api/cartApi";
 import { DietaryProvider, useDietary } from "../../contexts/dietaryContext";
+import { useOrder } from "../../contexts/orderContext";
 
 const RecipeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,6 +56,7 @@ const RecipeDetails: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const { data: recipeStats, isFetching: isRecipeStatsFetching } = useRecipeStats(parseInt(id));
+  const { getUnitFromId } = useOrder();
 
   const { getToken } = useAuth();
   const token = getToken();
@@ -319,7 +321,7 @@ const RecipeDetails: React.FC = () => {
               id={ingredient.ingredient.product_id}
               name={ingredient.ingredient.name}
               image={ingredient.ingredient.image || "/img/no-photo.png"}
-              quantity={`${ingredient.ingredient.unit_size} ${ingredient.ingredient.unit_id}`}
+              quantity={`${ingredient.ingredient.unit_size} ${getUnitFromId(ingredient.ingredient.unit_id)}`}
               price={`$${ingredient.price.toFixed(2)}`}
             />
           ))}
