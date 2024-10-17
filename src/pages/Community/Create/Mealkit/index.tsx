@@ -55,9 +55,19 @@ const CreateMealkit: React.FC = () => {
   const router = useIonRouter();
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [allFieldsFilled, setAllFieldsFilled] = useState(false);
   const [anyFieldFilled, setAnyFieldFilled] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
+
+  useEffect(() => {
+    const isValid = Boolean(
+      state.mealkit.name &&
+      state.mealkit.description &&
+      state.mealkit.dietary_details.length > 0 &&
+      selectedRecipes.length > 0
+    );
+    setAllFieldsFilled(isValid);
+  }, [state, selectedRecipes]);
 
   useEffect(() => {
     const isValid = Boolean(
@@ -258,10 +268,23 @@ const CreateMealkit: React.FC = () => {
               </IonList>
             )}
           </div>
-
-          <IonButton color="tertiary" expand="block" onClick={handleCreateMealkit} disabled={selectedRecipes.length === 0}>
-            Create Mealkit
-          </IonButton>
+          {allFieldsFilled ? (
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+            <div className="flex justify-between max-w-2xl mx-auto">
+            <div className='w-full'>
+              <IonButton
+                color="tertiary"
+                expand="block"
+                onClick={handleCreateMealkit}
+                className="px-4 py-2 rounded-md bg-primary text-white" 
+                disabled={!allFieldsFilled}
+              >
+                Create Mealkit
+              </IonButton>
+            </div>
+            </div>
+            </div>
+          ) : null}
         </div>
         )}
         <IonAlert
