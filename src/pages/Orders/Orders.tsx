@@ -1,12 +1,10 @@
 import React from 'react';
-import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonSpinner, IonText, IonButton } from '@ionic/react';
+import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonSpinner } from '@ionic/react';
 import OrderItem from '../../components/OrderItem/OrderItem';
 import { useGetUserOrders, UserOrders } from '../../api/orderApi';
-import { useHistory } from 'react-router-dom';
 
 const Orders: React.FC = () => {
   const { data: orders, isLoading, error } = useGetUserOrders();
-  const history = useHistory()
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -82,11 +80,6 @@ const Orders: React.FC = () => {
   }
 
   const orderGroups = groupOrders(orders || []);
-  const noOrders = orderGroups.every((section) => section.orders.length === 0);
-
-  const navigateToOrder = () => {
-    history.replace("/categories");
-  }
 
   return (
     <IonPage>
@@ -97,20 +90,7 @@ const Orders: React.FC = () => {
       </IonHeader>
       <IonContent fullscreen className='font-sans'>
         <div className="px-4 py-6 pb-20">
-          {noOrders ? (
-            <div className="flex items-center justify-center w-full h-full">
-              <div className="w-full max-w-md text-center">
-                <IonText>
-                You don't have any orders yet. Ready to start shopping?
-                </IonText>
-                <div className="mt-4">
-                  <IonButton onClick={navigateToOrder}>Explore</IonButton>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-            {orderGroups.map((group, index) => (
+          {orderGroups.map((group, index) => (
             group.orders.length > 0 && (
               <div key={index} className="mb-6">
                 <h2 className="text-xl font-bold mb-3">{group.title}</h2>
@@ -127,8 +107,6 @@ const Orders: React.FC = () => {
               </div>
             )
           ))}
-            </>
-          )}
         </div>
       </IonContent>
     </IonPage>

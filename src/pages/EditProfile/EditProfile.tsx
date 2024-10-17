@@ -23,7 +23,7 @@ import {
   cameraOutline,
   checkmarkOutline,
 } from "ionicons/icons";
-import { useUserProfile, useUpdateUserProfile, UserProfile, UpdateUserProfilePayload } from "../../api/userApi";
+import { useUserProfile, useUpdateUserProfile } from "../../api/userApi";
 import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
 import { useHistory } from "react-router-dom";
 import "./EditProfile.css";
@@ -46,11 +46,20 @@ interface DietaryRequirement {
   name: string;
 }
 
+interface User {
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender?: string;
+  image?: string;
+  dietary_requirements?: DietaryRequirement[];
+}
+
 const DEFAULT_IMAGE = "/img/no-photo.png";
 
 function EditProfile() {
   const history = useHistory();
-  const { data: user, isLoading, error } = useUserProfile() as { data: UserProfile | undefined, isLoading: boolean, error: any };
+  const { data: user, isLoading, error } = useUserProfile() as { data: User | undefined, isLoading: boolean, error: any };
   const [dietaryRequirements, setDietaryRequirements] = useState<string[]>([]);
   const { data: dietaryOptions, isLoading: isLoadingDietary } =
     useDietaryDetails() as {data: DietaryDetail[], isLoading: boolean};
@@ -62,8 +71,7 @@ function EditProfile() {
     email: "",
     gender: "",
   });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<PhotoState>({ dataUrl: null, file: null });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -78,7 +86,7 @@ function EditProfile() {
         email: user.email,
         gender: user.gender || "",
       });
-      setPhoto(user.image);
+      setPhoto({ dataUrl: user.image || null, file: null });
       const initialDietaryRequirements = user.dietary_requirements
         ? user.dietary_requirements.map((req) => req.name)
         : [];
@@ -99,8 +107,7 @@ function EditProfile() {
       formData.lastName !== user.last_name ||
       formData.email !== user.email ||
       formData.gender !== user.gender ||
-      photo !== null ||
-      photo !== user.image ||
+      photo.file !== null ||
       !arraysEqual(dietaryRequirements, currentDietaryRequirements)
     );
   }, [formData, photo, dietaryRequirements, user]);
@@ -113,24 +120,28 @@ function EditProfile() {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((value, index) => value === arr2[index]);
   }
-
   const handleUpdateProfile = async () => {
     if (!hasChanges) return;
-  
+
     setIsUpdating(true);
     try {
+      // Map dietary names to their corresponding IDs
       const selectedDietaryIds = dietaryOptions
         .filter((option) => dietaryRequirements.includes(option.name))
-        .map((option) => Number(option.id));
-  
-      const updatedProfile: UpdateUserProfilePayload = {
+        .map((option) => option.id);
+
+      const updatedProfile: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
+        email: formData.email,
         gender: formData.gender,
         dietary_requirements: selectedDietaryIds,
-        image: photo || "",
       };
-  
+
+      if (photo.file) {
+        updatedProfile.image = photo.file;
+      }
+
       await updateUserProfile.mutateAsync(updatedProfile);
       setToastMessage("Profile updated successfully");
       setShowToast(true);
@@ -160,8 +171,7 @@ function EditProfile() {
           type: "image/jpeg",
         });
 
-        setPhoto(file);
-        setPhotoUrl(image.dataUrl);
+        setPhoto({ dataUrl: image.dataUrl, file: file });
       }
     } catch (error) {
       console.error("Error capturing photo:", error);
@@ -199,7 +209,7 @@ function EditProfile() {
           <div className="flex justify-center">
             <div className="w-[40%] max-w-md rounded-lg mb-4 border-4 border-dashed border-[#7862FC] p-2">
               <IonImg
-                src={photoUrl || DEFAULT_IMAGE}
+                src={photo.dataUrl || DEFAULT_IMAGE}
                 alt="Profile Photo"
                 className="w-full rounded-lg shadow-lg"
               />
