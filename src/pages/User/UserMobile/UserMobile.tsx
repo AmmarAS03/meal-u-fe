@@ -38,6 +38,20 @@ type CombinedItemData = {
   is_like?: boolean;
   type: "recipe" | "mealkit";
 };
+interface DietaryRequirement {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: any;
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender?: string;
+  image?: string;
+  dietary_requirements?: DietaryRequirement[];
+}
 
 function UserMobile() {
   const history = useHistory();
@@ -47,7 +61,7 @@ function UserMobile() {
     isLoading: isUserLoading,
     error: userError,
     refetch: refetchUser,
-  } = useUserProfile();
+  } = useUserProfile() as {data: User | undefined, isLoading: boolean, error: any, refetch: any};
   const [activeIcon, setActiveIcon] = useState("grid");
 
   const creatorId = user ? user.id : 0;
@@ -182,7 +196,7 @@ function UserMobile() {
                 marginBottom: "15px",
               }}
             >
-              {user.dietary_requirements.map((requirement) => (
+              {user.dietary_requirements?.map((requirement) => (
                 <span
                   key={requirement.id}
                   style={{
