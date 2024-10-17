@@ -31,6 +31,7 @@ import { useHistory } from "react-router-dom";
 import "./EditProfile.css";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
+import imageCompression from 'browser-image-compression';
 
 type FormData = {
   dietary_requirements: number[];
@@ -170,15 +171,34 @@ function EditProfile() {
       if (image.dataUrl) {
         const response = await fetch(image.dataUrl);
         const blob = await response.blob();
-        const file = new File([blob], "profile_photo.jpg", {
+
+        // Convert Blob to File
+        const originalFile = new File([blob], "original_photo.jpg", {
           type: "image/jpeg",
+          lastModified: new Date().getTime(),
         });
 
-        setPhoto({ dataUrl: image.dataUrl, file: file });
+        // Compress the image
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        };
+
+        const compressedFile = await imageCompression(originalFile, options);
+        console.log(`Original size: ${originalFile.size / 1024 / 1024} MB`);
+        console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+
+        // Convert compressed file back to data URL for preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhoto({ dataUrl: reader.result as string, file: compressedFile });
+        };
+        reader.readAsDataURL(compressedFile);
       }
     } catch (error) {
-      console.error("Error capturing photo:", error);
-      setToastMessage("Failed to capture photo");
+      console.error("Error capturing or compressing photo:", error);
+      setToastMessage("Failed to capture or compress photo");
       setShowToast(true);
     }
   };
