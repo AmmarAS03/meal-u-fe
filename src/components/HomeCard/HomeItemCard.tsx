@@ -55,7 +55,7 @@ const HomeItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
             <img
               alt={item.creator.name}
               src={item.creator.profile_picture}
-              className="w-[5px] h-[5px] object-cover rounded-[15px]"
+              className="w-[8px] h-[8px] object-cover rounded-[15px]"
             />
             <p className="m-0 text-[6px]">
               {item.creator.name.length > 15 ? `${item.creator.name.slice(0, 15)}...` : item.creator.name} -
