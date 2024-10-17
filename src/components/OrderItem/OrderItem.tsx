@@ -30,14 +30,14 @@ const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurren
       className={`flex items-center bg-white rounded-xl p-3 mb-3 shadow-sm cursor-pointer hover:bg-gray-50`}
       onClick={handleClick}
     >
-      <div className="w-12 h-12 bg-gray-100 rounded-lg mr-3 flex items-center justify-center">
+      <div className="w-12 h-12 bg-gray-100 rounded-lg mr-3 flex items-center justify-center p-3">
         <BagIcon />
       </div>
       <div className="flex-grow overflow-hidden">
         <p className="text-gray-500 text-sm">{capitalizeFirstLetter(status)}</p>
         <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-navy-700 truncate`}>{title}</p>
       </div>
-      <div className="text-right ml-2">
+      <div className="text-right ml-2 shrink-0">
         <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-sm text-gray-500`}>{date}</p>
         {isCurrent && <div className="w-2 h-2 bg-purple-500 rounded-full ml-auto mt-1"></div>}
       </div>
