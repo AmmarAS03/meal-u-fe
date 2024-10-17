@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/authContext";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-interface Creator {
+export interface Creator {
   name: string;
   profile_picture: string;
   id: number;

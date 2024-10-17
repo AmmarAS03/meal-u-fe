@@ -14,6 +14,7 @@ import { useHistory } from "react-router-dom";
 import { gridOutline, heartOutline } from "ionicons/icons";
 import { useUserProfile, useLikedRecipes } from "../../../api/userApi";
 import {
+  Creator,
   useRecipesByCreator,
   useCommunityRecipesList,
 } from "../../../api/recipeApi";
@@ -23,7 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 type CombinedItemData = {
   id: number;
-  creator: { name: string; profile_picture: string };
+  creator: Creator;
   name: string;
   description: string;
   serving_size?: number;
