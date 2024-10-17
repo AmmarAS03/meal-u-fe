@@ -24,7 +24,7 @@ import {
   checkmarkOutline,
 } from "ionicons/icons";
 import { useUserProfile, useUpdateUserProfile } from "../../api/userApi";
-import { useDietaryDetails } from "../../api/productApi";
+import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
 import { useHistory } from "react-router-dom";
 import "./EditProfile.css";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
@@ -41,13 +41,28 @@ interface PhotoState {
   file: File | null;
 }
 
+interface DietaryRequirement {
+  id: number;
+  name: string;
+}
+
+interface User {
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender?: string;
+  image?: string;
+  dietary_requirements?: DietaryRequirement[];
+}
+
 const DEFAULT_IMAGE = "/img/no-photo.png";
 
 function EditProfile() {
   const history = useHistory();
-  const { data: user, isLoading, error } = useUserProfile();
+  const { data: user, isLoading, error } = useUserProfile() as { data: User | undefined, isLoading: boolean, error: any };
   const [dietaryRequirements, setDietaryRequirements] = useState<string[]>([]);
-  const { data: dietaryOptions, isLoading: isLoadingDietary } = useDietaryDetails();
+  const { data: dietaryOptions, isLoading: isLoadingDietary } =
+    useDietaryDetails() as {data: DietaryDetail[], isLoading: boolean};
   const updateUserProfile = useUpdateUserProfile();
 
   const [formData, setFormData] = useState<FormData>({
@@ -73,10 +88,10 @@ function EditProfile() {
       });
       setPhoto({ dataUrl: user.image || null, file: null });
       const initialDietaryRequirements = user.dietary_requirements
-      ? user.dietary_requirements.map((req) => req.name)
-      : [];
+        ? user.dietary_requirements.map((req) => req.name)
+        : [];
 
-    setDietaryRequirements(initialDietaryRequirements);
+      setDietaryRequirements(initialDietaryRequirements);
     }
   }, [user]);
 
@@ -84,8 +99,8 @@ function EditProfile() {
     if (!user) return false;
 
     const currentDietaryRequirements = user.dietary_requirements
-    ? user.dietary_requirements.map((req) => req.name)
-    : [];
+      ? user.dietary_requirements.map((req) => req.name)
+      : [];
 
     return (
       formData.firstName !== user.first_name ||
@@ -94,33 +109,33 @@ function EditProfile() {
       formData.gender !== user.gender ||
       photo.file !== null ||
       !arraysEqual(dietaryRequirements, currentDietaryRequirements)
-      );
-    }, [formData, photo, dietaryRequirements, user]);
+    );
+  }, [formData, photo, dietaryRequirements, user]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  function arraysEqual(arr1, arr2) {
+  function arraysEqual(arr1: any[], arr2: string | any[]) {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((value, index) => value === arr2[index]);
   }
   const handleUpdateProfile = async () => {
     if (!hasChanges) return;
-  
+
     setIsUpdating(true);
     try {
       // Log dietary requirements selected
       console.log("Selected Dietary Requirements:", dietaryRequirements);
-  
+
       // Map dietary names to their corresponding IDs
       const selectedDietaryIds = dietaryOptions
         .filter((option) => dietaryRequirements.includes(option.name))
         .map((option) => option.id);
-  
+
       // Log the IDs that will be sent
       console.log("Selected Dietary IDs:", selectedDietaryIds);
-  
+
       const updatedProfile: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -128,11 +143,11 @@ function EditProfile() {
         gender: formData.gender,
         dietary_requirements: selectedDietaryIds,
       };
-  
+
       if (photo.file) {
         updatedProfile.image = photo.file;
       }
-  
+
       await updateUserProfile.mutateAsync(updatedProfile);
       setToastMessage("Profile updated successfully");
       setShowToast(true);
@@ -342,7 +357,7 @@ function EditProfile() {
             Gender
           </label>
           <div style={{ display: "flex", gap: "10px" }}>
-            {["female", "male", "non-binary"].map((gender) => (
+            {["female", "male", "leave empty"].map((gender) => (
               <div
                 key={gender}
                 className={`gender-button ${
@@ -357,28 +372,30 @@ function EditProfile() {
               </div>
             ))}
           </div>
-          
         </div>
-        <IonItem lines="none" className="select-item">
-          <IonLabel>Dietary Requirements</IonLabel>
-          <IonSelect
-            value={dietaryRequirements}
-            placeholder="Select Dietary Requirements"
-            multiple={true}
-            onIonChange={(e) => setDietaryRequirements(e.detail.value)}
-          >
-            {isLoadingDietary ? (
-              <IonSelectOption>Loading...</IonSelectOption>
-            ) : (
-              dietaryOptions.map((option) => (
-                <IonSelectOption key={option.id} value={option.name}>
-                  {option.name}
-                </IonSelectOption>
-              ))
-            )}
-          </IonSelect>
-        </IonItem>
-
+        <div>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Dietary Requirements
+          </label>
+          <IonItem lines="none" className="select-item">
+            <IonSelect
+              value={dietaryRequirements}
+              placeholder="Select Dietary Requirements"
+              multiple={true}
+              onIonChange={(e) => setDietaryRequirements(e.detail.value)}
+            >
+              {isLoadingDietary ? (
+                <IonSelectOption>Loading...</IonSelectOption>
+              ) : (
+                dietaryOptions.map((option) => (
+                  <IonSelectOption key={option.id} value={option.name}>
+                    {option.name}
+                  </IonSelectOption>
+                ))
+              )}
+            </IonSelect>
+          </IonItem>
+        </div>
         <IonButton
           expand="full"
           color="primary"
