@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -33,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/auth/login/', {
+      const response = await fetch(`${apiBaseUrl}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
