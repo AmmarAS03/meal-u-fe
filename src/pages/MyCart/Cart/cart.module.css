@@ -7,7 +7,7 @@
 }
 
 .title {
-    font-size: 21px;
+    font-size: 16px;
     font-weight: 700;
 }
 
@@ -37,7 +37,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
-    max-width: inherit;
+    max-width: 75vh;
 }
 
 .column {
@@ -63,6 +63,20 @@
     position: relative;
 }
 
+.empty_cart{
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.expanded_content {
+    display: grid;
+    padding-top: 10px;
+    gap: 4px;
+}
+
 .node {
     background-color: #f1f5f5;
     border-radius: 35px;
@@ -71,12 +85,12 @@
     padding-bottom: 4.5px;
     padding-left: 9px;
     padding-right: 9px;
-    font-size: 12px;
+    font-size: 8px;
     font-weight: 400;
 }
 
 .price {
-    font-size: 19px;
+    font-size: 10px;
     font-weight: 700;
 }
 

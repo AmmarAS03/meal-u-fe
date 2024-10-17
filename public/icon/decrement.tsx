@@ -7,9 +7,11 @@ interface DecrementIconProps {
 
 const DecrementIcon: React.FC<DecrementIconProps> = ({
     color = "#7862FC",
+    onClick,
 }) => {
     return (
-        <svg
+        <div onClick={onClick}>
+            <svg
             width="26"
             height="27"
             viewBox="0 0 26 27"
@@ -33,6 +35,7 @@ const DecrementIcon: React.FC<DecrementIconProps> = ({
         stroke-linejoin="round"
     />
     </svg>
+        </div>
     );
 };
 

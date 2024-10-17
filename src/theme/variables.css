@@ -2,3 +2,6 @@
 http://ionicframework.com/docs/theming/ */
 
 @import url('https://fonts.google.com/specimen/DM+Sans');
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';

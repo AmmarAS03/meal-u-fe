@@ -1,0 +1,22 @@
+.custom-navbar {
+  --background: #ffffff;
+}
+
+.custom-navbar ion-buttons {
+  display: flex;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.custom-navbar ion-button {
+  --color: #000000;
+}
+
+ion-toolbar {
+  --background: #f8f8f8;
+}
+
+/* Optional: Adjust tab bar color */
+ion-tab-bar {
+  --background: #f8f8f8;
+}
