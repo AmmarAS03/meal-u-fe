@@ -19,13 +19,14 @@ import {
 import { heartOutline, chatbubbleOutline } from 'ionicons/icons';
 import { BsPencilSquare } from 'react-icons/bs';
 import LongRecipeCard from '../../components/LongRecipeCard/LongRecipeCard';
-import { fetchMealkitDetails, MealkitDetailsData, useAddMealkitComment, useMealkitComments } from '../../api/mealkitApi';
+import { fetchMealkitDetails, MealkitDetailsData, useAddMealkitComment, useMealkitComments, useMealkitStats } from '../../api/mealkitApi';
 import { useAuth } from '../../contexts/authContext';
 import { useAddCartItem } from '../../api/cartApi';
 import { DietaryProvider, useDietary } from '../../contexts/dietaryContext';
 
 const MealkitDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const mealkitId = parseInt(id);
     const { checkDietaryCompatibility, showIncompatibleFoodWarning } = useDietary();
     const [mealkit, setMealkit] = useState<MealkitDetailsData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -39,7 +40,8 @@ const MealkitDetails: React.FC = () => {
 
     const [newComment, setNewComment] = useState('');
     const addComment = useAddMealkitComment(parseInt(id));
-    const { data: comments, isLoading: isLoadingComments } = useMealkitComments(parseInt(id));
+    const { data: comments, isLoading: isLoadingComments } = useMealkitComments(mealkitId);
+    const { data: mealkitStats, isFetching: isMealkitStatsFetching } = useMealkitStats(mealkitId);
     const [commentCount, setCommentCount] = useState(0);
 
     useEffect(() => {
@@ -183,7 +185,7 @@ const MealkitDetails: React.FC = () => {
                         <div className="flex items-center gap-5">
                             <div className="flex items-center gap-2">
                                 <IonIcon icon={heartOutline} className="w-6 h-6"></IonIcon>
-                                <IonText className="text-sm text-[#0A2533]">N/A</IonText>
+                                <IonText className="text-sm text-[#0A2533]">{mealkitStats ? mealkitStats.likes_count : "N/A"}</IonText>
                             </div>
                             <div className="flex items-center gap-2">
                                 <IonIcon icon={chatbubbleOutline} className="w-6 h-6"></IonIcon>
