@@ -125,16 +125,10 @@ function EditProfile() {
 
     setIsUpdating(true);
     try {
-      // Log dietary requirements selected
-      console.log("Selected Dietary Requirements:", dietaryRequirements);
-
       // Map dietary names to their corresponding IDs
       const selectedDietaryIds = dietaryOptions
         .filter((option) => dietaryRequirements.includes(option.name))
         .map((option) => option.id);
-
-      // Log the IDs that will be sent
-      console.log("Selected Dietary IDs:", selectedDietaryIds);
 
       const updatedProfile: any = {
         first_name: formData.firstName,

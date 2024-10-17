@@ -68,7 +68,6 @@ const ConfirmPickup: React.FC = () => {
       if (isPickup) {
         history.push('/courier/delivery/1', { orders, date, time });
       } else {
-        console.log('All deliveries confirmed');
         history.push('/courier/home');
       }
     }

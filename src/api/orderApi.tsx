@@ -313,7 +313,6 @@ export const useUpdateOrderStatusToPreparing = () => {
         throw new Error(data.message || 'Failed to update order status to preparing');
       }
 
-      console.log("success");
       return data;
     },
     onSuccess: (data) => {

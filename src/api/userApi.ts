@@ -135,9 +135,6 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
         dietary_requirements: updatedProfile.dietary_requirements,
       };
 
-      // Log the body being sent
-      console.log("Request body being sent:", body);
-
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -153,9 +150,6 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
       }
 
       const data: UpdateUserProfileResponse = await response.json();
-
-      // Log the response data
-      console.log("Update profile response data:", data);
 
       if (!data.success) {
         throw new Error(data.message || 'Failed to update profile');

@@ -49,8 +49,6 @@ const IngredientRowCard: React.FC<IngredientRowCardProps> = ({ data }) => {
   useEffect(() => {
     setPrice(data.total_price);
   }, [data.total_price, data]);
-
-  console.log("data: ", data);
   return (
     <div className={styles.card}>
       <div className={styles.row_card_content}>
