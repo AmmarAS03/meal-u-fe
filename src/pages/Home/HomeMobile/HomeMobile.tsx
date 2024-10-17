@@ -121,6 +121,7 @@ function HomeMobile() {
                       creatorName={`${item.top_creator.first_name} ${item.top_creator.last_name}`}
                       dietaryName={item.dietary_detail.name}
                       recipeCount={item.top_creator.recipe_count}
+                      creatorId={item.top_creator.id}
                     />
                   ))
                 ) : (
