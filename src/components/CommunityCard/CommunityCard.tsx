@@ -2,20 +2,15 @@ import React, { useEffect } from "react";
 import LoveIcon from "../../../public/icon/love-icon";
 import CommentIcon from "../../../public/icon/comment-icon";
 import { formatDistanceToNow } from "date-fns";
-import {useLikeRecipe} from "../../../src/api/recipeApi";
-import {useLikeMealkit} from "../../../src/api/mealkitApi";
+import { CommunityRecipeData, useLikeRecipe} from "../../../src/api/recipeApi";
+import { CommunityMealkitData, useLikeMealkit} from "../../../src/api/mealkitApi";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface Creator {
-  name: string;
-  profile_picture: string;
-}
-
-interface CommunityRecipeData {
-  description: string;
+type CombinedItemData = {
   id: number;
   creator: Creator;
   name: string;
+  description: string;
   serving_size?: number;
   meal_type?: string;
   cooking_time?: number;
@@ -26,14 +21,21 @@ interface CommunityRecipeData {
   likes_count: number;
   comments_count: number;
   is_like?: boolean;
+  type: "recipe" | "mealkit";
+};
+
+interface Creator {
+  name: string;
+  profile_picture: string;
 }
 
 interface CommunityCardProps {
-  recipe: CommunityRecipeData;
+  recipe: CombinedItemData | CommunityRecipeData | CommunityMealkitData;
   onClick?: () => void;
+  onLike?: () => void; 
 }
 
-const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
+const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick, onLike}) => {
   const likeRecipeMutation = useLikeRecipe();
   const likeMealkitMutation = useLikeMealkit();
 
@@ -45,6 +47,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
   };
 
   const isRecipe = 'meal_type' in recipe || 'cooking_time' in recipe;
+  const isMealkit = 'meal_types' in recipe;
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -56,13 +59,18 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
         queryClient.invalidateQueries({queryKey: ["community-mealkit.list"]});
         queryClient.invalidateQueries({ queryKey: ["recipes"] });
         queryClient.invalidateQueries({ queryKey: ["community-recipe.list"] });
+        queryClient.invalidateQueries({ queryKey: ["mealkit"] });
         queryClient.invalidateQueries({ queryKey: ['user.likedRecipes'] });
+        if (onLike) {
+          onLike();
+        }
       },
       onError: (error) => {
         console.error(`Failed to like ${isRecipe ? 'recipe' : 'mealkit'}:`, error);
       }
     });
   };
+
   return (
     <div
       className="max-w-xl mx-auto bg-white rounded-lg shadow-md overflow-hidden mb-2 mt-2"
@@ -88,10 +96,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick }) => {
           </div>
         </div>
 
-        <div className="flex flex-row justify-between]">
+        <div className="flex flex-row justify-between">
           <div className="mb-4 w-[67%]">
             <h1 className="text-xs font-medium mb-2 flex items-center">
-              {recipe.name}
+              {recipe.name} {isMealkit ? (recipe.price ? (` - $${recipe.price}`) : null) : (recipe.total_price ? (` - $${recipe.total_price}`) : null)}
             </h1>
             <div className="flex space-x-2 mb-2">
               {recipe.dietary_details.slice(0, 2).map((detail, index) => (

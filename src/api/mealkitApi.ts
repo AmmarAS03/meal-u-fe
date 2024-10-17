@@ -9,9 +9,9 @@ interface CommunityCreator {
 }
 
 interface Creator {
-  id: number;
   name: string;
   profile_picture: string;
+  id: number;
 }
 
 interface NutritionDetails {
@@ -89,7 +89,7 @@ interface MealkitListParams {
 
 export interface CommunityMealkitData {
   id: number;
-  creator: CommunityCreator;
+  creator: Creator;
   name: string;
   description: string;
   created_at: string;
@@ -426,3 +426,41 @@ export const useMealkitComments = (mealkitId: number) => {
     },
   });
 };
+
+interface Stats {
+  likes_count: number;
+  comments_count: number;
+}
+
+export const useMealkitStats = (mealkitId: number): UseQueryResult<Stats, Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchMealkitStats = async (): Promise<Stats> => {
+    const url = `${apiBaseUrl}/community/mealkit/${mealkitId}/stats`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch mealkit stats");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch mealkit stats");
+    }
+
+    return data.data;
+  };
+
+  return useQuery<Stats, Error>({
+    queryKey: ["recipe.stats", mealkitId],
+    queryFn: fetchMealkitStats,
+    enabled: !!token,
+  });
+}

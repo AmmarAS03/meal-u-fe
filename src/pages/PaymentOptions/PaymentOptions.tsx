@@ -14,8 +14,10 @@ import { useUpdateOrderStatusToPaid } from '../../api/orderApi';
 import { useUserPaymentMethods, PaymentMethod } from '../../api/userApi';
 import { useHistory, useParams } from 'react-router-dom';
 import VoucherCard from './VoucherCard';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PaymentOptions: React.FC = () => {
+    const queryClient = useQueryClient();
     const { id } = useParams<{ id: string }>();
     const history = useHistory();
     const updateOrderStatus = useUpdateOrderStatusToPaid({
@@ -33,7 +35,12 @@ const PaymentOptions: React.FC = () => {
         updateOrderStatus.mutate({ orderId: parseInt(id), useVoucher: useVoucher})
     }
 
+    const refetchCart = () => {
+        queryClient.invalidateQueries({ queryKey: ["userOrders"] });
+      };
+      
     const handlePayLater = () => {
+        refetchCart()
         history.push('/home');
     }
 
