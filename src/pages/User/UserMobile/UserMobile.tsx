@@ -11,7 +11,7 @@ import {
   useIonViewDidEnter,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
-import { gridOutline, heartOutline } from "ionicons/icons";
+import { gridOutline, heartOutline, logOutOutline } from "ionicons/icons";
 import { useUserProfile, useLikedRecipes } from "../../../api/userApi";
 import {
   Creator,
@@ -21,6 +21,7 @@ import {
 import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from '../../../contexts/authContext';
 
 type CombinedItemData = {
   id: number;
@@ -55,6 +56,7 @@ interface User {
 }
 
 function UserMobile() {
+  const { logout } = useAuth();
   const history = useHistory();
   const queryClient = useQueryClient();
   const {
@@ -64,9 +66,6 @@ function UserMobile() {
     refetch: refetchUser,
   } = useUserProfile() as {data: User | undefined, isLoading: boolean, error: any, refetch: any};
   const [activeIcon, setActiveIcon] = useState("grid");
-
-
-  console.log("DATA USER",user)
 
   const creatorId = user ? user.id : 0;
   const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } =
@@ -164,11 +163,30 @@ function UserMobile() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      history.push('/login');
+      queryClient.clear();
+      setShowToast(true);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar className="ion-hide-sm-up">
-          <IonTitle>My Profile</IonTitle>
+       <IonHeader>
+        <IonToolbar className="px-4">
+          <IonTitle className="text-lg font-semibold">My Profile</IonTitle>
+          <IonButton 
+            slot="end" 
+            fill="clear" 
+            onClick={handleLogout}
+            className="text-red-500 font-bold md:hidden"
+          >
+            <IonIcon slot="icon-only" icon={logOutOutline} className="text-xl" />
+          </IonButton>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding font-sans">
@@ -315,3 +333,7 @@ function UserMobile() {
 }
 
 export default UserMobile;
+
+function setShowToast(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}

@@ -61,8 +61,6 @@ function EditProfile() {
   const updateUserProfile = useUpdateUserProfile();
   const updateDietaryRequirements = useUpdateDietaryRequirements();
 
-  console.log("DATA USER",user)
-
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
