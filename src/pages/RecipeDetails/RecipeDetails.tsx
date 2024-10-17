@@ -38,11 +38,13 @@ import {
   RecipeData,
   useAddRecipeComment,
   useRecipeComments,
+  useRecipeStats,
 } from "../../api/recipeApi";
 import { useAuth } from "../../contexts/authContext";
 import { BsPencilSquare } from "react-icons/bs";
 import { useAddCartItem } from "../../api/cartApi";
 import { DietaryProvider, useDietary } from "../../contexts/dietaryContext";
+import { useOrder } from "../../contexts/orderContext";
 
 const RecipeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +55,8 @@ const RecipeDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const { data: recipeStats, isFetching: isRecipeStatsFetching } = useRecipeStats(parseInt(id));
+  const { getUnitFromId } = useOrder();
 
   const { getToken } = useAuth();
   const token = getToken();
@@ -198,9 +202,6 @@ const RecipeDetails: React.FC = () => {
                 <IonText className="font-bold text-base block">
                   {recipe.creator.name}
                 </IonText>
-                <IonText className="text-sm text-gray-600">
-                  Followers: N/A
-                </IonText>
               </div>
             </div>
           </div>
@@ -215,7 +216,7 @@ const RecipeDetails: React.FC = () => {
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
                 <IonIcon icon={heartOutline} className="w-6 h-6" />
-                <IonText>N/A</IonText>
+                <IonText>{recipeStats?.likes_count}</IonText>
               </div>
               <div className="flex items-center gap-2">
                 <IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
@@ -320,7 +321,7 @@ const RecipeDetails: React.FC = () => {
               id={ingredient.ingredient.product_id}
               name={ingredient.ingredient.name}
               image={ingredient.ingredient.image || "/img/no-photo.png"}
-              quantity={`${ingredient.ingredient.unit_size} ${ingredient.ingredient.unit_id}`}
+              quantity={`${ingredient.ingredient.unit_size} ${getUnitFromId(ingredient.ingredient.unit_id)}`}
               price={`$${ingredient.price.toFixed(2)}`}
             />
           ))}
@@ -389,9 +390,6 @@ const RecipeDetails: React.FC = () => {
               ? "Adding..."
               : `Add Recipe to cart ($${recipe.total_price.toFixed(2)})`}
           </button>
-          <div className="w-12 h-12 flex items-center justify-center font-sans">
-            <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
-          </div>
         </div>
       </IonContent>
       <IonToast

@@ -151,9 +151,6 @@ const ProductDetails: React.FC = () => {
                     >
                         {addCartItem.isPending ? 'Adding...' : 'Add to cart'}
                     </button>
-                    <div className="w-12 h-12 flex items-center justify-center font-sans">
-                        <BsPencilSquare className="w-8 h-8 text-[#7862FC]" />
-                    </div>
                 </div>
             </IonContent>
             <IonToast

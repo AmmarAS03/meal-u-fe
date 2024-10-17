@@ -6,42 +6,56 @@ import {
 import { useParams } from 'react-router-dom';
 import { useCreatorProfile } from "../../../api/userApi";
 import React, { useMemo, useState } from 'react';
-import { RecipeData, useRecipesByCreator } from '../../../api/recipeApi';
+import { CommunityRecipeData, useCommunityRecipesList, useRecipesByCreator } from '../../../api/recipeApi';
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
-import { MealkitData, useMealkitList } from "../../../api/mealkitApi";
+import { CommunityMealkitData, useMealkitList, useCommunityMealkitList } from "../../../api/mealkitApi";
 import FlexibleCommunityCard from "../../../components/CommunityCard/FlexibleCommunityCard";
 import { cubeOutline, bookOutline } from "ionicons/icons";
+import { DietaryDetail } from "../../../api/productApi";
+import { useHistory } from 'react-router-dom';
+
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender?: string;
+  image?: string;
+  dietary_requirements?: DietaryDetail[];
+}
 
 const CreatorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const creatorId = parseInt(id);
-  const { data: creator } = useCreatorProfile(creatorId);
-  const { data: creatorRecipes = [], isFetching: isCreatorRecipesFetching } = useRecipesByCreator(creatorId);
-  const { data: allMealkits = [], isFetching: isMealkitFetching } = useMealkitList({ search: "" });
+  const history = useHistory();
+  const { data: creator } = useCreatorProfile(creatorId)  as {data: User | undefined};
+  // const { data: creatorRecipes = [], isFetching: isCreatorRecipesFetching } = useRecipesByCreator(creatorId);
+  const { data: communityRecipes = [], isFetching: isCommunityRecipesFetching } = useCommunityRecipesList();
+  const { data: communityMealkits = [], isFetching: isCommunityMealkitsFetching } = useCommunityMealkitList();
 
-  // Filter mealkit based on id
-  const creatorMealkits = allMealkits.filter((mealkit) => mealkit.creator?.id === creatorId);
+  // get creator's recipes and mealkits
+  const creatorRecipes = communityRecipes?.filter((recipe) => recipe.creator.id === creator?.id);
+  const creatorMealkits = communityMealkits?.filter((mealkit) => mealkit.creator.id === creator?.id);
 
   const segments = ['recipe', 'mealkit'];
   const [segment, setSegment] = useState(segments[0]);
-  const [contentToRender, setContentToRender] = useState<RecipeData[] | MealkitData[]>(creatorRecipes);
-
-
-  console.log(creator);
-
-  // const handleSegmentChange = (e: CustomEvent) => {
-  //   const value = e.detail.value;
-  //   setContentToRender(value === "recipe" ? creatorRecipes : creatorMealkits);
-  //   setSegment(value);
-  // };
+  const [contentToRender, setContentToRender] = useState<CommunityRecipeData[] | CommunityMealkitData[]>(creatorRecipes);
 
   const handleSegmentChange = (type: string) => {
     setActiveIcon(type);
     setContentToRender(type === "recipe" ? creatorRecipes : creatorMealkits);
   }
 
+  const navigateToContent = (content: CommunityMealkitData | CommunityRecipeData) => {
+    if ('meal_types' in content) { // mealkit
+      history.push(`/mealkit-details/${content.id}`);
+    } else { // recipe
+      history.push(`/recipe-details/${content.id}`);
+    }
+  }
+
   const renderContent = useMemo(() => {
-    if (isCreatorRecipesFetching || isMealkitFetching) {
+    if (isCommunityRecipesFetching || isCommunityMealkitsFetching) {
       return (
         <>
           <SkeletonCommunityCard />
@@ -54,13 +68,13 @@ const CreatorProfile: React.FC = () => {
     if (contentToRender.length) {
       return contentToRender.map((content, index) => (
         <div style={{width: "100%"}}>
-          <FlexibleCommunityCard key={index} item={content} />
+          <FlexibleCommunityCard key={index} item={content} onClick={() => navigateToContent(content)}/>
         </div>
       ));
     }
 
     return <p>No {segment}s.</p>;
-  }, [isCreatorRecipesFetching, isMealkitFetching, contentToRender, segment]);
+  }, [isCommunityRecipesFetching, isCommunityMealkitsFetching, contentToRender, segment]);
 
   const [activeIcon, setActiveIcon] = useState("recipe");
 
@@ -84,7 +98,7 @@ const CreatorProfile: React.FC = () => {
               }}
             >
               <img
-                src={creator.image ? URL.createObjectURL(creator.image) : '/img/no-photo.png'}
+                src={creator.image || '/img/no-photo.png'}
                 alt="Profile"
                 style={{ width: '100%', height: '100%' }}
               />

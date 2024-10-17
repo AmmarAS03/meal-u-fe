@@ -14,6 +14,7 @@ import { useHistory } from "react-router-dom";
 import { gridOutline, heartOutline } from "ionicons/icons";
 import { useUserProfile, useLikedRecipes } from "../../../api/userApi";
 import {
+  Creator,
   useRecipesByCreator,
   useCommunityRecipesList,
 } from "../../../api/recipeApi";
@@ -23,7 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 type CombinedItemData = {
   id: number;
-  creator: { name: string; profile_picture: string };
+  creator: Creator;
   name: string;
   description: string;
   serving_size?: number;
@@ -151,6 +152,14 @@ function UserMobile() {
 
   if (isUserLoading) return <p>Loading...</p>;
   if (userError) return <p>Error loading profile.</p>;
+
+  const navigateToContent = (item: CombinedItemData) => {
+    if ('meal_types' in item) { // mealkits
+      history.push(`/mealkit-details/${item.id}`);
+    } else { // recipes
+      history.push(`/recipe-details/${item.id}`);
+    }
+  }
 
   return (
     <IonPage>
@@ -290,7 +299,7 @@ function UserMobile() {
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div style={{ width: "100%" }} key={item.id}>
-                <CommunityCard recipe={item} />
+                <CommunityCard recipe={item} onClick={() => navigateToContent(item)}/>
               </div>
             ))
           ) : (
