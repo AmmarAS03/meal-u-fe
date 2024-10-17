@@ -1,5 +1,5 @@
-import { useQuery, UseQueryResult, useMutation } from '@tanstack/react-query';
-import { useAuth } from '../contexts/authContext';
+import { useQuery, UseQueryResult, useMutation } from "@tanstack/react-query";
+import { useAuth } from "../contexts/authContext";
 
 interface DeliveryLocation {
   id: number;
@@ -55,110 +55,121 @@ interface Order {
 }
 
 interface OrdersByDate {
-    [date: string]: {
-      [time: string]: Order[];
-    };
-  }
-  
-interface OrdersResponse {
-    success: boolean;
-    message: string;
-    data: OrdersByDate;
-  }
-
-  interface UpdateOrderStatusResponse {
-    success: boolean;
-    message: string;
-    data: string;
-  }
-  
-  export const useAllOrders = (): UseQueryResult<OrdersByDate, Error> => {
-    const { getToken } = useAuth();
-    const token = getToken() || '';
-  
-    const fetchOrders = async (): Promise<OrdersByDate> => {
-      const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/warehouse/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-  
-      const data: OrdersResponse = await response.json();
-  
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to fetch orders');
-      }
-  
-      return data.data;
-    };
-  
-    return useQuery<OrdersByDate, Error>({
-      queryKey: ['courier.orders'],
-      queryFn: fetchOrders,
-      enabled: !!token,
-    });
+  [date: string]: {
+    [time: string]: Order[];
   };
+}
 
-  export const useUpdateOrderStatusToDelivering = () => {
-    const { getToken } = useAuth();
-  
-    return useMutation<UpdateOrderStatusResponse, Error, number>({
-      mutationFn: async (orderId: number) => {
-        const token = getToken() || '';
-        const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivering/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update order status');
-        }
-  
-        const data: UpdateOrderStatusResponse = await response.json();
-  
-        if (!data.success) {
-          throw new Error(data.message || 'Failed to update order status');
-        }
-  
-        return data;
+interface OrdersResponse {
+  success: boolean;
+  message: string;
+  data: OrdersByDate;
+}
+
+interface UpdateOrderStatusResponse {
+  success: boolean;
+  message: string;
+  data: string;
+}
+
+const BASE_URL = import.meta.env.BASE_URL;
+export const useAllOrders = (): UseQueryResult<OrdersByDate, Error> => {
+  const { getToken } = useAuth();
+  const token = getToken() || "";
+
+  const fetchOrders = async (): Promise<OrdersByDate> => {
+    const response = await fetch(`${BASE_URL}/api/v1/orders/warehouse/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch orders");
+    }
+
+    const data: OrdersResponse = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch orders");
+    }
+
+    return data.data;
   };
-  
-  export const useUpdateOrderStatusToDelivered = () => {
-    const { getToken } = useAuth();
-  
-    return useMutation<UpdateOrderStatusResponse, Error, { orderId: number; photoProof: File }>({
-      mutationFn: async ({ orderId, photoProof }) => {
-        const token = getToken() || '';
-        const formData = new FormData();
-        formData.append('photo_proof', photoProof);
-  
-        const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivered/`, {
-          method: 'POST',
+
+  return useQuery<OrdersByDate, Error>({
+    queryKey: ["courier.orders"],
+    queryFn: fetchOrders,
+    enabled: !!token,
+  });
+};
+
+export const useUpdateOrderStatusToDelivering = () => {
+  const { getToken } = useAuth();
+
+  return useMutation<UpdateOrderStatusResponse, Error, number>({
+    mutationFn: async (orderId: number) => {
+      const token = getToken() || "";
+      const response = await fetch(
+        `https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivering/`,
+        {
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update order status");
+      }
+
+      const data: UpdateOrderStatusResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to update order status");
+      }
+
+      return data;
+    },
+  });
+};
+
+export const useUpdateOrderStatusToDelivered = () => {
+  const { getToken } = useAuth();
+
+  return useMutation<
+    UpdateOrderStatusResponse,
+    Error,
+    { orderId: number; photoProof: File }
+  >({
+    mutationFn: async ({ orderId, photoProof }) => {
+      const token = getToken() || "";
+      const formData = new FormData();
+      formData.append("photo_proof", photoProof);
+
+      const response = await fetch(
+        `https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/delivered/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
           body: formData,
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update order status');
         }
-  
-        const data: UpdateOrderStatusResponse = await response.json();
-  
-        if (!data.success) {
-          throw new Error(data.message || 'Failed to update order status');
-        }
-  
-        return data;
-      },
-    });
-  };
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update order status");
+      }
+
+      const data: UpdateOrderStatusResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to update order status");
+      }
+
+      return data;
+    },
+  });
+};

@@ -117,8 +117,10 @@ export interface WarehouseOrdersData {
   };
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const fetchWarehouseOrders = async (token: string): Promise<WarehouseOrdersData> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/warehouse/', {
+  const response = await fetch(`${BASE_URL}/api/v1/orders/warehouse/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -149,7 +151,7 @@ export const useWarehouseOrders = (): UseQueryResult<WarehouseOrdersData, Error>
 };
 
 const fetchOrderDetails = async (token: string, orderId: number): Promise<OrderDetailsData> => {
-  const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/order-details/${orderId}/`, {
+  const response = await fetch(`${BASE_URL}/api/v1/orders/order-details/${orderId}/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

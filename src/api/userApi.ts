@@ -84,12 +84,14 @@ interface UpdateUserProfileResponse {
   data: UserProfile;
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 export const useUserProfile = (): UseQueryResult<UserProfile, Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
 
   const fetchUserProfile = async (): Promise<UserProfile> => {
-    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+    const url = `${BASE_URL}/api/v1/users/user-profile/`;
 
     const response = await fetch(url, {
       headers: {

@@ -16,8 +16,10 @@ export interface LocationData {
   longitude: string;
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const fetchLocation = async (token: string): Promise<LocationData[]> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-locations/', {
+  const response = await fetch(`${BASE_URL}/api/v1/orders/delivery-locations/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

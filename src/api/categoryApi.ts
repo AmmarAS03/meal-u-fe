@@ -6,9 +6,10 @@ export interface CategoryData {
   name: string;
   image: string;
 }
+const BASE_URL = import.meta.env.BASE_URL;
 
 const fetchCategories = async (token: string): Promise<CategoryData[]> => {
-  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/categories/', {
+  const response = await fetch(`${BASE_URL}/api/v1/groceries/categories/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

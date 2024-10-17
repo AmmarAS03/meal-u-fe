@@ -62,14 +62,16 @@ interface ProductListParams {
   search: string;
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 export const useProductList = (params: ProductListParams): UseQueryResult<ProductData[], Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
 
   const fetchProduct = async (): Promise<ProductData[]> => {
     const url = params.search && params.search !== "Show All"
-      ? `https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/?search=${encodeURIComponent(params.search)}`
-      : 'https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/products/';
+      ? `${BASE_URL}/api/v1/groceries/products/?search=${encodeURIComponent(params.search)}`
+      : `${BASE_URL}/api/v1/groceries/products/`;
 
     const response = await fetch(url, {
       headers: {

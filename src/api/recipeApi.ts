@@ -88,6 +88,8 @@ interface LikeRecipeResponse {
   message: string;
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 export const useRecipesList = (
   params: RecipeListParams
 ): UseQueryResult<RecipeData[], Error> => {
@@ -215,7 +217,7 @@ export const useCommunityRecipesList = (): UseQueryResult<
 
   const fetchCommunityRecipe = async (): Promise<CommunityRecipeData[]> => {
     const url =
-      "https://meal-u-api.nafisazizi.com:8001/api/v1/community/community-recipes/";
+    `${BASE_URL}/api/v1/community/community-recipes/`;
 
     const response = await fetch(url, {
       headers: {

@@ -25,13 +25,14 @@ interface TopCreatorsByDietaryResponse {
   message: string;
   data: TopCreatorByDietary[];
 }
+const BASE_URL = import.meta.env.BASE_URL;
 
 export const useTopCreatorsByDietary = (): UseQueryResult<TopCreatorByDietary[], Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
 
   const fetchTopCreatorsByDietary = async (): Promise<TopCreatorByDietary[]> => {
-    const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/community/top-creator-by-dietary-detail/', {
+    const response = await fetch(`${BASE_URL}/api/v1/community/top-creator-by-dietary-detail/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

@@ -36,6 +36,8 @@ interface DeliveryResponse<T> {
   data: T;
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 // Fetch Delivery Locations
 export const useDeliveryLocations = (): UseQueryResult<
   DeliveryLocation[],
@@ -46,7 +48,7 @@ export const useDeliveryLocations = (): UseQueryResult<
 
   const fetchDeliveryLocations = async (): Promise<DeliveryLocation[]> => {
     const response = await fetch(
-      "https://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-locations/",
+      `${BASE_URL}/api/v1/orders/delivery-locations/`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -84,7 +86,7 @@ export const useDeliveryTimeSlots = (): UseQueryResult<
 
   const fetchDeliveryTimeSlots = async (): Promise<DeliveryTimeSlot[]> => {
     const response = await fetch(
-      "https://meal-u-api.nafisazizi.com:8001/api/v1/orders/delivery-time-slots/",
+      `${BASE_URL}/api/v1/orders/delivery-time-slots/`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -137,7 +139,7 @@ export const useCreateOrder = () => {
     mutationFn: async (payload) => {
       const token = getToken() || "";
       const response = await fetch(
-        "https://meal-u-api.nafisazizi.com:8001/api/v1/orders/checkout/",
+        `${BASE_URL}/api/v1/orders/checkout/`,
         {
           method: "POST",
           headers: {
