@@ -137,7 +137,7 @@ export const useUpdateUserProfile = (): UseMutationResult<UserProfile, Error, Up
   return useMutation<UserProfile, Error, UpdateUserProfilePayload>({
     mutationFn: async (updatedProfile) => {
       const token = getToken() || '';
-      const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+      const url = `${apiBaseUrl}/users/user-profile/`;
 
       const formData = new FormData();
       if (updatedProfile.first_name) formData.append('first_name', updatedProfile.first_name);
@@ -200,7 +200,7 @@ export const useUpdateDietaryRequirements = (): UseMutationResult<UserProfile, E
   return useMutation<UserProfile, Error, UpdateDietaryRequirementsPayload>({
     mutationFn: async (updatedDietaryRequirements) => {
       const token = getToken() || '';
-      const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/users/user-profile/';
+      const url = `${apiBaseUrl}/users/user-profile/`;
 
       const response = await fetch(url, {
         method: 'PUT',
