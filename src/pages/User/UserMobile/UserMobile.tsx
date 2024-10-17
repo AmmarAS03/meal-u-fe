@@ -152,6 +152,14 @@ function UserMobile() {
   if (isUserLoading) return <p>Loading...</p>;
   if (userError) return <p>Error loading profile.</p>;
 
+  const navigateToContent = (item: CombinedItemData) => {
+    if ('meal_types' in item) { // mealkits
+      history.push(`/mealkit-details/${item.id}`);
+    } else { // recipes
+      history.push(`/recipe-details/${item.id}`);
+    }
+  }
+
   return (
     <IonPage>
       <IonHeader>
@@ -290,7 +298,7 @@ function UserMobile() {
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div style={{ width: "100%" }} key={item.id}>
-                <CommunityCard recipe={item} />
+                <CommunityCard recipe={item} onClick={() => navigateToContent(item)}/>
               </div>
             ))
           ) : (

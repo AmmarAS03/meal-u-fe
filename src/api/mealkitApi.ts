@@ -9,9 +9,9 @@ interface CommunityCreator {
 }
 
 interface Creator {
-  id: number;
   name: string;
   profile_picture: string;
+  id: number;
 }
 
 interface NutritionDetails {
@@ -89,7 +89,7 @@ interface MealkitListParams {
 
 export interface CommunityMealkitData {
   id: number;
-  creator: CommunityCreator;
+  creator: Creator;
   name: string;
   description: string;
   created_at: string;
