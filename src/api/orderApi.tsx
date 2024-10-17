@@ -76,7 +76,7 @@ export const useOrderDetails = (orderId: number): UseQueryResult<OrderDetails, E
     const token = getToken() || '';
 
     const fetchOrderDetails = async (): Promise<OrderDetails> => {
-        const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/order-details/${orderId}`, {
+        const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/order-details/${orderId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
@@ -117,7 +117,7 @@ export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void })
     mutationFn: async ({ orderId, useVoucher }) => {
       const token = getToken() || '';
       const response = await fetch(
-        `http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/paid/`,
+        `https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/paid/`,
         {
           method: 'POST',
           headers: {
@@ -170,7 +170,7 @@ export const useGetUserOrders = (): UseQueryResult<UserOrders[], Error> => {
     const token = getToken() || '';
 
     const fetchUserOrders = async (): Promise<UserOrders[]> => {
-        const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/orders/', {
+        const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/orders/', {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
@@ -209,7 +209,7 @@ export const useLocationList = (): UseQueryResult<
 
   const fetchLocation = async (): Promise<Location[]> => {
     const url =
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
+      "https://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
 
     const response = await fetch(url, {
       headers: {
@@ -295,7 +295,7 @@ export const useUpdateOrderStatusToPreparing = () => {
   return useMutation<OrderStatusPreparingResponse, Error, number>({
     mutationFn: async (orderId) => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/preparing/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/preparing/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -328,7 +328,7 @@ export const useUpdateOrderStatusToReadyToDeliver = () => {
     return useMutation<OrderStatusPreparingResponse, Error, number>({
         mutationFn: async (orderId) => {
             const token = getToken() || '';
-            const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/ready-to-deliver/`, {
+            const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/ready-to-deliver/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -367,7 +367,7 @@ export const useUpdateOrderStatusToCompleted = () => {
     return useMutation<CompleteOrderResponse, Error, { orderId: number; passcode: string }>({
         mutationFn: async ({ orderId, passcode }) => {
             const token = getToken() || '';
-            const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/completed/`, {
+            const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/orders/${orderId}/status/completed/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

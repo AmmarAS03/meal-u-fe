@@ -8,7 +8,7 @@ export interface CategoryData {
 }
 
 const fetchCategories = async (token: string): Promise<CategoryData[]> => {
-  const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/categories/', {
+  const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/categories/', {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

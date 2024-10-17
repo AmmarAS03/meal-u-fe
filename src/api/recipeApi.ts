@@ -97,10 +97,10 @@ export const useRecipesList = (
   const fetchRecipe = async (): Promise<RecipeData[]> => {
     const url =
       params.search && params.search !== "Show All"
-        ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?search=${encodeURIComponent(
+        ? `https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?search=${encodeURIComponent(
             params.search
           )}`
-        : "http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/";
+        : "https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/";
 
     const response = await fetch(url, {
       headers: {
@@ -143,7 +143,7 @@ export const fetchRecipeDetails = async (
   }
 
   const response = await fetch(
-    `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/`,
+    `https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ export const useTrendingRecipesList = (): UseQueryResult<
 
   const fetchTrendingRecipe = async (): Promise<CommunityRecipeData[]> => {
     const url =
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-recipes/";
+      "https://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-recipes/";
 
     const response = await fetch(url, {
       headers: {
@@ -215,7 +215,7 @@ export const useCommunityRecipesList = (): UseQueryResult<
 
   const fetchCommunityRecipe = async (): Promise<CommunityRecipeData[]> => {
     const url =
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/community-recipes/";
+      "https://meal-u-api.nafisazizi.com:8001/api/v1/community/community-recipes/";
 
     const response = await fetch(url, {
       headers: {
@@ -268,7 +268,7 @@ export const useRecipesByCreator = (
   const token = getToken() || "";
 
   const fetchRecipesByCreator = async (): Promise<RecipeData[]> => {
-    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?creator=${creatorId}`;
+    const url = `https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipes/?creator=${creatorId}`;
 
     const response = await fetch(url, {
       headers: {
@@ -346,7 +346,7 @@ export const useCreateRecipe = (options?: {
       }
 
       const response = await fetch(
-        "http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/",
+        "https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/",
         {
           method: "POST",
           headers: {
@@ -387,7 +387,7 @@ export const useLikeRecipe = (options?: {
     mutationFn: async (recipeId: number) => {
       const token = getToken() || "";
       const response = await fetch(
-        `http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/like/`,
+        `https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/like/`,
         {
           method: "POST",
           headers: {
@@ -424,7 +424,7 @@ export const usePreparationTypeList = (
   const token = getToken() || '';
 
   const fetchPreparationTypes = async (): Promise<PreparationType[]> => {
-    const url = `http://meal-u-api.nafisazizi.com:8001/api/v1/groceries/preparation-type/${categoryId}/`;
+    const url = `https://meal-u-api.nafisazizi.com:8001/api/v1/groceries/preparation-type/${categoryId}/`;
 
     const response = await fetch(url, {
       headers: {
@@ -476,7 +476,7 @@ export const useAddRecipeComment = (recipeId: number) => {
   return useMutation<CommentResponse, Error, { comment: string }>({
     mutationFn: async ({ comment }) => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comment/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comment/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -504,7 +504,7 @@ export const useRecipeComments = (recipeId: number) => {
     queryKey: ['recipeComments', recipeId],
     queryFn: async () => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comments/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/recipe/${recipeId}/comments/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
