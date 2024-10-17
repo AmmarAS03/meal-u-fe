@@ -68,6 +68,14 @@ interface LikedRecipesResponse {
   liked_recipes: LikedRecipe[];
 }
 
+export interface UpdateUserProfilePayload {
+  first_name: string;
+  last_name: string;
+  image: File | "";
+  gender: string;
+  dietary_requirements?: number[];
+}
+
 export interface UserProfile {
   id: number;
   email: string;
@@ -79,8 +87,8 @@ export interface UserProfile {
   image: string | null;
   voucher_credits: string;
   profile: null | any;
-  gender: string;
-  dietary_requirements?: number[];
+  gender: string | null;
+  dietary_requirements: number[];
 }
 
 interface UpdateUserProfileResponse {
