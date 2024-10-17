@@ -304,3 +304,102 @@ export const useTrendingCreators = () => {
       enabled: !!token,
     });
   };
+
+  export interface PaymentMethod {
+    user: number;
+    method: number;
+    token: string;
+    last_four_digits: string;
+    expiration_date: string;
+  }
+  
+  interface PaymentMethodsResponse {
+    success: boolean;
+    message: string;
+    data: PaymentMethod[];
+  }
+  
+  interface AddPaymentMethodPayload {
+    method: number;
+    last_four_digits: string;
+    expiration_date: string;
+  }
+  
+  interface AddPaymentMethodResponse {
+    success: boolean;
+    message: string;
+    data: PaymentMethod;
+  }
+  
+  export const useUserPaymentMethods = (): UseQueryResult<PaymentMethod[], Error> => {
+    const { getToken } = useAuth();
+    const token = getToken() || '';
+  
+    const fetchUserPaymentMethods = async (): Promise<PaymentMethod[]> => {
+      const url = `${apiBaseUrl}/users/payment-methods/`;
+  
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch user payment methods');
+      }
+  
+      const data: PaymentMethodsResponse = await response.json();
+  
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch user payment methods');
+      }
+  
+      return data.data;
+    };
+  
+    return useQuery<PaymentMethod[], Error>({
+      queryKey: ['user.paymentMethods'],
+      queryFn: fetchUserPaymentMethods,
+      enabled: !!token,
+    });
+  };
+  
+  export const useAddPaymentMethod = (): UseMutationResult<PaymentMethod, Error, AddPaymentMethodPayload> => {
+    const { getToken } = useAuth();
+    const queryClient = useQueryClient();
+  
+    return useMutation<PaymentMethod, Error, AddPaymentMethodPayload>({
+      mutationFn: async (paymentMethodData) => {
+        const token = getToken() || '';
+        const url = `${apiBaseUrl}/users/payment-methods/`;
+  
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentMethodData),
+        });
+  
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to add payment method: ${errorText}`);
+        }
+  
+        const data: AddPaymentMethodResponse = await response.json();
+  
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to add payment method');
+        }
+  
+        return data.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ['user.paymentMethods'] });
+      },
+      onError: (error) => {
+        console.error('Error adding payment method:', error);
+      },
+    });
+  };

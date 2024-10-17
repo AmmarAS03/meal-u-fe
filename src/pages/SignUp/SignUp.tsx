@@ -8,6 +8,8 @@ import EyeIcon from "../../../public/icon/eye-icon";
 import { useAuth } from '../../contexts/authContext';
 import { useHistory } from 'react-router-dom';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const SignUp: React.FC = () => {
   const router = useIonRouter();
   const { login } = useAuth();
@@ -64,7 +66,7 @@ const SignUp: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/auth/register/', {
+      const response = await fetch(`${apiBaseUrl}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
