@@ -165,7 +165,6 @@ const CreateRecipe: React.FC = () => {
 
   const [anyFieldFilled, setAnyFieldFilled] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
 
   const handleBackClick = () => {
     if (anyFieldFilled) {

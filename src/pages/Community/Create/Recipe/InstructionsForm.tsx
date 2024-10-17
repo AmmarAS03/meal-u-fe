@@ -76,24 +76,26 @@ const InstructionsForm: React.FC<InstructionsFormProps> = ({ state, dispatch }) 
   }, [instructions.length])
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto font-sans">
       <div className="flex flex-col space-y-4 justify-start items-start mb-4">
         <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
           Recipe Instructions
         </IonLabel>
-        <IonList>
+        <IonList className="w-full">
         <div className="w-full">
-        <IonReorderGroup disabled={toggleDisabled} onIonItemReorder={handleReorder}>
-          {instructions.map((instruction, index) => (
+          <IonReorderGroup disabled={toggleDisabled} onIonItemReorder={handleReorder}>
+            {instructions.map((instruction, index) => (
               <IonItemSliding key={index}>
-                <IonItem>
+                <IonItem className="w-full">
                   <IonInput
                     id={`instruction-${index}`} 
                     type="text"
                     value={instruction}
                     placeholder="Add instructions for your recipe"
                     onIonInput={(e) => handleChange(index, e.target.value)}
-                    label={`${index + 1}`}>
+                    label={`${index + 1}`}
+                    className="w-full"
+                  >
                   </IonInput>
                   <IonReorder slot="end"></IonReorder>
                 </IonItem>
@@ -103,8 +105,8 @@ const InstructionsForm: React.FC<InstructionsFormProps> = ({ state, dispatch }) 
                   </IonItemOption>
                 </IonItemOptions>
               </IonItemSliding>
-          ))}
-        </IonReorderGroup>
+            ))}
+          </IonReorderGroup>
         </div>
         </IonList>
         <div className="w-full flex justify-center">
