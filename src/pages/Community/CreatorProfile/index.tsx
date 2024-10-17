@@ -84,7 +84,7 @@ const CreatorProfile: React.FC = () => {
               }}
             >
               <img
-                src={creator.image || '/img/no-photo.png'}
+                src={creator.image ? URL.createObjectURL(creator.image) : '/img/no-photo.png'}
                 alt="Profile"
                 style={{ width: '100%', height: '100%' }}
               />
