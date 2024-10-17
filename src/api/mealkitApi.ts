@@ -110,8 +110,8 @@ export const useMealkitList = (params: MealkitListParams): UseQueryResult<Mealki
 
   const fetchMealkits = async (): Promise<MealkitData[]> => {
     const url = params.search && params.search !== "Show All"
-      ? `http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/?search=${encodeURIComponent(params.search)}`
-      : 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/';
+      ? `https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/?search=${encodeURIComponent(params.search)}`
+      : 'https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkits/';
 
     const response = await fetch(url, {
       headers: {
@@ -145,7 +145,7 @@ export const fetchMealkitDetails = async (mealkitId: number, token: string): Pro
     throw new Error('No authentication token available');
   }
 
-  const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/`, {
+  const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -180,7 +180,7 @@ export const useTrendingMealkitList = (): UseQueryResult<MealkitData[], Error> =
   const token = getToken() || '';
 
   const fetchTrendingMealkits = async (): Promise<MealkitData[]> => {
-    const url = 'http://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-mealkits/';
+    const url = 'https://meal-u-api.nafisazizi.com:8001/api/v1/community/trending-mealkits/';
 
     const response = await fetch(url, {
       headers: {
@@ -218,7 +218,7 @@ export const useCommunityMealkitList = (): UseQueryResult<
 
   const fetchCommunityMealkit = async (): Promise<CommunityMealkitData[]> => {
     const url =
-      "http://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
+      "https://meal-u-api.nafisazizi.com:8001/api/v1/community/community-mealkits/";
 
     const response = await fetch(url, {
       headers: {
@@ -255,7 +255,7 @@ export const useLikeMealkit = (options?: {
   return useMutation<LikeMealkitResponse, Error, number>({
     mutationFn: async (mealkitId: number) => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/like/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/like/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -331,7 +331,7 @@ export const useCreateMealkit = (options?: {
       // append rest of data
       formData.append('mealkit', JSON.stringify(payload.mealkit));
 
-      const response = await fetch('http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/', {
+      const response = await fetch('https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -381,7 +381,7 @@ export const useAddMealkitComment = (mealkitId: number) => {
   return useMutation<CommentResponse, Error, { comment: string }>({
     mutationFn: async ({ comment }) => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comment/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comment/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -409,7 +409,7 @@ export const useMealkitComments = (mealkitId: number) => {
     queryKey: ['mealkitComments', mealkitId],
     queryFn: async () => {
       const token = getToken() || '';
-      const response = await fetch(`http://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comments/`, {
+      const response = await fetch(`https://meal-u-api.nafisazizi.com:8001/api/v1/community/mealkit/${mealkitId}/comments/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
