@@ -310,7 +310,7 @@ export interface CreateRecipePayload {
   };
   ingredients: IngredientRecipe[];
   dietary_details: string[];
-  image: string | null;
+  image: File | null;
 }
 
 interface RecipeCreationResponse {
