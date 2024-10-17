@@ -28,9 +28,11 @@ import HomeImageCard from "../../../components/HomeImageCard/HomeImageCard";
 import SkeletonHomeItemCard from "../../../components/HomeCard/SkeletonHomeItemCard";
 import { useTopCreatorsByDietary } from "../../../api/creatorApi";
 import SkeletonHomeImageCard from "../../../components/HomeImageCard/SkeletonImageCard";
+import { useOrder } from "../../../contexts/orderContext";
 
 function HomeMobile() {
   const { category } = useParams<{ category: string }>();
+  const { currentOrdersCount } = useOrder();
   const router = useIonRouter();
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
@@ -59,6 +61,10 @@ function HomeMobile() {
     router.push(`/recipe-details/${recipeId}`);
   };
 
+  const handleClick = () => {
+    router.push('/tab4');
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -68,9 +74,9 @@ function HomeMobile() {
       </IonHeader>
       <IonContent className="ion-padding font-sans">
         <div className="flex justify-center items-center">
-          <div className="flex justify-between items-center w-4/5 border-2 border-[#7862FC] p-3 rounded-xl">
+          <div className="flex justify-between items-center w-4/5 border-2 border-[#7862FC] p-3 rounded-xl" onClick={handleClick}>
             <p className="text-sm font-semibold text-[#7862FC]">
-              1 Update From Your Order
+              You have {currentOrdersCount} ongoing orders.
             </p>
             <NotifIcon />
           </div>
@@ -169,7 +175,7 @@ function HomeMobile() {
               </div>
             </div>
           ) : (
-            <p>No recipes found.</p>
+            <p>No trending recipes found.</p>
           )}
         </div>
 
@@ -217,7 +223,7 @@ function HomeMobile() {
               </div>
             </div>
           ) : (
-            <p>No mealkits found.</p>
+            <p>No trending mealkits found.</p>
           )}
         </div>
 
