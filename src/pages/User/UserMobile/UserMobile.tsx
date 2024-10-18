@@ -150,8 +150,6 @@ function UserMobile() {
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
 
-  console.log(filteredItems)
-
   const handleEditProfile = () => {
     history.push("/edit-profile");
   };
