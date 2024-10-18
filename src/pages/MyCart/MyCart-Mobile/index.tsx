@@ -29,7 +29,6 @@ const MyCartMobile: React.FC = () => {
     history.replace(`/payment-options/${data?.data.order_id}`)
   }
 
-  // make button not disable when delivery details is set
   useEffect(() => {
     if (deliveryDetails.deliveryLocation !== -1 && deliveryDetails.deliveryTime !== -1) {
       setIsDeliveryDetailsSet(true);

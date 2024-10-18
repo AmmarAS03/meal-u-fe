@@ -34,7 +34,7 @@ const HomeItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
   return (
     <IonCard
       key={item.id}
-      className={`w-[30vw] flex-none m-2.5 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+      className={`w-[30vw] max-w-[150px] flex-none m-2.5 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
       onClick={handleClick}
     >
       <div className="flex justify-center items-center overflow-hidden p-1.5">
