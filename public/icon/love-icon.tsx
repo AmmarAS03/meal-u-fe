@@ -4,20 +4,24 @@ interface LoveIconProps {
   color?: string;
   selectedColor?: string;
   liked?: boolean;
+  width?: string;
+  height?: string;
 }
 
 const LoveIcon: React.FC<LoveIconProps> = ({
   color = "#97A2B0",
   selectedColor = "#7862FC",
   liked = false,
+  width = "18",
+  height = "19",
 }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="19"
+      width={width ? width : "18"}
+      height={height ? height : "19"}
       viewBox="0 0 18 19"
-      fill={liked? "#c22335": "none"}
+      fill={liked ? "#c22335" : "none"}
     >
       <path
         fill-rule="evenodd"

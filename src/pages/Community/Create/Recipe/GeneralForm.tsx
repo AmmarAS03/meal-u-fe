@@ -81,12 +81,14 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
         throw new Error('No image data received');
       }
 
+      setPhotoUrl(image.dataUrl);
+
       const response = await fetch(image.dataUrl);
       const blob = await response.blob();
       const photoFile = new File([blob], "recipe_image.jpg", { type: "image/jpeg" });
 
       setPhoto(photoFile);
-      setPhotoUrl(image.dataUrl);
+
       dispatch({ type: "SET_FIELD", field: "image", value: photoFile });
 
       setToast({
@@ -103,6 +105,24 @@ const GeneralForm: React.FC<GeneralFormProps> = ({ state, dispatch }) => {
       });
     }
   };
+
+  useEffect(() => {
+    const displaySavedImage = async () => {
+      if (state.image instanceof File) {
+        try {
+          const url = URL.createObjectURL(state.image);
+          setPhotoUrl(url);
+          
+          // Cleanup URL when component unmounts
+          return () => URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error creating URL for saved image:', error);
+        }
+      }
+    };
+
+    displaySavedImage();
+  }, [state.image]);
 
   return (
     <div className="w-full max-w-md mx-auto">

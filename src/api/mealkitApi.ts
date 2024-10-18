@@ -73,6 +73,7 @@ export interface MealkitData {
 }
 
 export interface MealkitDetailsData {
+  id: number;
   name: string;
   creator: Creator;
   image: string;

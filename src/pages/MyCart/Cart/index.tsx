@@ -5,11 +5,6 @@ import React, { Dispatch, SetStateAction, useEffect }from "react";
 import styles from './cart.module.css';
 import { useCart } from '../../../api/cartApi';
 
-interface CartProps {
-  subTotal: number;
-  setSubTotal: Dispatch<SetStateAction<number>>;
-}
-
 export const cartContents = () => {
   const { data: cartData } = useCart();
 
@@ -28,6 +23,11 @@ export const cartContents = () => {
     cartRecipes: [],
     cartProducts: [],
   };
+}
+
+interface CartProps {
+  subTotal: number;
+  setSubTotal: Dispatch<SetStateAction<number>>;
 }
 
 const Cart: React.FC<CartProps> = ({subTotal, setSubTotal}) => {

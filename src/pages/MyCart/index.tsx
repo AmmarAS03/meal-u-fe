@@ -15,7 +15,7 @@ function MyCart() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [window.innerWidth]);
+  }, []);
 
   if (isMobile) {
     return <MyCartMobile />;
