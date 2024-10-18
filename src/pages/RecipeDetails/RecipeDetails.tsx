@@ -39,12 +39,15 @@ import {
   useAddRecipeComment,
   useRecipeComments,
   useRecipeStats,
+  useLikeRecipe,
 } from "../../api/recipeApi";
 import { useAuth } from "../../contexts/authContext";
 import { BsPencilSquare } from "react-icons/bs";
 import { useAddCartItem } from "../../api/cartApi";
 import { DietaryProvider, useDietary } from "../../contexts/dietaryContext";
 import { useOrder } from "../../contexts/orderContext";
+import { useLikedRecipes } from "../../api/userApi";
+import LoveIcon from "../../../public/icon/love-icon";
 
 const RecipeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,8 +58,21 @@ const RecipeDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const { data: recipeStats, isFetching: isRecipeStatsFetching } = useRecipeStats(parseInt(id));
+  const { data: recipeStats, isFetching: isRecipeStatsFetching , refetch: refetchLikedStats } =
+    useRecipeStats(parseInt(id));
   const { getUnitFromId } = useOrder();
+
+  const likeRecipeMutation = useLikeRecipe();
+
+  const {
+    data: likedRecipesData,
+    isFetching: isLikedFetching,
+    refetch: refetchLikedRecipes,
+  } = useLikedRecipes();
+
+  console.log("LIKEDRECIPES: ", likedRecipesData?.liked_recipes);
+
+  const [isLiked, setIsLiked] = useState(false);
 
   const { getToken } = useAuth();
   const token = getToken();
@@ -74,6 +90,15 @@ const RecipeDetails: React.FC = () => {
       setCommentCount(comments.length);
     }
   }, [comments]);
+
+  useEffect(() => {
+    if (likedRecipesData?.liked_recipes && id) {
+      const isRecipeLiked = likedRecipesData.liked_recipes.some(
+        (likedRecipe) => likedRecipe.recipe.id === parseInt(id)
+      );
+      setIsLiked(isRecipeLiked);
+    }
+  }, [likedRecipesData, id]);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -158,6 +183,23 @@ const RecipeDetails: React.FC = () => {
     });
   };
 
+  const handleLike = async () => {
+    if (!recipe) return;
+
+    try {
+      await likeRecipeMutation.mutateAsync(recipe.id);
+      setIsLiked(!isLiked);
+      refetchLikedRecipes();
+      refetchLikedStats();
+      // Optionally, you can also update the likes count here
+      // You might want to refetch the recipe stats or update it optimistically
+    } catch (error) {
+      console.error("Failed to like/unlike the recipe", error);
+      setToastMessage("Failed to update like status");
+      setShowToast(true);
+    }
+  };
+
   if (loading) {
     return (
       <IonPage>
@@ -196,6 +238,7 @@ const RecipeDetails: React.FC = () => {
                 <img
                   src={recipe.creator.profile_picture || "/default-avatar.png"}
                   alt={recipe.creator.name}
+                  className="max-h-12"
                 />
               </IonAvatar>
               <div>
@@ -215,7 +258,9 @@ const RecipeDetails: React.FC = () => {
           <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-200 mt-1">
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
-                <IonIcon icon={heartOutline} className="w-6 h-6" />
+                <div className="w-6 h-6" onClick={handleLike}>
+                  <LoveIcon width="28" height="28" liked={isLiked}/>
+                </div>
                 <IonText>{recipeStats?.likes_count}</IonText>
               </div>
               <div className="flex items-center gap-2">
@@ -321,7 +366,9 @@ const RecipeDetails: React.FC = () => {
               id={ingredient.ingredient.product_id}
               name={ingredient.ingredient.name}
               image={ingredient.ingredient.image || "/img/no-photo.png"}
-              quantity={`${ingredient.ingredient.unit_size} ${getUnitFromId(ingredient.ingredient.unit_id)}`}
+              quantity={`${ingredient.ingredient.unit_size} ${getUnitFromId(
+                ingredient.ingredient.unit_id
+              )}`}
               price={`$${ingredient.price.toFixed(2)}`}
             />
           ))}
