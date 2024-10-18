@@ -122,10 +122,6 @@ const ConfirmDelivery: React.FC = () => {
                 <IonIcon icon={imageOutline} slot="start" />
                 Upload Photo
               </IonButton>
-              <IonButton expand="block" onClick={takePhoto} color="dark" className="font-semibold">
-                <IonIcon icon={cameraOutline} slot="start" />
-                Take a Photo
-              </IonButton>
             </div>
           </div>
           
