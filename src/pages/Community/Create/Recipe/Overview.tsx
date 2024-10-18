@@ -60,7 +60,7 @@ const Overview: React.FC<OverviewProps> = ({ state }) => {
           <div className="p-4 bg-gray-50">
             <ul className="list-disc list-inside">
               {state.dietary_details.map((detail, index) => (
-                <li key={index} className="mb-1">{findDietaryFromId(parseInt(detail))}</li>
+                <li key={index} className="mb-1">{findDietaryFromId(detail)}</li>
               ))}
             </ul>
           </div>
