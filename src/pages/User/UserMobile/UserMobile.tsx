@@ -52,6 +52,7 @@ interface User {
   email: string;
   gender?: string;
   image?: string;
+  voucher_credits: string;
   dietary_requirements?: DietaryRequirement[];
 }
 
@@ -148,8 +149,6 @@ function UserMobile() {
     }
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
-
-  console.log(filteredItems)
 
   const handleEditProfile = () => {
     history.push("/edit-profile");
@@ -250,6 +249,19 @@ function UserMobile() {
                   {requirement.name}
                 </span>
               ))}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                marginBottom: "15px",
+                alignItems: "center",
+                gap: "2px"
+              }}
+            >
+              <p>Voucher Credits:</p>
+              <IonButton size="small" shape="round" fill="outline" color={user.voucher_credits === "0.00" ? "medium" : "tertiary"}>${user.voucher_credits}</IonButton>
             </div>
             <IonButton
               color="primary"
