@@ -1,10 +1,12 @@
 import React from 'react';
-import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonSpinner } from '@ionic/react';
+import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonSpinner, IonText, IonButton } from '@ionic/react';
 import OrderItem from '../../components/OrderItem/OrderItem';
 import { useGetUserOrders, UserOrders } from '../../api/orderApi';
+import { useHistory } from 'react-router-dom';
 
 const Orders: React.FC = () => {
   const { data: orders, isLoading, error } = useGetUserOrders();
+  const history = useHistory()
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -80,6 +82,11 @@ const Orders: React.FC = () => {
   }
 
   const orderGroups = groupOrders(orders || []);
+  const noOrders = orderGroups.every((section) => section.orders.length === 0);
+
+  const navigateToOrder = () => {
+    history.replace("/categories");
+  }
 
   return (
     <IonPage>
@@ -120,6 +127,8 @@ const Orders: React.FC = () => {
               </div>
             )
           ))}
+            </>
+          )}
         </div>
       </IonContent>
     </IonPage>
