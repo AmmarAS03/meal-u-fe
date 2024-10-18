@@ -100,7 +100,7 @@ function CommunityMobile() {
 
   const renderContent = useMemo(() => {
 
-    if (isRecipesFetching || isMealkitFetching || isCreatorsLoading) {
+    if (isRecipesFetching || isMealkitFetching || isCreatorsLoading || combinedAndSortedData.length === 0 ) {
       return (
         <>
           <SkeletonCommunityCard />

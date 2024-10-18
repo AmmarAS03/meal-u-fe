@@ -70,7 +70,6 @@ const RecipeDetails: React.FC = () => {
     refetch: refetchLikedRecipes,
   } = useLikedRecipes();
 
-  console.log("LIKEDRECIPES: ", likedRecipesData?.liked_recipes);
 
   const [isLiked, setIsLiked] = useState(false);
 

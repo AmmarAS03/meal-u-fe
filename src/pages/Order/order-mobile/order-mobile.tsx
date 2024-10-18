@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   IonBackButton,
   IonButtons,
@@ -21,8 +21,12 @@ import { addCircleOutline, removeCircleOutline } from "ionicons/icons";
 import IconInput from "../../../components/icon-input";
 import { useMealkitList, MealkitData } from "../../../api/mealkitApi";
 import { RecipeData, useRecipesList } from "../../../api/recipeApi";
-import { ProductData, useProductList, useDietaryDetails, useMealTypeList } from "../../../api/productApi";
-import { LocationData, useLocationList } from "../../../api/locationApi";
+import {
+  ProductData,
+  useProductList,
+  useDietaryDetails,
+  useMealTypeList,
+} from "../../../api/productApi";
 import { useOrder } from "../../../contexts/orderContext";
 import {
   useCart,
@@ -41,11 +45,12 @@ import {
   useDeliveryLocations,
 } from "../../../api/deliveryApi";
 import FilterOverlay from "../../../components/FilterOverlay";
-import { useDietary, DietaryProvider } from "../../../contexts/dietaryContext";
+import { useDietary } from "../../../contexts/dietaryContext";
 
 function OrderMobile() {
   const queryClient = useQueryClient();
-  const { checkDietaryCompatibility, showIncompatibleFoodWarning } = useDietary();
+  const { checkDietaryCompatibility, showIncompatibleFoodWarning } =
+    useDietary();
   const { category } = useParams<{ category: string }>();
   const { setDeliveryDetails, fillDeliveryLocationDetails } = useOrder();
   const router = useIonRouter();
@@ -56,14 +61,12 @@ function OrderMobile() {
   const [mealType, setMealType] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100 });
   const [searchValue, setSearchValue] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [totalItem, setTotalItem] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+
   const { data: mealkits = [], isFetching: isMealkitsFetching } =
-    useMealkitList({
-      search: selectedCategory,
-    });
+    useMealkitList({ search: category });
   const { data: recipes = [], isFetching: isRecipesFetching } = useRecipesList({
     search: category,
   });
@@ -77,23 +80,32 @@ function OrderMobile() {
   const { data: dietaryRequirements = [] } = useDietaryDetails();
   const { data: mealTypes = [] } = useMealTypeList();
   const { meal_types } = useOrder();
+  const { data: locations = [], isFetching: isLocationFetching } =
+    useDeliveryLocations();
 
   const updateCartItem = useUpdateCartItem();
   const deleteCartItem = useDeleteCartItem();
   const addCartItem = useAddCartItem();
 
-  const refetchCart = () => {
+  const isLoading =
+    isMealkitsFetching ||
+    isRecipesFetching ||
+    isProductFetching ||
+    isCartFetching ||
+    isLocationFetching;
+
+  const refetchCart = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["cart"] });
-  };
+  }, [queryClient]);
 
-  const getCartItem = (productId: number) => {
-    return cart?.products?.find(
-      (item: { product: { id: number } }) => item.product.id === productId
-    );
-  };
-
-  const { data: locations = [], isFetching: isLocationFetching } =
-    useDeliveryLocations();
+  const getCartItem = useCallback(
+    (productId: number) => {
+      return cart?.products?.find(
+        (item: { product: { id: number } }) => item.product.id === productId
+      );
+    },
+    [cart]
+  );
 
   const updateTotals = useCallback(() => {
     if (cart) {
@@ -104,211 +116,186 @@ function OrderMobile() {
 
   useEffect(() => {
     updateTotals();
-  }, [cart, updateTotals]);
+  }, [updateTotals]);
 
-  const handleFilter = () => {
-    setIsFilterVisible(!isFilterVisible);
-  };
+  const handleFilter = useCallback(() => {
+    setIsFilterVisible((prev) => !prev);
+  }, []);
 
-  const increment = (product: ProductData) => {
-    const cartItem = getCartItem(product.id);
-    
-    // Check if the product is compatible with the user's dietary requirements
-    const isCompatible = checkDietaryCompatibility(product.dietary_details);
-  
-    if (!isCompatible) {
-      showIncompatibleFoodWarning(
-        () => {
-          // User confirmed to add the item despite the warning
-          addToCart(product, cartItem);
-        },
-        () => {
-          // User cancelled adding the item
-          console.log('User cancelled adding incompatible food to cart');
-        }
-      );
-    } else {
-      // If compatible, add to cart directly
-      addToCart(product, cartItem);
-    }
-  };
-  
-  const addToCart = (product: ProductData, cartItem: any) => {
-    if (cartItem) {
-      const newQuantity = cartItem.quantity + 1;
-      updateCartItem.mutate(
-        {
-          item_type: "product",
-          item_id: cartItem.id,
-          quantity: newQuantity,
-        },
-        {
-          onSuccess: () => {
-            refetchCart();
-            updateTotals();
-          },
-        }
-      );
-    } else {
-      addCartItem.mutate(
-        {
-          item_type: "product",
-          product_id: product.id,
-          quantity: 1,
-        },
-        {
-          onSuccess: () => {
-            refetchCart();
-            updateTotals();
-          },
-          onError: (error) => {
-            console.error("Add to cart failed:", error);
-          },
-          onSettled: () => {
-            console.log("Add to cart operation completed (success or failure)");
-          },
-        }
-      );
-    }
-  };
-
-  const decrement = (productId: number) => {
-    const cartItem = getCartItem(productId);
-    if (cartItem) {
-      if (cartItem.quantity > 1) {
-        const newQuantity = cartItem.quantity - 1;
+  const addToCart = useCallback(
+    (product: ProductData, cartItem: any) => {
+      if (cartItem) {
+        const newQuantity = cartItem.quantity + 1;
         updateCartItem.mutate(
+          { item_type: "product", item_id: cartItem.id, quantity: newQuantity },
           {
-            item_type: "product",
-            item_id: cartItem.id,
-            quantity: newQuantity,
-          },
-          {
-            onSuccess: () => refetchCart(),
+            onSuccess: () => {
+              refetchCart();
+              updateTotals();
+            },
           }
         );
       } else {
-        deleteCartItem.mutate(
+        addCartItem.mutate(
+          { item_type: "product", product_id: product.id, quantity: 1 },
           {
-            item_type: "product",
-            cart_product_id: cartItem.id,
-          },
-          {
-            onSuccess: () => refetchCart(),
+            onSuccess: () => {
+              refetchCart();
+              updateTotals();
+            },
+            onError: (error) => console.error("Add to cart failed:", error),
+            onSettled: () => console.log("Add to cart operation completed"),
           }
         );
       }
-    }
-  };
+    },
+    [updateCartItem, addCartItem, refetchCart, updateTotals]
+  );
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchValue(value);
-  };
+  const increment = useCallback(
+    (product: ProductData) => {
+      const cartItem = getCartItem(product.id);
+      const isCompatible = checkDietaryCompatibility(product.dietary_details);
 
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      setSearchValue(searchValue);
-    }
-  };
+      if (!isCompatible) {
+        showIncompatibleFoodWarning(
+          () => addToCart(product, cartItem),
+          () => console.log("User cancelled adding incompatible food to cart")
+        );
+      } else {
+        addToCart(product, cartItem);
+      }
+    },
+    [
+      getCartItem,
+      checkDietaryCompatibility,
+      showIncompatibleFoodWarning,
+      addToCart,
+    ]
+  );
 
-  const handleMealkitClick = (mealkitId: number) => {
-    router.push(`/mealkit-details/${mealkitId}`);
-  };
+  const decrement = useCallback(
+    (productId: number) => {
+      const cartItem = getCartItem(productId);
+      if (cartItem) {
+        if (cartItem.quantity > 1) {
+          updateCartItem.mutate(
+            {
+              item_type: "product",
+              item_id: cartItem.id,
+              quantity: cartItem.quantity - 1,
+            },
+            { onSuccess: refetchCart }
+          );
+        } else {
+          deleteCartItem.mutate(
+            { item_type: "product", cart_product_id: cartItem.id },
+            { onSuccess: refetchCart }
+          );
+        }
+      }
+    },
+    [getCartItem, updateCartItem, deleteCartItem, refetchCart]
+  );
+
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(event.target.value);
+    },
+    []
+  );
+
+  const handleKeyPress = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        setSearchValue(event.currentTarget.value);
+      }
+    },
+    []
+  );
 
   const handleSearchIconClick = useCallback(() => {
     setSearchValue(searchValue);
   }, [searchValue]);
 
-  const filterItems = (items: any[], searchTerm: string) => {
-    return items.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  };
+  const handleMealkitClick = useCallback(
+    (mealkitId: number) => {
+      router.push(`/mealkit-details/${mealkitId}`);
+    },
+    [router]
+  );
 
-  const handleRecipeClick = (recipeId: number) => {
-    router.push(`/recipe-details/${recipeId}`);
-  };
+  const handleRecipeClick = useCallback(
+    (recipeId: number) => {
+      router.push(`/recipe-details/${recipeId}`);
+    },
+    [router]
+  );
 
-  const filteredMealkits = filterItems(mealkits, searchValue);
-  const filteredRecipes = filterItems(recipes, searchValue);
-  const filteredProducts = filterItems(product, searchValue);
+  const filteredData = useMemo(() => {
+    const filterItems = (items: any[], searchTerm: string) => {
+      return items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    };
 
-  function filterContent(content: any): any {
-    let finalContent = content;
+    return {
+      mealkits: filterItems(mealkits, searchValue),
+      recipes: filterItems(recipes, searchValue),
+      products: filterItems(product, searchValue),
+    };
+  }, [mealkits, recipes, product, searchValue]);
 
-    if (!filterApplied) {
-      return content;
-    } else {
-      // dietary requirements filter applied
-      if (dietary.length > 0) {
-        finalContent = content.filter((item: any) => {
-          const selectedDietaryNames = dietary
-          .map(id => dietaryRequirements.find(dr => dr.id === id)?.name)
-          .filter((name): name is string => name !== undefined);
+  const applyFilters = useCallback(
+    (items: any[]) => {
+      if (!filterApplied) return items;
 
-          // check if all selected dietary names are included in the item's dietary_details
-          return selectedDietaryNames.every(name => item.dietary_details.includes(name));
-        })
-      }
+      return items.filter((item) => {
+        const matchesDietary =
+          dietary.length === 0 ||
+          dietary.every((id) =>
+            item.dietary_details.includes(
+              dietaryRequirements.find((dr) => dr.id === id)?.name
+            )
+          );
 
-      // if meal type filters applied
-      if (mealType.length > 0) {
-        finalContent = content.filter((item: any) => {
-          // get the names of the selected meal types
-          const selectedMealTypes = mealType
-          .map(id => meal_types?.find(mt => mt.id === id)?.name)
-          .filter((name): name is string => name !== undefined);
+        const matchesMealType =
+          mealType.length === 0 ||
+          mealType.every((id) => {
+            const mealTypeName = meal_types?.find((mt) => mt.id === id)?.name;
+            return "cooking_time" in item
+              ? item.meal_type.includes(mealTypeName)
+              : "meal_types" in item
+              ? item.meal_types.includes(mealTypeName)
+              : true;
+          });
 
-          // check if all selected meal types are included in the item's meal types
-          if ('cooking_time' in item) { // recipe
-            return selectedMealTypes.every(mt => item.meal_type.includes(mt));
-          } else if ('meal_types' in item) { // mealkit
-            return selectedMealTypes.every(mt => item.meal_types.includes(mt));
-          } else {
-            return false;
-          }
-        });
-      }
+        const itemPrice =
+          "cooking_time" in item ? item.total_price : item.price;
+        const matchesPriceRange =
+          itemPrice >= priceRange.min && itemPrice <= priceRange.max;
 
-      // if price range filters applied
-      if (priceRange.min !== 0 || priceRange.max !== 100) {
-        finalContent = content.filter((item: any) => {
-          // field 'price' on mealkit, field 'total_price' on recipe
-          const itemPrice = ('cooking_time' in item) ? item.total_price : item.price;
-          return itemPrice >= priceRange.min && itemPrice <= priceRange.max;
-        })
-      }
+        return matchesDietary && matchesMealType && matchesPriceRange;
+      });
+    },
+    [
+      filterApplied,
+      dietary,
+      mealType,
+      priceRange,
+      dietaryRequirements,
+      meal_types,
+    ]
+  );
 
-      // if no content matches the filter
-      if (finalContent.length === 0) {
-        return (
-          <div className="flex items-center justify-center h-4/5">
-            <p className="text-sm text-gray-800">Sorry, we don't have anything that matches your preferences.</p>
-          </div>
-        );
-      }
-
-      return finalContent;
-    }
-  }
-
-  // filter contents 
-  const [finalMealkits, setFinalMealkits] = useState<any[]|null>(null);
-  const [finalRecipes, setFinalRecipes] = useState<any[]|null>(null);
-  const [finalProducts, setFinalProducts] = useState<any[]|null>(null);
-
-
-  useEffect(() => {
-    setFinalMealkits(filterContent(filteredMealkits));
-    setFinalRecipes(filterContent(filteredRecipes));
-    setFinalProducts(filterContent(filteredProducts));
-
-  }, [filterApplied,
-    dietary,
-    mealType,
-    priceRange,
-  ])
+  const finalData = useMemo(
+    () => ({
+      mealkits: applyFilters(filteredData.mealkits),
+      recipes: applyFilters(filteredData.recipes),
+      products: applyFilters(filteredData.products),
+    }),
+    [filteredData, applyFilters]
+  );
 
   useEffect(() => {
     if (!isLocationFetching && locations.length > 0 && !selectedLocation) {
@@ -319,30 +306,91 @@ function OrderMobile() {
       }));
       fillDeliveryLocationDetails(locations[0].id);
     }
-  }, [isLocationFetching, locations, selectedLocation]);
+  }, [
+    isLocationFetching,
+    locations,
+    selectedLocation,
+    setDeliveryDetails,
+    fillDeliveryLocationDetails,
+  ]);
 
-  const handleLocationChange = (e: CustomEvent) => {
-    const locationId = parseInt(e.detail.value, 10);
-    setSelectedLocation(e.detail.value);
-    setDeliveryDetails((prev) => ({
-      ...prev,
-      deliveryLocation: locationId,
-    }));
-    fillDeliveryLocationDetails(locationId);
-  };
+  const handleLocationChange = useCallback(
+    (e: CustomEvent) => {
+      const locationId = parseInt(e.detail.value, 10);
+      setSelectedLocation(e.detail.value);
+      setDeliveryDetails((prev) => ({ ...prev, deliveryLocation: locationId }));
+      fillDeliveryLocationDetails(locationId);
+    },
+    [setDeliveryDetails, fillDeliveryLocationDetails]
+  );
 
-  const handleApplyFilter = (filters: any) => {
+  const handleApplyFilter = useCallback(() => {
     setFilterApplied(true);
     setIsFilterVisible(false);
-  };
+  }, []);
 
-  // user clears filter
   useEffect(() => {
-    if (!dietary.length && !applyDietary && !mealType.length &&
-      priceRange.min === 0 && priceRange.max === 100) {
+    if (
+      !dietary.length &&
+      !applyDietary &&
+      !mealType.length &&
+      priceRange.min === 0 &&
+      priceRange.max === 100
+    ) {
       setFilterApplied(false);
     }
   }, [dietary, applyDietary, mealType, priceRange]);
+
+  const renderSection = useCallback(
+    (
+      title: string,
+      items: any[],
+      ItemComponent: React.ComponentType<any>,
+      handleClick: (id: number) => void
+    ) => (
+      <div
+        style={{ display: "flex", flexDirection: "column", marginTop: "5px" }}
+      >
+        <p style={{ fontSize: "16px", fontWeight: "600" }}>{title}</p>
+        {isLoading ? (
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                minWidth: "min-content",
+              }}
+            >
+              {[...Array(5)].map((_, index) => (
+                <SkeletonOrderCard key={index} />
+              ))}
+            </div>
+          </div>
+        ) : items.length > 0 ? (
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                minWidth: "min-content",
+              }}
+            >
+              {items.map((item) => (
+                <ItemComponent
+                  key={item.id}
+                  item={item}
+                  onClick={() => handleClick(item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p>No {title.toLowerCase()} found.</p>
+        )}
+      </div>
+    ),
+    [isLoading]
+  );
 
   return (
     <IonPage>
@@ -402,16 +450,13 @@ function OrderMobile() {
             width="300px"
             value={searchValue}
           />
-
-          {/* FILTER BUTTON */}
           <IonButton size="small" onClick={handleFilter}>
             <FilterIcon />
           </IonButton>
         </div>
 
-        {/* FILTER*/}
         {isFilterVisible && (
-            <FilterOverlay
+          <FilterOverlay
             onClose={() => setIsFilterVisible(false)}
             onApplyFilter={handleApplyFilter}
             dietary={dietary}
@@ -426,91 +471,19 @@ function OrderMobile() {
             mealTypes={mealTypes}
           />
         )}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginTop: "5px",
-          }}
-        >
-          <p style={{ fontSize: "16px", fontWeight: "600" }}>Mealkits</p>
-          {isMealkitsFetching ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {[...Array(5)].map((_, index) => (
-                  <SkeletonOrderCard key={index} />
-                ))}
-              </div>
-            </div>
-          ) : finalMealkits!.length > 0 ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {finalMealkits!.map((mealkit: MealkitData) => (
-                  <ItemCard
-                    key={mealkit.id}
-                    item={mealkit}
-                    onClick={handleMealkitClick}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p>No mealkits found.</p>
-          )}
-        </div>
 
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: "600" }}>Recipes</h3>
-          {isRecipesFetching ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {[...Array(5)].map((_, index) => (
-                  <SkeletonOrderCard key={index} />
-                ))}
-              </div>
-            </div>
-          ) : finalRecipes!.length > 0 ? (
-            <div style={{ overflowX: "auto", width: "100%" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  minWidth: "min-content",
-                }}
-              >
-                {finalRecipes!.map((recipe: RecipeData) => (
-                  <ItemCard
-                    key={recipe.id}
-                    item={recipe}
-                    onClick={handleRecipeClick}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p>No recipes found.</p>
-          )}
-        </div>
-
-        {/* Bawah ini Product (Groceries) */}
+        {renderSection(
+          "Mealkits",
+          finalData.mealkits,
+          ItemCard,
+          handleMealkitClick
+        )}
+        {renderSection(
+          "Recipes",
+          finalData.recipes,
+          ItemCard,
+          handleRecipeClick
+        )}
 
         <div
           style={{
@@ -521,14 +494,14 @@ function OrderMobile() {
           }}
         >
           <h3 style={{ fontSize: "16px", fontWeight: "600" }}>Groceries</h3>
-          {isProductFetching ? (
+          {isLoading ? (
             <>
               <SkeletonProductItem />
               <SkeletonProductItem />
               <SkeletonProductItem />
             </>
-          ) : finalProducts!.length > 0 ? (
-            finalProducts!.map((product: ProductData) => {
+          ) : finalData.products.length > 0 ? (
+            finalData.products.map((product: ProductData) => {
               const cartItem = getCartItem(product.id);
               const cartQuantity = cartItem ? cartItem.quantity : 0;
               return (
@@ -598,12 +571,7 @@ function OrderMobile() {
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                    }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "row" }}>
                     <IonIcon
                       icon={removeCircleOutline}
                       onClick={() => decrement(product.id)}
@@ -631,8 +599,6 @@ function OrderMobile() {
             <p>No Groceries found.</p>
           )}
         </div>
-
-        {/* Bawah ini Floating Button */}
 
         {!isFilterVisible && (
           <IonButton
