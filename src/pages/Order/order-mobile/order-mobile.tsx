@@ -237,9 +237,7 @@ function OrderMobile() {
   function filterContent(content: any): any {
     let finalContent = content;
 
-    if (!filterApplied) {
-      return content;
-    } else {
+    if (filterApplied) {
       // dietary requirements filter applied
       if (dietary.length > 0) {
         finalContent = content.filter((item: any) => {
@@ -291,6 +289,7 @@ function OrderMobile() {
 
       return finalContent;
     }
+    return finalContent;
   }
 
   // filter contents 
@@ -338,8 +337,13 @@ function OrderMobile() {
 
   // user clears filter
   useEffect(() => {
-    if (!dietary.length && !applyDietary && !mealType.length &&
-      priceRange.min === 0 && priceRange.max === 100) {
+    if (
+      !dietary.length &&
+      !applyDietary &&
+      !mealType.length &&
+      priceRange.min === 0 &&
+      priceRange.max === 100
+      ) {
       setFilterApplied(false);
     }
   }, [dietary, applyDietary, mealType, priceRange]);
@@ -448,7 +452,7 @@ function OrderMobile() {
                 ))}
               </div>
             </div>
-          ) : finalMealkits!.length > 0 ? (
+          ) : finalMealkits && finalMealkits.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
                 style={{
@@ -487,7 +491,7 @@ function OrderMobile() {
                 ))}
               </div>
             </div>
-          ) : finalRecipes!.length > 0 ? (
+          ) : finalRecipes && finalRecipes.length > 0 ? (
             <div style={{ overflowX: "auto", width: "100%" }}>
               <div
                 style={{
@@ -527,8 +531,8 @@ function OrderMobile() {
               <SkeletonProductItem />
               <SkeletonProductItem />
             </>
-          ) : finalProducts!.length > 0 ? (
-            finalProducts!.map((product: ProductData) => {
+          ) : finalProducts && finalProducts.length > 0 ? (
+            finalProducts.map((product: ProductData) => {
               const cartItem = getCartItem(product.id);
               const cartQuantity = cartItem ? cartItem.quantity : 0;
               return (
