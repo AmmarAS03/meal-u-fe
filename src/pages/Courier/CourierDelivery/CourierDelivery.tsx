@@ -25,7 +25,7 @@ interface LocationState {
 const CourierDelivery: React.FC = () => {
   const { type } = useParams<RouteParams>();
   const location = useLocation<LocationState>();
-  const { orders, date, time } = location.state || {};
+  const { orders = [], date, time } = location.state || {};
   const isPickup = type === 'pickup';
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
@@ -35,16 +35,33 @@ const CourierDelivery: React.FC = () => {
 
   const destinationLocation: [number, number] = isPickup 
     ? [153.0197, -27.4648]
-    : [parseFloat(orders[0].delivery_details.delivery_location.longitude), 
-       parseFloat(orders[0].delivery_details.delivery_location.latitude)];
+    : (orders[0]?.delivery_details?.delivery_location?.longitude && orders[0]?.delivery_details?.delivery_location?.latitude)
+      ? [parseFloat(orders[0].delivery_details.delivery_location.longitude), 
+         parseFloat(orders[0].delivery_details.delivery_location.latitude)]
+      : [0, 0]; // Default coordinates if not available
 
   const destinationName = isPickup 
     ? 'Warehouse Center'
-    : `${orders[0].delivery_details.delivery_location.name} ${orders[0].delivery_details.delivery_location.branch}`;
+    : orders[0]?.delivery_details?.delivery_location?.name && orders[0]?.delivery_details?.delivery_location?.branch
+      ? `${orders[0].delivery_details.delivery_location.name} ${orders[0].delivery_details.delivery_location.branch}`
+      : 'Unknown Location';
 
-  const destinationTime = isPickup
-    ? format(addHours(parseISO(`${date}T${time}`), -1), 'HH:mm')
-    : format(parseISO(`${date}T${time}`), 'HH:mm');
+  const formatTime = (dateStr: string | undefined, timeStr: string | undefined) => {
+    if (!dateStr || !timeStr) return 'Time not set';
+    try {
+      const dateTime = parseISO(`${dateStr}T${timeStr}`);
+      return isPickup
+        ? format(addHours(dateTime, -1), 'HH:mm')
+        : format(dateTime, 'HH:mm');
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Invalid time';
+    }
+  };
+
+  const destinationTime = formatTime(date, time);
+
+  console.log("date,", date, "time,", time);
 
   const handleConfirm = () => {
     if (isPickup) {

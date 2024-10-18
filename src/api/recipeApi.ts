@@ -1,5 +1,6 @@
 import {
   useMutation,
+  useQueries,
   useQuery,
   useQueryClient,
   UseQueryResult,
@@ -309,7 +310,7 @@ export interface CreateRecipePayload {
     instructions: string[];
   };
   ingredients: IngredientRecipe[];
-  dietary_details: string[];
+  dietary_details: number[];
   image: File | null;
 }
 
@@ -330,6 +331,11 @@ export const useCreateRecipe = (options?: {
       const token = getToken() || "";
       const formData = new FormData();
 
+      // Append image if it exists
+      if (payload.image) {
+        formData.append("image", payload.image);
+      }
+
       // Append recipe data
       formData.append("recipe", JSON.stringify(payload.recipe));
 
@@ -341,11 +347,6 @@ export const useCreateRecipe = (options?: {
         "dietary_details",
         JSON.stringify(payload.dietary_details)
       );
-
-      // Append image if it exists
-      if (payload.image) {
-        formData.append("image", payload.image);
-      }
 
       const response = await fetch(
         `${apiBaseUrl}/community/recipe/`,
@@ -420,13 +421,13 @@ export const useLikeRecipe = (options?: {
 };
 
 export const usePreparationTypeList = (
-  categoryId: number
+  productId: number
 ): UseQueryResult<PreparationType[], Error> => {
   const { getToken } = useAuth();
   const token = getToken() || '';
 
   const fetchPreparationTypes = async (): Promise<PreparationType[]> => {
-    const url = `${apiBaseUrl}/groceries/preparation-type/${categoryId}/`;
+    const url = `${apiBaseUrl}/groceries/preparation-type/${productId}/`;
 
     const response = await fetch(url, {
       headers: {
@@ -448,10 +449,45 @@ export const usePreparationTypeList = (
   };
 
   return useQuery<PreparationType[], Error, PreparationType[], [string, number]>({
-    queryKey: ['preparationType.list', categoryId],
+    queryKey: ['preparationType.list', productId],
     queryFn: fetchPreparationTypes,
     initialData: [],
-    enabled: !!token && !!categoryId,
+    enabled: !!token && !!productId,
+  });
+};
+
+export const useMultiplePreparationTypes = (ingredients: IngredientRecipe[]) => {
+  const { getToken } = useAuth();
+  const token = getToken() || '';
+
+  const fetchPreparationTypes = async (productId: number): Promise<PreparationType[]> => {
+    const url = `${apiBaseUrl}/groceries/preparation-type/${productId}/`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch preparation types');
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch preparation types');
+    }
+
+    return data.data;
+  };
+
+  return useQueries({
+    queries: ingredients.map(ingredient => ({
+      queryKey: ['preparationType.list', ingredient.ingredient.product_id],
+      queryFn: () => fetchPreparationTypes(ingredient.ingredient.product_id),
+      initialData: [],
+      enabled: !!token && !!ingredient.ingredient.product_id,
+    }))
   });
 };
 

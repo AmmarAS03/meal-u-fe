@@ -45,7 +45,7 @@ import SignUp from "./pages/SignUp/SignUp";
 import AddCardPage from "./pages/AddCard/AddCard";
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const location = useLocation();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
@@ -82,7 +82,7 @@ const AppContent: React.FC = () => {
           <Navbar />
         </IonHeader>
       )}
-      {isAuthenticated && isDesktop && <DesktopNavbar />}
+      {isAuthenticated && isDesktop && role ==="client" && <DesktopNavbar />}
       <IonContent>
         {isAuthenticated ? (
           <>

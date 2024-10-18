@@ -337,6 +337,7 @@ function OrderMobile() {
       priceRange.min === 0 &&
       priceRange.max === 100
     ) {
+
       setFilterApplied(false);
     }
   }, [dietary, applyDietary, mealType, priceRange]);
@@ -439,6 +440,8 @@ function OrderMobile() {
             flexDirection: "row",
             gap: "5px",
             marginTop: 5,
+            width: "100%",
+            justifyContent: "space-between",
           }}
         >
           <IconInput
@@ -447,7 +450,7 @@ function OrderMobile() {
             rightIcon={<SearchIcon />}
             onRightIconClick={handleSearchIconClick}
             placeholder="Search"
-            width="300px"
+            width="100%"
             value={searchValue}
           />
           <IonButton size="small" onClick={handleFilter}>
