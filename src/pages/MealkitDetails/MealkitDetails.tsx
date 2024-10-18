@@ -195,8 +195,6 @@ const MealkitDetails: React.FC = () => {
     );
   }
 
-  console.log("", mealkit);
-
   const handleLike = async () => {
     if (!mealkit) return;
 
@@ -244,7 +242,7 @@ const MealkitDetails: React.FC = () => {
           </div>
           <div className="w-full h-64 overflow-hidden">
             <IonImg
-              src={mealkit.image}
+              src={mealkit.image || "/img/no-photo.png"}
               alt={mealkit.name}
               className="w-full h-full object-cover"
             />
@@ -283,9 +281,11 @@ const MealkitDetails: React.FC = () => {
             ))}
           </div>
           <div className="p-4">
-            <IonText className="text-base text-[#0A2533] leading-relaxed">
-              {mealkit.description}
-            </IonText>
+            <div className="bg-[#F1F5F5] rounded-2xl p-3.5">
+              <IonText className="text-base leading-relaxed">
+                {mealkit.description}
+              </IonText>
+            </div>
           </div>
           <div className="px-4 mt-4">
             <h2 className="text-lg font-bold text-[#0A2533]">Recipes</h2>
