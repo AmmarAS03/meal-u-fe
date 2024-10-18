@@ -263,7 +263,7 @@ function UserMobile() {
               }}
             >
               <p>Voucher Credits:</p>
-              <IonButton size="small" shape="round" fill="outline" color="tertiary">${user.voucher_credits}</IonButton>
+              <IonButton size="small" shape="round" fill="outline" color={user.voucher_credits === "0.00" ? "medium" : "tertiary"}>${user.voucher_credits}</IonButton>
             </div>
             <IonButton
               color="primary"
