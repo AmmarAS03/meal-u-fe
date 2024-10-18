@@ -53,7 +53,8 @@ const CreateMealkit: React.FC = () => {
 
   const router = useIonRouter();
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
   const [anyFieldFilled, setAnyFieldFilled] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -115,6 +116,13 @@ const CreateMealkit: React.FC = () => {
     dispatch({ type: 'SET_FIELD', field: 'dietary_details', value: updatedDietaryDetails });
   }
 
+  // for uploading photo
+  const [toast, setToast] = useState({
+    isOpen: false,
+    message: '',
+    isError: false
+  });
+
   const uploadPhoto = async () => {
     try {
       const image = await Camera.getPhoto({
@@ -123,11 +131,32 @@ const CreateMealkit: React.FC = () => {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos
       });
+
+      if (!image.dataUrl) {
+        throw new Error('No image data received');
+      }
       
-      setPhoto(image.dataUrl || null);
-      dispatch({type: "SET_FIELD", field: "image", value: image.dataUrl});
+      setPhotoUrl(image.dataUrl || null);
+
+      const response = await fetch(image.dataUrl);
+      const blob = await response.blob();
+      const photoFile = new File([blob], "mealkit_image.jpg", { type: "image/jpeg" });
+
+      setPhoto(photoFile);
+
+      dispatch({type: "SET_FIELD", field: "image", value: photoFile});
+      setToast({
+        isOpen: true,
+        message: 'Image uploaded successfully',
+        isError: false
+      });
     } catch (error) {
       console.error('Error uploading photo:', error);
+      setToast({
+        isOpen: true,
+        message: error instanceof Error ? error.message : 'Failed to upload photo',
+        isError: true
+      });
     }
   };
 
@@ -185,8 +214,8 @@ const CreateMealkit: React.FC = () => {
             </IonLabel>
             <div className="flex justify-center">
               <div className="w-full max-w-md rounded-lg mb-4 border-4 border-dashed border-[#7862FC] p-2">
-                {photo ? (
-                  <IonImg src={photo} alt="Mealkit Photo" className="w-full rounded-lg shadow-lg" />
+                {photoUrl ? (
+                  <IonImg src={photoUrl} alt="Mealkit Photo" className="w-full rounded-lg shadow-lg" />
                 ) : (
                   <div className="grid grid-cols-1 justify-items-center items-center py-20">
                     <p>No image selected</p>
@@ -239,7 +268,7 @@ const CreateMealkit: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-20">
             <IonLabel className="block text-gray-700 text-sm font-bold mb-2">
               Select Recipes (minimum 1)
             </IonLabel>
@@ -275,7 +304,7 @@ const CreateMealkit: React.FC = () => {
                 color="tertiary"
                 expand="block"
                 onClick={handleCreateMealkit}
-                className="px-4 py-2 rounded-md bg-primary text-white" 
+                className="px-4 py-1 rounded-md bg-primary text-white" 
                 disabled={!allFieldsFilled}
               >
                 Create Mealkit
