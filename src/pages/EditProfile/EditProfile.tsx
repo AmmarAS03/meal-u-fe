@@ -6,7 +6,6 @@ import {
   IonTitle,
   IonPage,
   IonAvatar,
-  IonLabel,
   IonInput,
   IonItem,
   IonButton,
@@ -23,47 +22,54 @@ import {
   cameraOutline,
   checkmarkOutline,
 } from "ionicons/icons";
-import { useUserProfile, useUpdateUserProfile, UserProfile, UpdateUserProfilePayload } from "../../api/userApi";
-import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
+import {
+  useUserProfile,
+  useUpdateUserProfile,
+  useUpdateDietaryRequirements,
+} from "../../api/userApi";
 import { useHistory } from "react-router-dom";
 import "./EditProfile.css";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { DietaryDetail, useDietaryDetails } from "../../api/productApi";
+import imageCompression from 'browser-image-compression';
 
 type FormData = {
+  dietary_requirements: number[];
   firstName: string;
   lastName: string;
   email: string;
-  gender: string;
+  gender: string | null;
 };
-
-interface PhotoState {
-  dataUrl: string | null;
-  file: File | null;
-}
 
 interface DietaryRequirement {
   id: number;
   name: string;
 }
 
+interface PhotoState {
+  dataUrl: string | null;
+  file: File | null;
+}
+
 const DEFAULT_IMAGE = "/img/no-photo.png";
 
 function EditProfile() {
   const history = useHistory();
-  const { data: user, isLoading, error } = useUserProfile() as { data: UserProfile | undefined, isLoading: boolean, error: any };
+  const { data: user, isLoading, error } = useUserProfile();
   const [dietaryRequirements, setDietaryRequirements] = useState<string[]>([]);
   const { data: dietaryOptions, isLoading: isLoadingDietary } =
-    useDietaryDetails() as {data: DietaryDetail[], isLoading: boolean};
+    useDietaryDetails() as { data: DietaryDetail[]; isLoading: boolean };
   const updateUserProfile = useUpdateUserProfile();
+  const updateDietaryRequirements = useUpdateDietaryRequirements();
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
     gender: "",
+    dietary_requirements: [] as number[],
   });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<PhotoState>({ dataUrl: null, file: null });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -76,62 +82,71 @@ function EditProfile() {
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
-        gender: user.gender || "",
+        gender: user.gender,
+        dietary_requirements: user.dietary_requirements || [],
       });
-      setPhoto(user.image);
-      const initialDietaryRequirements = user.dietary_requirements
-        ? user.dietary_requirements.map((req) => req.name)
-        : [];
-
-      setDietaryRequirements(initialDietaryRequirements);
+      setPhoto({ dataUrl: user.image || null, file: null });
     }
   }, [user]);
 
   const hasChanges = useMemo(() => {
     if (!user) return false;
 
-    const currentDietaryRequirements = user.dietary_requirements
-      ? user.dietary_requirements.map((req) => req.name)
-      : [];
+    const dietaryRequirementsChanged =
+      formData.dietary_requirements.length !==
+        user.dietary_requirements?.length ||
+      !formData.dietary_requirements.every((id) =>
+        user.dietary_requirements?.includes(id)
+      );
 
     return (
       formData.firstName !== user.first_name ||
       formData.lastName !== user.last_name ||
       formData.email !== user.email ||
       formData.gender !== user.gender ||
-      photo !== null ||
-      photo !== user.image ||
-      !arraysEqual(dietaryRequirements, currentDietaryRequirements)
+      dietaryRequirementsChanged ||
+      photo.file !== null
+
     );
-  }, [formData, photo, dietaryRequirements, user]);
+  }, [formData, photo, user]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  function arraysEqual(arr1: any[], arr2: string | any[]) {
-    if (arr1.length !== arr2.length) return false;
-    return arr1.every((value, index) => value === arr2[index]);
-  }
-
   const handleUpdateProfile = async () => {
     if (!hasChanges) return;
-  
+
     setIsUpdating(true);
     try {
-      const selectedDietaryIds = dietaryOptions
-        .filter((option) => dietaryRequirements.includes(option.name))
-        .map((option) => Number(option.id));
-  
-      const updatedProfile: UpdateUserProfilePayload = {
+      const profileUpdates: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
+        email: formData.email,
         gender: formData.gender,
-        dietary_requirements: selectedDietaryIds,
-        image: photo || "",
       };
-  
-      await updateUserProfile.mutateAsync(updatedProfile);
+
+      if (photo.file) {
+        profileUpdates.image = photo.file;
+      }
+
+      // Update general profile info
+      await updateUserProfile.mutateAsync(profileUpdates);
+
+      // Check if dietary requirements have changed
+      const dietaryRequirementsChanged =
+        formData.dietary_requirements.length !==
+          user?.dietary_requirements?.length ||
+        !formData.dietary_requirements.every((id) =>
+          user?.dietary_requirements?.includes(id)
+        );
+
+      if (dietaryRequirementsChanged) {
+        // Update dietary requirements
+        await updateDietaryRequirements.mutateAsync({
+          dietary_requirements: formData.dietary_requirements,
+        });
+      }
       setToastMessage("Profile updated successfully");
       setShowToast(true);
       history.push("/user");
@@ -156,16 +171,34 @@ function EditProfile() {
       if (image.dataUrl) {
         const response = await fetch(image.dataUrl);
         const blob = await response.blob();
-        const file = new File([blob], "profile_photo.jpg", {
+
+        // Convert Blob to File
+        const originalFile = new File([blob], "original_photo.jpg", {
           type: "image/jpeg",
+          lastModified: new Date().getTime(),
         });
 
-        setPhoto(file);
-        setPhotoUrl(image.dataUrl);
+        // Compress the image
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        };
+
+        const compressedFile = await imageCompression(originalFile, options);
+        console.log(`Original size: ${originalFile.size / 1024 / 1024} MB`);
+        console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+
+        // Convert compressed file back to data URL for preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhoto({ dataUrl: reader.result as string, file: compressedFile });
+        };
+        reader.readAsDataURL(compressedFile);
       }
     } catch (error) {
-      console.error("Error capturing photo:", error);
-      setToastMessage("Failed to capture photo");
+      console.error("Error capturing or compressing photo:", error);
+      setToastMessage("Failed to capture or compress photo");
       setShowToast(true);
     }
   };
@@ -191,7 +224,7 @@ function EditProfile() {
           <IonTitle>Edit Profile</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding" scroll-y="true">
+      <IonContent className="ion-padding">
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2 text-center">
             Profile Photo
@@ -199,7 +232,7 @@ function EditProfile() {
           <div className="flex justify-center">
             <div className="w-[40%] max-w-md rounded-lg mb-4 border-4 border-dashed border-[#7862FC] p-2">
               <IonImg
-                src={photoUrl || DEFAULT_IMAGE}
+                src={photo.dataUrl || DEFAULT_IMAGE}
                 alt="Profile Photo"
                 className="w-full rounded-lg shadow-lg"
               />
@@ -332,6 +365,7 @@ function EditProfile() {
                 textDecoration: "none",
                 "--highlight-background": "transparent",
               }}
+              disabled
             />
           </IonItem>
         </div>
@@ -341,7 +375,7 @@ function EditProfile() {
             Gender
           </label>
           <div style={{ display: "flex", gap: "10px" }}>
-            {["female", "male", "leave empty"].map((gender) => (
+            {["Female", "Male", "leave empty"].map((gender) => (
               <div
                 key={gender}
                 className={`gender-button ${
@@ -357,22 +391,25 @@ function EditProfile() {
             ))}
           </div>
         </div>
+
         <div>
           <label style={{ display: "block", marginBottom: "5px" }}>
             Dietary Requirements
           </label>
           <IonItem lines="none" className="select-item">
             <IonSelect
-              value={dietaryRequirements}
+              value={formData.dietary_requirements}
               placeholder="Select Dietary Requirements"
               multiple={true}
-              onIonChange={(e) => setDietaryRequirements(e.detail.value)}
+              onIonChange={(e) =>
+                handleInputChange("dietary_requirements", e.detail.value)
+              }
             >
               {isLoadingDietary ? (
                 <IonSelectOption>Loading...</IonSelectOption>
               ) : (
                 dietaryOptions.map((option) => (
-                  <IonSelectOption key={option.id} value={option.name}>
+                  <IonSelectOption key={option.id} value={option.id}>
                     {option.name}
                   </IonSelectOption>
                 ))
@@ -380,6 +417,7 @@ function EditProfile() {
             </IonSelect>
           </IonItem>
         </div>
+
         <IonButton
           expand="full"
           color="primary"
@@ -403,3 +441,10 @@ function EditProfile() {
 }
 
 export default EditProfile;
+
+function arraysEqual(
+  dietaryRequirements: string[],
+  currentDietaryRequirements: any
+) {
+  throw new Error("Function not implemented.");
+}

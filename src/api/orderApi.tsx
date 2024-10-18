@@ -144,6 +144,7 @@ export const useUpdateOrderStatusToPaid = (options?: { onSuccess?: () => void })
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({queryKey: ['userOrders']});
       options?.onSuccess?.();
     },
   });

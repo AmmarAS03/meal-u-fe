@@ -16,7 +16,7 @@ interface DietaryContextType {
 const DietaryContext = createContext<DietaryContextType | undefined>(undefined);
 
 export const DietaryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [dietaryRequirements, setDietaryRequirements] = useState<DietaryRequirement[]>([]);
+  const [dietaryRequirements, setDietaryRequirements] = useState<any>([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertHandlers, setAlertHandlers] = useState<{ onConfirm: () => void; onCancel: () => void } | null>(null);
   const { data: userProfile, isLoading, isError } = useUserProfile();
@@ -31,7 +31,7 @@ export const DietaryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (foodRequirements.length === 0){
         return true
     }
-    const userDietaryNames = dietaryRequirements.map(req => req.name.toLowerCase());
+    const userDietaryNames = dietaryRequirements.map((req: { name: string; }) => req.name.toLowerCase());
     return foodRequirements.every(req => userDietaryNames.includes(req.toLowerCase()));
   };
 

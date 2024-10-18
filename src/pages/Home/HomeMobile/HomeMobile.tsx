@@ -74,7 +74,7 @@ function HomeMobile() {
       </IonHeader>
       <IonContent className="ion-padding font-sans">
         <div className="flex justify-center items-center">
-          <div className="flex justify-between items-center w-4/5 border-2 border-[#7862FC] p-3 rounded-xl" onClick={handleClick}>
+          <div className="flex justify-between items-center w-full border-2 border-[#7862FC] p-3 rounded-xl" onClick={handleClick}>
             <p className="text-sm font-semibold text-[#7862FC]">
               You have {currentOrdersCount} ongoing orders.
             </p>
@@ -121,6 +121,7 @@ function HomeMobile() {
                       creatorName={`${item.top_creator.first_name} ${item.top_creator.last_name}`}
                       dietaryName={item.dietary_detail.name}
                       recipeCount={item.top_creator.recipe_count}
+                      creatorId={item.top_creator.id}
                     />
                   ))
                 ) : (

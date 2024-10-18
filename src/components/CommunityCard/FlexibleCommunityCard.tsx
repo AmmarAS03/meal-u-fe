@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import LoveIcon from "../../../public/icon/love-icon";
 import CommentIcon from "../../../public/icon/comment-icon";
 import { formatDistanceToNow } from "date-fns";
-import {RecipeData, useLikeRecipe} from "../../../src/api/recipeApi";
-import {MealkitData, useLikeMealkit} from "../../../src/api/mealkitApi";
+import {CommunityRecipeData, useLikeRecipe} from "../../../src/api/recipeApi";
+import {CommunityMealkitData, MealkitData, useLikeMealkit} from "../../../src/api/mealkitApi";
 
 interface Creator {
   name: string;
@@ -11,7 +11,7 @@ interface Creator {
 }
 
 interface FlexibleCommunityCardProps {
-  item: RecipeData | MealkitData;
+  item: CommunityRecipeData | CommunityMealkitData;
   onClick?: () => void;
 }
 
@@ -107,7 +107,7 @@ const FlexibleCommunityCard: React.FC<FlexibleCommunityCardProps> = ({ item, onC
                 <LoveIcon />
               </div>
               <span className="text-xs text-gray-700">
-                XXX
+                {item.likes_count}
               </span>
             </button>
             <button className="flex items-center">
@@ -115,7 +115,7 @@ const FlexibleCommunityCard: React.FC<FlexibleCommunityCardProps> = ({ item, onC
                 <CommentIcon />
               </div>
               <span className="text-xs text-gray-700">
-                XXX
+                {item.comments_count}
               </span>
             </button>
           </div>

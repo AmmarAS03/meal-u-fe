@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   IonHeader,
   IonContent,
@@ -11,19 +11,21 @@ import {
   useIonViewDidEnter,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
-import { gridOutline, heartOutline } from "ionicons/icons";
+import { gridOutline, heartOutline, logOutOutline } from "ionicons/icons";
 import { useUserProfile, useLikedRecipes } from "../../../api/userApi";
 import {
+  Creator,
   useRecipesByCreator,
   useCommunityRecipesList,
 } from "../../../api/recipeApi";
 import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from '../../../contexts/authContext';
 
 type CombinedItemData = {
   id: number;
-  creator: { name: string; profile_picture: string };
+  creator: Creator;
   name: string;
   description: string;
   serving_size?: number;
@@ -54,6 +56,7 @@ interface User {
 }
 
 function UserMobile() {
+  const { logout } = useAuth();
   const history = useHistory();
   const queryClient = useQueryClient();
   const {
@@ -71,7 +74,7 @@ function UserMobile() {
     data: communityRecipes = [],
     isFetching: isCommunityRecipesFetching,
   } = useCommunityRecipesList();
-  const { data: likedRecipesData, isFetching: isLikedFetching } =
+  const { data: likedRecipesData, isFetching: isLikedFetching, refetch: refetchLikedRecipes } =
     useLikedRecipes();
 
   useIonViewDidEnter(() => {
@@ -138,12 +141,15 @@ function UserMobile() {
       const userRecipeIds = new Set(userRecipes.map((recipe) => recipe.id));
       return communityRecipes
         .filter((recipe) => userRecipeIds.has(recipe.id))
-        .map((recipe) => transformItemData(recipe, "recipe"));
+        .map((recipe) => transformItemData(recipe, "recipe"))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (activeIcon === "heart") {
       return likedItems;
     }
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
+
+  console.log(filteredItems)
 
   const handleEditProfile = () => {
     history.push("/edit-profile");
@@ -152,11 +158,45 @@ function UserMobile() {
   if (isUserLoading) return <p>Loading...</p>;
   if (userError) return <p>Error loading profile.</p>;
 
+  const navigateToContent = (item: CombinedItemData) => {
+    if ('meal_types' in item) { // mealkits
+      history.push(`/mealkit-details/${item.id}`);
+    } else { // recipes
+      history.push(`/recipe-details/${item.id}`);
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      history.push('/login');
+      queryClient.clear();
+      setShowToast(true);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const handleLikeUpdate = useCallback(() => {
+    refetchLikedRecipes();
+    // Optionally, you might want to refetch other data as well
+    // For example, if the like count affects the community recipes list:
+    // refetchCommunityRecipes();
+  }, [refetchLikedRecipes]);
+
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar className="ion-hide-sm-up">
-          <IonTitle>My Profile</IonTitle>
+       <IonHeader>
+        <IonToolbar className="px-4">
+          <IonTitle className="text-lg font-semibold">My Profile</IonTitle>
+          <IonButton 
+            slot="end" 
+            fill="clear" 
+            onClick={handleLogout}
+            className="text-red-500 font-bold md:hidden"
+          >
+            <IonIcon slot="icon-only" icon={logOutOutline} className="text-xl" />
+          </IonButton>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding font-sans">
@@ -290,7 +330,7 @@ function UserMobile() {
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div style={{ width: "100%" }} key={item.id}>
-                <CommunityCard recipe={item} />
+                <CommunityCard recipe={item} onClick={() => navigateToContent(item)} onLike={handleLikeUpdate}/>
               </div>
             ))
           ) : (
@@ -303,3 +343,7 @@ function UserMobile() {
 }
 
 export default UserMobile;
+
+function setShowToast(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
