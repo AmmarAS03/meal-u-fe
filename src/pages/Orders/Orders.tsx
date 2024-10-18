@@ -101,7 +101,7 @@ const Orders: React.FC = () => {
             <div className="flex items-center justify-center w-full h-full">
               <div className="w-full max-w-md text-center">
                 <IonText>
-                You don't have any orders yet. Ready to start shopping?
+                You don't have any orders yet. Ready to order?
                 </IonText>
                 <div className="mt-4">
                   <IonButton onClick={navigateToOrder}>Explore</IonButton>
