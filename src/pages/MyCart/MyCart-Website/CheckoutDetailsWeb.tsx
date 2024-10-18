@@ -34,7 +34,6 @@ const CheckoutDetailsWeb: React.FC<CheckoutDetailsWebProps> = ({subTotal, setSub
   const { data: deliveryTimeSlot = [] } = useDeliveryTimeSlots();
 
   // calculate total based on subtotal and delivery fee
-  console.log("subTotal: ", subTotal);
   const total = subTotal + deliveryFee;
 
   // calculate minimum date based on latest time slot

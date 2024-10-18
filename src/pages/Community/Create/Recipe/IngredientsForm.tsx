@@ -5,6 +5,7 @@ import {
   useRef,
   useEffect,
   SetStateAction,
+  useMemo,
 } from "react";
 import {
   IonCard,
@@ -23,7 +24,7 @@ import { ProductData, useProductList } from "../../../../api/productApi";
 import { useParams } from "react-router-dom";
 import IconInput from "../../../../components/icon-input";
 import SearchIcon from "../../../../../public/icon/search-icon";
-import { CreateRecipePayload, IngredientRecipe, usePreparationTypeList, PreparationType } from "../../../../api/recipeApi"
+import { CreateRecipePayload, IngredientRecipe, PreparationType, useMultiplePreparationTypes } from "../../../../api/recipeApi"
 import { useUnitList } from '../../../../api/productApi';
 import { useOrder } from '../../../../contexts/orderContext'
 import { useCategoriesList } from '../../../../api/categoryApi';
@@ -48,19 +49,25 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { data: categories } = useCategoriesList();
 
-  const prepTypeMap: Record<number, PreparationType[]> = {};
-  
-  const preparationTypeQueries = (categories ?? []).map(category => usePreparationTypeList(category.id));
+  // create individual queries for each ingredient
+  const prepTypeQueries = useMultiplePreparationTypes(selectedIngredients || []);
 
-  preparationTypeQueries?.forEach((query, index) => {
-    if (query.isError) {
-      console.error(`Error fetching preparation types for category ${categories![index]?.name}:`, query.error);
-    } else {
-      if (query.data) {
-        prepTypeMap[categories![index]?.id] = query.data; // Map the data to category ID
-      }
-    }
-  });
+  const prepTypeMap = useMemo(() => {
+    const map: Record<number, PreparationType[]> = {};
+    
+    if (!selectedIngredients) return map;
+    
+    prepTypeQueries.forEach((query, index) => {
+      const productId = selectedIngredients[index]?.ingredient?.product_id;
+      if (!productId || !query.data) return;
+  
+      map[productId] = query.data;
+    });
+  
+    return map;
+  }, [prepTypeQueries, selectedIngredients]);
+
+  console.log("prepTypeMap new: ", prepTypeMap);
 
   function getIdFromCategoryName(name: string): number {
     const result = categories?.find((category) => category.name === name)
@@ -132,6 +139,8 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
         price: Number(product.price_per_unit),
       };
 
+      console.log(newIngredient);
+
       setSelectedIngredients((prev) => [...prev, newIngredient]);
       dispatch({
         type: "SET_FIELD",
@@ -171,9 +180,8 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     setSelectedIngredients((prevIngredients) => {
       const updatedIngredients = prevIngredients.map((item) => {
         if (item.ingredient.product_id === productId) {
-          const categoryId = getCategoryIdFromProductId(item.ingredient.product_id);
-          if (categoryId) {
-            const prepTypes = prepTypeMap[categoryId] || [];
+          if (productId) {
+            const prepTypes = prepTypeMap[productId] || [];
             const selectedPrepType = prepTypes.find((type) => type.name === preptype);
 
             // calculate the new price
@@ -215,7 +223,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   }
 
   function getPrepTypeNameFromId(productId: number, prepTypeId: number): string {
-    const data = prepTypeMap[getCategoryIdFromProductId(productId)].find((prepType) => prepType.id === prepTypeId);
+    const data = prepTypeMap[productId].find((prepType) => prepType.id === prepTypeId);
     return data!.name;
   }  
 
@@ -257,7 +265,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {selectedIngredients.map((ingredient) => (
+        {(selectedIngredients || []).map((ingredient) => (
           <IonCard key={ingredient.ingredient.product_id}>
             <IonCardHeader>
               <IonCardSubtitle>{ingredient.ingredient.name}</IonCardSubtitle>
@@ -290,20 +298,22 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-x-3 mt-2">
-                { prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)].length > 0 && (
-                  <IonSelect
+              { prepTypeMap[ingredient.ingredient.product_id]?.length > 0 && (
+                <IonSelect
                   value={ingredient.preparation_type}
-                  placeholder={ingredient.preparation_type ? getPrepTypeNameFromId(ingredient.ingredient.product_id, ingredient.preparation_type) : "Select preparation type"}
+                  placeholder={ingredient.preparation_type ? 
+                    getPrepTypeNameFromId(ingredient.ingredient.product_id, ingredient.preparation_type) 
+                    : "Select preparation type"}
                   onIonChange={(e) => handlePrepTypeChange(ingredient.ingredient.product_id, e.detail.value)}
-                  >
-                    {ingredient && 
-                      prepTypeMap[getCategoryIdFromProductId(ingredient.ingredient.product_id)]?.map((prepType) => (
-                    <IonSelectOption key={prepType.id} value={prepType.name}>
-                      {prepType.name}
-                    </IonSelectOption>
+                >
+                  {ingredient &&
+                    prepTypeMap[ingredient.ingredient.product_id]?.map((prepType) => (
+                      <IonSelectOption key={prepType.id} value={prepType.name}>
+                        {prepType.name}
+                      </IonSelectOption>
                   ))}
                 </IonSelect>
-                )}
+              )}
               </div>
             </IonCardContent>
           </IonCard>
