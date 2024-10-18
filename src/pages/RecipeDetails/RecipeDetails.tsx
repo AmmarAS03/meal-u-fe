@@ -278,11 +278,11 @@ const RecipeDetails: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex px-4">
+          <div className="flex flex-wrap px-4 gap-2">
             {recipe.dietary_details.map((detail, index) => (
               <IonChip
                 key={index}
-                className="text-[#7862FC] border border-[#7862FC] bg-transparent rounded-full px-2.5 py-1 text-sm mr-2"
+                className="text-[#7862FC] border border-[#7862FC] bg-transparent rounded-full px-2.5 py-1 text-sm"
               >
                 {detail}
               </IonChip>

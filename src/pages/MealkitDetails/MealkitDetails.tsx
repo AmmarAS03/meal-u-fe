@@ -244,7 +244,7 @@ const MealkitDetails: React.FC = () => {
           </div>
           <div className="w-full h-64 overflow-hidden">
             <IonImg
-              src={mealkit.image}
+              src={mealkit.image || "/img/no-photo.png"}
               alt={mealkit.name}
               className="w-full h-full object-cover"
             />
