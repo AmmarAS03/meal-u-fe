@@ -410,30 +410,20 @@ function OrderMobile() {
           <IonTitle>Order</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <p style={{ fontSize: "12px" }}>Delivery Location</p>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 2,
-              alignItems: "center",
-            }}
-          >
+      <IonContent className="ion-padding font-sans">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs">Delivery Location</p>
+          <div className="flex flex-row items-center gap-0.5">
             <LocationIcon />
             <IonSelect
               value={selectedLocation}
               placeholder="Select Location"
               onIonChange={handleLocationChange}
               interface="popover"
-              style={{ fontSize: "14px", fontWeight: "500" }}
+              className="text-sm font-medium"
             >
               {locations.map((location: DeliveryLocation) => (
-                <IonSelectOption
-                  key={location.id}
-                  value={location.id.toString()}
-                >
+                <IonSelectOption key={location.id} value={location.id.toString()}>
                   {location.name} - {location.branch}
                 </IonSelectOption>
               ))}
@@ -441,16 +431,7 @@ function OrderMobile() {
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: "5px",
-            marginTop: 5,
-            width: "100%",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="flex flex-row gap-1 mt-1 w-full justify-between">
           <IconInput
             onInputHandleChange={handleSearchChange}
             onKeyPress={handleKeyPress}
@@ -482,28 +463,62 @@ function OrderMobile() {
           />
         )}
 
-        {renderSection(
-          "Mealkits",
-          finalData.mealkits,
-          ItemCard,
-          handleMealkitClick
-        )}
-        {renderSection(
-          "Recipes",
-          finalData.recipes,
-          ItemCard,
-          handleRecipeClick
-        )}
-        
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginBottom: "50px",
-            marginTop: "10px",
-          }}
-        >
-          <h3 style={{ fontSize: "16px", fontWeight: "600" }}>Groceries</h3>
+        <div className="flex flex-col mt-1">
+          <h3 className="text-base font-semibold">Mealkits</h3>
+          {isLoading ? (
+            <div className="overflow-x-auto w-full">
+              <div className="flex flex-row min-w-min">
+                {[...Array(5)].map((_, index) => (
+                  <SkeletonOrderCard key={index} />
+                ))}
+              </div>
+            </div>
+          ) : finalData.mealkits.length > 0 ? (
+            <div className="overflow-x-auto w-full">
+              <div className="flex flex-row min-w-min">
+                {finalData.mealkits.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => handleMealkitClick(item.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p>No mealkits found.</p>
+          )}
+        </div>
+
+        <div className="flex flex-col mt-1">
+          <h3 className="text-base font-semibold">Recipes</h3>
+          {isLoading ? (
+            <div className="overflow-x-auto w-full">
+              <div className="flex flex-row min-w-min">
+                {[...Array(5)].map((_, index) => (
+                  <SkeletonOrderCard key={index} />
+                ))}
+              </div>
+            </div>
+          ) : finalData.recipes.length > 0 ? (
+            <div className="overflow-x-auto w-full">
+              <div className="flex flex-row min-w-min">
+                {finalData.recipes.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => handleRecipeClick(item.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p>No recipes found.</p>
+          )}
+        </div>
+
+        <div className="flex flex-col mb-12 mt-2.5">
+          <h3 className="text-base font-semibold">Groceries</h3>
           {isLoading ? (
             <>
               <SkeletonProductItem />
@@ -514,99 +529,47 @@ function OrderMobile() {
             finalData.products.map((product: ProductData) => {
               const cartItem = getCartItem(product.id);
               const cartQuantity = cartItem ? cartItem.quantity : 0;
-              
+
               return (
                 <div
                   key={product.id}
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    backgroundColor: "#ffffff",
-                    borderRadius: 15,
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    padding: "10px",
-                    marginBottom: "10px",
-                    cursor: "pointer",
-                  }}
+                  className="flex flex-row justify-between items-center bg-white rounded-2xl shadow-md p-2.5 mb-2.5 cursor-pointer"
                 >
                   <div
                     onClick={() => handleProductClick(product.id)}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      gap: "5px",
-                      flex: 1,
-                    }}
+                    className="flex flex-row gap-1 flex-1"
                   >
                     <img
                       alt={product.name}
                       src={product.image || "/img/no-photo.png"}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                        maxWidth: "50px",
-                        maxHeight: "50px",
-                        borderRadius: "10px",
-                      }}
+                      className="w-full h-auto object-cover max-w-[50px] max-h-[50px] rounded-xl"
                     />
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                        height: "100%",
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          marginBottom: "4px",
-                          fontSize: "10px",
-                          fontWeight: "normal",
-                        }}
-                      >
-                        {product.name.length > 50
-                          ? `${product.name.slice(0, 50)}...`
-                          : product.name}
+                    <div className="flex flex-col justify-center items-start h-full">
+                      <p className="m-0 mb-1 text-xs font-normal truncate max-w-[200px]">
+                        {product.name}
                       </p>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: "14px",
-                          fontWeight: "bold",
-                        }}
-                      >
+                      <h3 className="m-0 text-sm font-bold">
                         ${product.price_per_unit}
                       </h3>
                     </div>
                   </div>
 
                   <div 
-                    style={{ display: "flex", flexDirection: "row" }}
+                    className="flex flex-row items-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <IonIcon
                       icon={removeCircleOutline}
                       onClick={() => decrement(product.id)}
-                      style={{ fontSize: "24px", cursor: "pointer" }}
+                      className="text-2xl cursor-pointer"
                     />
-                    <div
-                      style={{
-                        width: "30px",
-                        textAlign: "center",
-                        margin: "0px",
-                      }}
-                    >
+                    <div className="w-8 text-center m-0">
                       {cartQuantity}
                     </div>
                     <IonIcon
                       icon={addCircleOutline}
                       onClick={() => increment(product)}
-                      style={{ fontSize: "24px", cursor: "pointer" }}
+                      className="text-2xl cursor-pointer"
                     />
                   </div>
                 </div>
@@ -619,62 +582,23 @@ function OrderMobile() {
 
         {!isFilterVisible && (
           <IonButton
-            onClick={() => router.push("/mycart")}
-            style={{
-              position: "fixed",
-              bottom: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "85vw",
-              height: "50px",
-              "--border-radius": "25px",
-              "--box-shadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
-              "--background": "#7862FC",
-              zIndex: 1000,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                flexDirection: "row",
-                padding: "5px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  width: "100%",
-                  flexDirection: "column",
-                  justifyContent: "space-around",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: "400",
-                    textAlign: "left",
-                    color: "#fff",
-                  }}
-                >
-                  My Orders
+          onClick={() => router.push("/mycart")}
+          className="fixed font-sans bottom-5 left-1/2 transform -translate-x-1/2 w-[92vw] rounded-[16px] shadow-md bg-[#7862FC] z-50"
+        >
+          <div className="flex justify-between w-full flex-row px-2 py-1">
+            <div className="flex w-full flex-col justify-around">
+              <p className="text-base font-semibold text-left text-white">
+                My Orders
+              </p>
+              {cart && (
+                <p className="text-xs text-left font-normal text-white">
+                  {totalItem} items - ${totalPrice} AUD
                 </p>
-                {cart && (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      textAlign: "left",
-                      color: "#fff",
-                    }}
-                  >
-                    {totalItem} items - ${totalPrice} AUD
-                  </p>
-                )}
-              </div>
-              <FloatCartIcon />
+              )}
             </div>
-          </IonButton>
+            <FloatCartIcon />
+          </div>
+        </IonButton>
         )}
       </IonContent>
     </IonPage>

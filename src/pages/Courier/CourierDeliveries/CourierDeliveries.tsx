@@ -1,14 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import DropdownSelect from '../../../components/Dropdown/DropdownSelect';
 import DeliveryBatch from '../../../components/Courier/DeliveryBatch/DeliveryBatch';
 import { useAllOrders } from '../../../api/courierApi';
 import { format, addHours, parseISO, isToday, isTomorrow, isThisWeek } from 'date-fns';
+import { logOutOutline } from 'ionicons/icons';
+import { useAuth } from '../../../contexts/authContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const CourierDeliveries: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState('All Deliveries');
+  const { logout } = useAuth();
   const history = useHistory();
+  const queryClient = useQueryClient();
   const { data: ordersData, isLoading, error } = useAllOrders();
 
   const deliveries = useMemo(() => {
@@ -97,11 +102,29 @@ const CourierDeliveries: React.FC = () => {
     );
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      history.push('/login');
+      queryClient.clear();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader collapse='fade'>
         <IonToolbar className='font-sans'>
           <IonTitle>Deliveries</IonTitle>
+          <IonButton 
+            slot="end" 
+            fill="clear" 
+            onClick={handleLogout}
+            className="text-red-500 font-bold md:hidden"
+          >
+            <IonIcon slot="icon-only" icon={logOutOutline} className="text-xl" />
+          </IonButton>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className='font-sans'>

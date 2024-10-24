@@ -338,7 +338,7 @@ function CommunityMobile() {
           </div>
 
           <IonButton size="small" onClick={handleFilter}>
-            <FilterIcon />
+            <FilterIcon/>
           </IonButton>
         </div>
 

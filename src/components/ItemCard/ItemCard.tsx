@@ -37,11 +37,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
       className={`w-[30vw] flex-none m-2.5 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
       onClick={handleClick}
     >
-      <div className="flex justify-center items-center overflow-hidden p-1.5">
+      <div className="relative w-full pt-[75%] overflow-hidden">
         <img
           alt={item.name}
           src={item.image || '/img/no-photo.png'}
-          className="w-full h-auto object-cover max-w-[130px] max-h-[90px] rounded-[15px]"
+          className="absolute top-0 left-0 w-full h-full object-cover p-1.5 rounded-[12px]"
         />
       </div>
       <IonCardHeader className="p-1.5">
