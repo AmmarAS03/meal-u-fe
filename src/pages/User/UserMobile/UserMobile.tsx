@@ -69,22 +69,27 @@ function UserMobile() {
   const [activeIcon, setActiveIcon] = useState("grid");
 
   const creatorId = user ? user.id : 0;
-  const { data: userRecipes = [], isFetching: isCreatorRecipesFetching } =
+  const { data: userRecipes = [], isFetching: isCreatorRecipesFetching, refetch: refetchUserByCreator} =
     useRecipesByCreator(creatorId);
   const {
     data: communityRecipes = [],
     isFetching: isCommunityRecipesFetching,
+    refetch: refetchCommunityRecipes
   } = useCommunityRecipesList();
   const { data: likedRecipesData, isFetching: isLikedFetching, refetch: refetchLikedRecipes } =
     useLikedRecipes();
 
   useIonViewDidEnter(() => {
     refetchUser();
+    refetchUserByCreator();
+    refetchCommunityRecipes(); 
   });
-
+  
   useEffect(() => {
     refetchUser();
-  }, [refetchUser]);
+    refetchUserByCreator();
+    refetchCommunityRecipes(); 
+  }, [refetchUser, refetchUserByCreator, refetchCommunityRecipes]);
 
   const transformItemData = (
     item: any,
@@ -151,7 +156,7 @@ function UserMobile() {
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
 
   const handleEditProfile = () => {
-    history.push("/edit-profile");
+    history.push('/edit-profile');
   };
 
   if (isUserLoading) return <p>Loading...</p>;

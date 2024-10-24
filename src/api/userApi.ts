@@ -17,6 +17,10 @@ import { dietaryRequirements } from "../components/FilterOverlay/dummyData";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
+export interface EditProfileLocationState {
+  refetchUserRecipes: () => Promise<any>;
+}
+
 export interface UserProfile {
   dietary_requirements: number[];
   id: number;
