@@ -84,13 +84,13 @@ function EditProfile() {
       const dietaryRequirementIds = user.dietary_requirements ? 
       user.dietary_requirements.map((dr: any) => dr.id) : [];
 
-    setFormData({
-      firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email,
-      gender: user.gender,
-      dietary_requirements: dietaryRequirementIds,
-    });
+      setFormData({
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        gender: user.gender,
+        dietary_requirements: dietaryRequirementIds,
+      });
       setPhoto({ dataUrl: user.image || null, file: null });
     }
   }, [user]);

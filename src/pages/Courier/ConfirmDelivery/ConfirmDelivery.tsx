@@ -16,6 +16,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { useUpdateOrderStatusToDelivered } from '../../../api/courierApi';
 import { useCourier } from '../../../contexts/courierContext';
+import imageCompression from 'browser-image-compression';
 
 interface RouteParams {
   id: string;
@@ -46,11 +47,45 @@ const ConfirmDelivery: React.FC = () => {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Camera
       });
+  
+      if (!image.dataUrl) {
+        throw new Error('No image data received');
+      }
+  
+      // Convert DataUrl to Blob
+      const response = await fetch(image.dataUrl);
+      const blob = await response.blob();
+  
+      // Create original file
+      const originalFile = new File([blob], "delivery_proof.jpg", {
+        type: "image/jpeg",
+        lastModified: new Date().getTime(),
+      });
+  
+      // Compression options
+      const options = {
+        maxSizeMB: 1,           // Maximum file size of 1MB
+        maxWidthOrHeight: 1920, // Maximum dimension
+        useWebWorker: true      // Better performance
+      };
+  
+      // Compress the image
+      const compressedFile = await imageCompression(originalFile, options);
       
-      setPhoto(image.dataUrl || null);
+      // Log sizes for verification
+      console.log(`Original size: ${originalFile.size / 1024 / 1024} MB`);
+      console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+  
+      // Convert back to DataURL for preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+  
     } catch (error) {
-      console.error('Error taking photo:', error);
-      setToastMessage('Failed to take photo');
+      console.error('Error taking/compressing photo:', error);
+      setToastMessage('Failed to take or compress photo');
       setShowToast(true);
     }
   };
@@ -63,11 +98,39 @@ const ConfirmDelivery: React.FC = () => {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos
       });
+  
+      if (!image.dataUrl) {
+        throw new Error('No image data received');
+      }
+  
+      const response = await fetch(image.dataUrl);
+      const blob = await response.blob();
+  
+      const originalFile = new File([blob], "delivery_proof.jpg", {
+        type: "image/jpeg",
+        lastModified: new Date().getTime(),
+      });
+  
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+  
+      const compressedFile = await imageCompression(originalFile, options);
       
-      setPhoto(image.dataUrl || null);
+      console.log(`Original size: ${originalFile.size / 1024 / 1024} MB`);
+      console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+  
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+  
     } catch (error) {
-      console.error('Error uploading photo:', error);
-      setToastMessage('Failed to upload photo');
+      console.error('Error uploading/compressing photo:', error);
+      setToastMessage('Failed to upload or compress photo');
       setShowToast(true);
     }
   };
@@ -83,7 +146,10 @@ const ConfirmDelivery: React.FC = () => {
       setIsLoading(true);
       const response = await fetch(photo);
       const blob = await response.blob();
-      const photoFile = new File([blob], "delivery_proof.jpg", { type: "image/jpeg" });
+      const photoFile = new File([blob], "delivery_proof.jpg", { 
+        type: "image/jpeg",
+        lastModified: new Date().getTime()
+      });
 
       await updateToDelivered.mutateAsync({ 
         orderId: parseInt(id), 
@@ -135,6 +201,10 @@ const ConfirmDelivery: React.FC = () => {
               <IonButton expand="block" onClick={uploadPhoto} color="primary" className="font-semibold">
                 <IonIcon icon={imageOutline} slot="start" />
                 Upload Photo
+              </IonButton>
+              <IonButton expand="block" onClick={takePhoto} color="primary" className="font-semibold">
+                <IonIcon icon={cameraOutline} slot="start" />
+                Take Photo
               </IonButton>
             </div>
           </div>

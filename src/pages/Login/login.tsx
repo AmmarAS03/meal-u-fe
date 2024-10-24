@@ -7,6 +7,7 @@ import LockIcon from "../../../public/icon/lock-icon";
 import EyeIcon from "../../../public/icon/eye-icon";
 import { useAuth } from "../../contexts/authContext";
 import { useHistory } from "react-router";
+import "./login.css";
 
 const Login: React.FC = () => {
   const router = useIonRouter();
@@ -51,16 +52,16 @@ const Login: React.FC = () => {
 
     try {
       const userRole = await login(email, password);
-      
+
       if (userRole) {
         switch (userRole) {
-          case 'warehouse':
+          case "warehouse":
             router.push("/warehouse/dashboard");
             break;
-          case 'courier':
+          case "courier":
             router.push("/courier/home");
             break;
-          case 'client':
+          case "client":
             router.push("/home");
             break;
           default:
@@ -97,10 +98,27 @@ const Login: React.FC = () => {
             )}
 
             <div className="flex-1 px-4 py-4 md:py-0 md:px-10 flex flex-col items-start">
-              <h2 className="text-3xl mb-2.5 font-bold">Login</h2>
-              {!isMobile && (
-                <p className="mb-5">Hi, let's jump in! 👋</p>
+              {isMobile && (
+                <div className="w-[100%]">
+                  <img
+                    className="w-12 h-12 rounded-full justify-self-center bounce-animation"
+                    src={
+                      "https://meal-u.s3.amazonaws.com/images/mealu-logo.png"
+                    }
+                    alt="MealU Logo"
+                  />
+                </div>
               )}
+              <h2
+                className={
+                  isMobile
+                    ? "w-[100%] text-center text-2xl mb-2.5 font-bold mt-4"
+                    : "text-3xl mb-2.5 font-bold"
+                }
+              >
+                {isMobile? "Login to your account" : "Login" }
+              </h2>
+              {!isMobile && <p className="mb-5">Hi, let's jump in! 👋</p>}
 
               <form onSubmit={handleSubmit} className="w-full">
                 <div className="mb-5">
@@ -125,9 +143,7 @@ const Login: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                   />
                 </div>
-                {error && (
-                  <p className="text-red-500 mb-2.5">{error}</p>
-                )}
+                {error && <p className="text-red-500 mb-2.5">{error}</p>}
                 <IconButton
                   text={isLoading ? "Logging in..." : "Login"}
                   textColor="white"

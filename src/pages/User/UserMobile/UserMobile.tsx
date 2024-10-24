@@ -9,6 +9,7 @@ import {
   IonButton,
   IonIcon,
   useIonViewDidEnter,
+  IonAlert,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
 import { gridOutline, heartOutline, logOutOutline } from "ionicons/icons";
@@ -21,7 +22,7 @@ import {
 import CommunityCard from "../../../components/CommunityCard/CommunityCard";
 import SkeletonCommunityCard from "../../../components/CommunityCard/SkeletonCommunityCard";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from '../../../contexts/authContext';
+import { useAuth } from "../../../contexts/authContext";
 
 type CombinedItemData = {
   id: number;
@@ -65,30 +66,42 @@ function UserMobile() {
     isLoading: isUserLoading,
     error: userError,
     refetch: refetchUser,
-  } = useUserProfile() as {data: User | undefined, isLoading: boolean, error: any, refetch: any};
+  } = useUserProfile() as {
+    data: User | undefined;
+    isLoading: boolean;
+    error: any;
+    refetch: any;
+  };
   const [activeIcon, setActiveIcon] = useState("grid");
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
   const creatorId = user ? user.id : 0;
-  const { data: userRecipes = [], isFetching: isCreatorRecipesFetching, refetch: refetchUserByCreator} =
-    useRecipesByCreator(creatorId);
+  const {
+    data: userRecipes = [],
+    isFetching: isCreatorRecipesFetching,
+    refetch: refetchUserByCreator,
+  } = useRecipesByCreator(creatorId);
   const {
     data: communityRecipes = [],
     isFetching: isCommunityRecipesFetching,
-    refetch: refetchCommunityRecipes
+    refetch: refetchCommunityRecipes,
   } = useCommunityRecipesList();
-  const { data: likedRecipesData, isFetching: isLikedFetching, refetch: refetchLikedRecipes } =
-    useLikedRecipes();
+  const {
+    data: likedRecipesData,
+    isFetching: isLikedFetching,
+    refetch: refetchLikedRecipes,
+  } = useLikedRecipes();
 
   useIonViewDidEnter(() => {
     refetchUser();
     refetchUserByCreator();
-    refetchCommunityRecipes(); 
+    refetchCommunityRecipes();
   });
-  
+
   useEffect(() => {
     refetchUser();
     refetchUserByCreator();
-    refetchCommunityRecipes(); 
+    refetchCommunityRecipes();
   }, [refetchUser, refetchUserByCreator, refetchCommunityRecipes]);
 
   const transformItemData = (
@@ -148,7 +161,10 @@ function UserMobile() {
       return communityRecipes
         .filter((recipe) => userRecipeIds.has(recipe.id))
         .map((recipe) => transformItemData(recipe, "recipe"))
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
     } else if (activeIcon === "heart") {
       return likedItems;
     }
@@ -156,28 +172,34 @@ function UserMobile() {
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);
 
   const handleEditProfile = () => {
-    history.push('/edit-profile');
+    history.push("/edit-profile");
   };
 
   if (isUserLoading) return <p>Loading...</p>;
   if (userError) return <p>Error loading profile.</p>;
 
   const navigateToContent = (item: CombinedItemData) => {
-    if ('meal_types' in item) { // mealkits
+    if ("meal_types" in item) {
+      // mealkits
       history.push(`/mealkit-details/${item.id}`);
-    } else { // recipes
+    } else {
+      // recipes
       history.push(`/recipe-details/${item.id}`);
     }
-  }
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutAlert(true);
+  };
 
   const handleLogout = async () => {
     try {
       await logout();
-      history.push('/login');
+      history.push("/login");
       queryClient.clear();
       setShowToast(true);
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -190,16 +212,20 @@ function UserMobile() {
 
   return (
     <IonPage>
-       <IonHeader>
+      <IonHeader>
         <IonToolbar className="px-4">
           <IonTitle className="text-lg font-semibold">My Profile</IonTitle>
-          <IonButton 
-            slot="end" 
-            fill="clear" 
-            onClick={handleLogout}
+          <IonButton
+            slot="end"
+            fill="clear"
+            onClick={handleLogoutClick}
             className="text-red-500 font-bold md:hidden"
           >
-            <IonIcon slot="icon-only" icon={logOutOutline} className="text-xl" />
+            <IonIcon
+              slot="icon-only"
+              icon={logOutOutline}
+              className="text-xl"
+            />
           </IonButton>
         </IonToolbar>
       </IonHeader>
@@ -262,11 +288,18 @@ function UserMobile() {
                 justifyContent: "center",
                 marginBottom: "15px",
                 alignItems: "center",
-                gap: "2px"
+                gap: "2px",
               }}
             >
               <p>Voucher Credits:</p>
-              <IonButton size="small" shape="round" fill="outline" color={user.voucher_credits === "0.00" ? "medium" : "tertiary"}>${user.voucher_credits}</IonButton>
+              <IonButton
+                size="small"
+                shape="round"
+                fill="outline"
+                color={user.voucher_credits === "0.00" ? "medium" : "tertiary"}
+              >
+                ${user.voucher_credits}
+              </IonButton>
             </div>
             <IonButton
               color="primary"
@@ -340,14 +373,20 @@ function UserMobile() {
           isCommunityRecipesFetching ||
           isLikedFetching ? (
             <>
-              <SkeletonCommunityCard />
-              <SkeletonCommunityCard />
-              <SkeletonCommunityCard />
+              <div style={{ width: "100%" }}>
+                <SkeletonCommunityCard />
+                <SkeletonCommunityCard />
+                <SkeletonCommunityCard />
+              </div>
             </>
           ) : filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div style={{ width: "100%" }} key={item.id}>
-                <CommunityCard recipe={item} onClick={() => navigateToContent(item)} onLike={handleLikeUpdate}/>
+                <CommunityCard
+                  recipe={item}
+                  onClick={() => navigateToContent(item)}
+                  onLike={handleLikeUpdate}
+                />
               </div>
             ))
           ) : (
@@ -355,6 +394,28 @@ function UserMobile() {
           )}
         </div>
       </IonContent>
+      <IonAlert
+        isOpen={showLogoutAlert}
+        onDidDismiss={() => setShowLogoutAlert(false)}
+        header="Confirm Logout"
+        message="Are you sure you want to logout?"
+        buttons={[
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: () => {
+              setShowLogoutAlert(false);
+            }
+          },
+          {
+            text: 'Yes, Logout',
+            handler: () => {
+              handleLogout();
+            }
+          }
+        ]}
+      />
     </IonPage>
   );
 }

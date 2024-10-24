@@ -130,10 +130,7 @@ const CreateRecipe: React.FC = () => {
       // state.recipe.instructions.length > 0 &&
       
       // Ingredients section
-      state.ingredients.length > 0 &&
-      
-      // Dietary details section
-      state.dietary_details.length > 0
+      state.ingredients.length > 0
     );
 
     setAllFieldsFilled(isValid);
@@ -151,10 +148,7 @@ const CreateRecipe: React.FC = () => {
       state.recipe.instructions.length > 0 ||
       
       // Ingredients section
-      state.ingredients.length > 0 ||
-      
-      // Dietary details section
-      state.dietary_details.length > 0
+      state.ingredients.length > 0
     );
     setAnyFieldFilled(isValid);
   }, [state]);

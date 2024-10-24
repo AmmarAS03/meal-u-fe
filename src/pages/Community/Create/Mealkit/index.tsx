@@ -7,6 +7,7 @@ import { useDietaryDetails } from '../../../../api/productApi';
 import { useHistory } from 'react-router-dom';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { chevronBack, cloudUploadOutline } from 'ionicons/icons';
+import imageCompression from 'browser-image-compression';
 
 interface MealkitAction {
   type: string;
@@ -131,30 +132,46 @@ const CreateMealkit: React.FC = () => {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos
       });
-
+  
       if (!image.dataUrl) {
         throw new Error('No image data received');
       }
-      
-      setPhotoUrl(image.dataUrl || null);
-
+  
+      setPhotoUrl(image.dataUrl);
+  
       const response = await fetch(image.dataUrl);
       const blob = await response.blob();
-      const photoFile = new File([blob], "mealkit_image.jpg", { type: "image/jpeg" });
-
-      setPhoto(photoFile);
-
-      dispatch({type: "SET_FIELD", field: "image", value: photoFile});
+  
+      const originalFile = new File([blob], "mealkit_image.jpg", {
+        type: "image/jpeg",
+        lastModified: new Date().getTime(),
+      });
+  
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+  
+      const compressedFile = await imageCompression(originalFile, options);
+      
+      console.log(`Original size: ${originalFile.size / 1024 / 1024} MB`);
+      console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+  
+      setPhoto(compressedFile);
+      dispatch({type: "SET_FIELD", field: "image", value: compressedFile});
+  
       setToast({
         isOpen: true,
-        message: 'Image uploaded successfully',
+        message: 'Image uploaded and compressed successfully',
         isError: false
       });
+  
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      console.error('Error uploading/compressing photo:', error);
       setToast({
         isOpen: true,
-        message: error instanceof Error ? error.message : 'Failed to upload photo',
+        message: error instanceof Error ? error.message : 'Failed to upload/compress photo',
         isError: true
       });
     }
