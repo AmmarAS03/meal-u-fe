@@ -86,7 +86,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick, onLike})
               className="w-12 h-12 rounded-full mr-4"
             />
             <div>
-              <h2 className="text-xs text-xl font-semibold">
+              <h2 className="text-xs font-semibold">
                 {recipe.creator.name}
               </h2>
               <p className="text-xs text-gray-500">
@@ -105,13 +105,13 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ recipe, onClick, onLike})
               {recipe.dietary_details.slice(0, 2).map((detail, index) => (
                 <span
                   key={index}
-                  className="text-[0.5rem] px-1 py-1 outline text-[#7862FC] rounded-full"
+                  className="text-[0.5rem] px-1 py-1 outline outline-1 text-[#7862FC] rounded-full"
                 >
                   {detail}
                 </span>
               ))}
               {recipe.dietary_details.length > 2 && (
-                <div className="text-[0.5rem] px-1 py-1 outline text-[#7862FC] rounded-full">
+                <div className="text-[0.5rem] px-1 py-1 outline outline-1 text-[#7862FC] rounded-full">
                   +{recipe.dietary_details.length - 2}
                 </div>
               )}

@@ -111,9 +111,10 @@ function UserMobile() {
 
   const likedItems = useMemo(() => {
     if (!likedRecipesData) return [];
-    return [
-      ...(likedRecipesData.liked_recipes?.map((item) =>
-        transformItemData(
+    
+    const allLikedItems = [
+      ...(likedRecipesData.liked_recipes?.map((item) => ({
+        ...transformItemData(
           {
             ...item.recipe,
             likes_count: item.likes_count,
@@ -121,10 +122,11 @@ function UserMobile() {
             is_like: true,
           },
           "recipe"
-        )
-      ) || []),
-      ...(likedRecipesData.liked_mealkits?.map((item) =>
-        transformItemData(
+        ),
+        liked_at: item.liked_at
+      })) || []),
+      ...(likedRecipesData.liked_mealkits?.map((item) => ({
+        ...transformItemData(
           {
             ...item.mealkit,
             likes_count: item.likes_count,
@@ -132,9 +134,14 @@ function UserMobile() {
             is_like: true,
           },
           "mealkit"
-        )
-      ) || []),
+        ),
+        liked_at: item.liked_at
+      })) || []),
     ];
+  
+    return allLikedItems.sort((a, b) => 
+      new Date(b.liked_at).getTime() - new Date(a.liked_at).getTime()
+    );
   }, [likedRecipesData]);
 
   const filteredItems = useMemo(() => {
@@ -145,7 +152,7 @@ function UserMobile() {
         .map((recipe) => transformItemData(recipe, "recipe"))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (activeIcon === "heart") {
-      return likedItems;
+      return likedItems.map(({ liked_at, ...item }) => item);
     }
     return [];
   }, [activeIcon, userRecipes, communityRecipes, likedItems]);

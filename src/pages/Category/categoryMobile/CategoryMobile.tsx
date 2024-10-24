@@ -40,7 +40,7 @@ const CategoryMobile: React.FC = () => {
           <IonTitle>Categories</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent className="ion-padding font-sans">
         <div
           style={{
             display: "flex",

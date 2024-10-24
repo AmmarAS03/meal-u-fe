@@ -5,7 +5,7 @@ interface FilterIconProps {
 }
 
 const FilterIcon: React.FC<FilterIconProps> = ({
-    color = "#042628",
+    color = "#FFFFFF",
 }) => {
     return (
         <svg

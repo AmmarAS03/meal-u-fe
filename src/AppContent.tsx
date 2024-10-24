@@ -4,6 +4,7 @@ import {
   IonContent,
   IonHeader,
   IonRouterOutlet,
+  IonSpinner,
 } from "@ionic/react";
 import Tab1 from "./pages/Tab-1/Tab1";
 import Tab2 from "./pages/Community";
@@ -45,7 +46,7 @@ import SignUp from "./pages/SignUp/SignUp";
 import AddCardPage from "./pages/AddCard/AddCard";
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading } = useAuth();
   const location = useLocation();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
@@ -75,6 +76,17 @@ const AppContent: React.FC = () => {
     return true;
   };
 
+  console.log("Is Authenticated,", isAuthenticated)
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center bg-white justify-center gap-2 h-screen">
+        <IonSpinner className="text-[#7862FC]" name="circular" />
+        <p className="text-[#7862FC] font-sans font-semibold">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       {isAuthenticated && (
@@ -87,6 +99,8 @@ const AppContent: React.FC = () => {
         {isAuthenticated ? (
           <>
             <IonRouterOutlet>
+              <Route exact path="/login" component={Login} />
+              <Route exact path="/signup" component={SignUp} />
               <Route exact path="/tab1/subpage" component={SubPage} />
               <Route exact path="/order/:category" component={Order} />
               <Route exact path="/categories" component={Category} />
