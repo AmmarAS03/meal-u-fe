@@ -5,6 +5,7 @@ import * as maptilersdk from '@maptiler/sdk';
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { format, parseISO, addHours } from 'date-fns';
+import { useCourier } from '../../../contexts/courierContext';
 
 const MAPTILER_API_KEY = import.meta.env.VITE_MAPTILER_API_KEY;
 
@@ -25,13 +26,17 @@ interface LocationState {
 const CourierDelivery: React.FC = () => {
   const { type } = useParams<RouteParams>();
   const location = useLocation<LocationState>();
-  const { orders = [], date, time } = location.state || {};
+  const { currentBatch } = useCourier();
   const isPickup = type === 'pickup';
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   const geolocateControl = useRef<maptilersdk.GeolocateControl | null>(null);
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
   const history = useHistory();
+
+  const orders = currentBatch?.orders || location.state?.orders || [];
+  const date = currentBatch?.date || location.state?.date || '';
+  const time = currentBatch?.time || location.state?.time || '';
 
   const destinationLocation: [number, number] = isPickup 
     ? [153.0197, -27.4648]

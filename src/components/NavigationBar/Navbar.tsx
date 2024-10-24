@@ -24,7 +24,6 @@ const Navbar: React.FC = () => {
   const courierNavItems = [
     { to: "/courier/home", icon: RepeatIcon, label: "Home" },
     { to: "/courier/deliveries", icon: ScheduleIcon, label: "Orders" },
-    { to: "/courier/profile", icon: UserIcon, label: "Profile" },
   ];
 
   const customerNavItems = [

@@ -228,6 +228,7 @@ const OrderDetail: React.FC = () => {
                       <p><span className="font-semibold">Delivery Time:</span> {detail.delivery_time.name} ({detail.delivery_time.start_time} - {detail.delivery_time.end_time})</p>
                       <p><span className="font-semibold">Delivery Date:</span> {detail.delivery_date}</p>
                       <p><span className="font-semibold">Locker Number:</span> {detail.locker_number || 'Not assigned'}</p>
+                      <p><span className="font-semibold">Passcode:</span> {orderDetails.passcode || 'Not assigned'}</p>
                     </div>
                     <div className="flex flex-col items-center justify-center">
                       {detail.qr_code ? (

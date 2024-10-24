@@ -10,11 +10,14 @@ interface OrderItemProps {
   isCurrent: boolean;
 }
 
+// OrderItem.tsx
 const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurrent }) => {
   const history = useHistory();
   
   const capitalizeFirstLetter = (string: string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+    return string.replace(/_/g, ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   const handleClick = () => {
@@ -23,6 +26,13 @@ const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurren
     } else {
       history.push(`/order-status/${id}`);
     }
+  };
+
+  const getStatusColor = (status: string) => {
+    if (status === 'cancelled') {
+      return 'text-red-500';
+    }
+    return 'text-gray-500';
   };
 
   return (
@@ -34,12 +44,20 @@ const OrderItem: React.FC<OrderItemProps> = ({ id, status, title, date, isCurren
         <BagIcon />
       </div>
       <div className="flex-grow overflow-hidden">
-        <p className="text-gray-500 text-sm">{capitalizeFirstLetter(status)}</p>
-        <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-navy-700 truncate`}>{title}</p>
+        <p className={`text-sm ${getStatusColor(status)}`}>
+          {capitalizeFirstLetter(status)}
+        </p>
+        <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-navy-700 truncate`}>
+          {title}
+        </p>
       </div>
       <div className="text-right ml-2">
-        <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-sm text-gray-500`}>{date}</p>
-        {isCurrent && <div className="w-2 h-2 bg-purple-500 rounded-full ml-auto mt-1"></div>}
+        <p className={`${isCurrent ? 'font-semibold' : 'font-normal'} text-sm text-gray-500`}>
+          {date}
+        </p>
+        {isCurrent && status !== 'cancelled' && (
+          <div className="w-2 h-2 bg-purple-500 rounded-full ml-auto mt-1" />
+        )}
       </div>
     </div>
   );

@@ -43,6 +43,7 @@ interface OrderDetails {
   delivery_details: {
     qr_code: string | null;
   }[];
+  passcode: string;
 }
 
 const Receipt: React.FC<{ orderDetails: OrderDetails }> = ({ orderDetails }) => (
@@ -80,6 +81,9 @@ const Receipt: React.FC<{ orderDetails: OrderDetails }> = ({ orderDetails }) => 
       </div>
       <div className="border-t pt-2">
         <p className="font-bold">Total: ${orderDetails.total}</p>
+      </div>
+      <div className="border-t pt-2">
+        <p className="font-bold">Passcode: {orderDetails.passcode}</p>
       </div>
       <div className="mt-4 text-center">
         <p>Thank you for ordering from Meal.U!</p>

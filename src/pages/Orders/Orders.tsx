@@ -15,12 +15,12 @@ const Orders: React.FC = () => {
 
   const groupOrders = (orders: UserOrders[]) => {
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Start of today
+    now.setHours(0, 0, 0, 0);
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+  
     return [
       {
         title: 'Waiting for Payment',
@@ -30,32 +30,21 @@ const Orders: React.FC = () => {
       {
         title: 'Ongoing',
         isCurrent: true,
-        orders: orders.filter(order => ['paid', 'preparing', 'ready to deliver', 'delivering', 'delivered', 'picked_up'].includes(order.order_status)),
-      },
-      {
-        title: 'Today',
-        isCurrent: !orders.filter(order => order.order_status === 'completed'),
         orders: orders.filter(order => 
-          order.order_status === 'completed' && 
-          new Date(order.created_at) >= now
+          ['paid', 'preparing', 'ready to deliver', 'delivering', 'delivered', 'picked_up'].includes(order.order_status)
         ),
       },
       {
-        title: 'Yesterday',
+        title: 'Cancelled',
         isCurrent: false,
-        orders: orders.filter(order => 
-          new Date(order.created_at) >= yesterday && 
-          new Date(order.created_at) < now && 
-          order.order_status !== 'pending'
-        ),
+        orders: orders.filter(order => order.order_status === 'cancelled'),
       },
       {
-        title: 'Past 7 Days',
+        title: 'Completed',
         isCurrent: false,
         orders: orders.filter(order => 
-          new Date(order.created_at) >= sevenDaysAgo && 
-          new Date(order.created_at) < yesterday && 
-          order.order_status !== 'pending'
+          order.order_status === 'completed' &&
+          new Date(order.created_at) >= sevenDaysAgo
         ),
       },
     ];

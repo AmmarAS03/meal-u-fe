@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   IonContent,
@@ -89,6 +89,15 @@ const RecipeDetails: React.FC = () => {
       setCommentCount(comments.length);
     }
   }, [comments]);
+
+  const commentsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToComments = () => {
+    commentsRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
 
   useEffect(() => {
     if (likedRecipesData?.liked_recipes && id) {
@@ -262,9 +271,14 @@ const RecipeDetails: React.FC = () => {
                 </div>
                 <IonText>{recipeStats?.likes_count}</IonText>
               </div>
-              <div className="flex items-center gap-2">
-                <IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
-                <IonText>{commentCount}</IonText>
+              <div 
+                className="flex items-center gap-2 cursor-pointer" 
+                onClick={scrollToComments}
+              >
+                <IonIcon icon={chatbubbleOutline} className="w-6 h-6"></IonIcon>
+                <IonText className="text-sm text-[#0A2533]">
+                  {commentCount}
+                </IonText>
               </div>
             </div>
           </div>
@@ -371,7 +385,7 @@ const RecipeDetails: React.FC = () => {
               price={`$${ingredient.price.toFixed(2)}`}
             />
           ))}
-          <div className="px-4 mt-8 mb-24">
+          <div className="px-4 mt-8 mb-24" ref={commentsRef}>
             <h2 className="text-xl font-bold mb-4">Comments</h2>
             <div className="space-y-4">
               {isLoadingComments ? (

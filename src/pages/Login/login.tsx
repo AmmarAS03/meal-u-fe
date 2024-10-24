@@ -10,7 +10,7 @@ import { useHistory } from "react-router";
 
 const Login: React.FC = () => {
   const router = useIonRouter();
-  const { login, getRole } = useAuth();
+  const { login } = useAuth();
   const history = useHistory();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
@@ -50,11 +50,10 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      const role = getRole();
+      const userRole = await login(email, password);
       
-      if (role) {
-        switch (role) {
+      if (userRole) {
+        switch (userRole) {
           case 'warehouse':
             router.push("/warehouse/dashboard");
             break;
@@ -68,7 +67,7 @@ const Login: React.FC = () => {
             setError("Unknown user role. Please contact support.");
         }
       } else {
-        setError("Login successful but role not set. Please try again.");
+        setError("Login failed. Role not found.");
       }
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");

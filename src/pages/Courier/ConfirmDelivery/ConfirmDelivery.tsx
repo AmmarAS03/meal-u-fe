@@ -15,6 +15,7 @@ import { cameraOutline, cloudUploadOutline, imageOutline } from 'ionicons/icons'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { useUpdateOrderStatusToDelivered } from '../../../api/courierApi';
+import { useCourier } from '../../../contexts/courierContext';
 
 interface RouteParams {
   id: string;
@@ -25,12 +26,14 @@ interface LocationState {
 }
 
 const ConfirmDelivery: React.FC = () => {
+  const { updateOrderStatus } = useCourier();
   const [photo, setPhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const history = useHistory();
   const { id } = useParams<RouteParams>();
   const location = useLocation<LocationState>();
+  const [isLoading, setIsLoading] = useState(false);
   const { order } = location.state || { order: null };
 
   const updateToDelivered = useUpdateOrderStatusToDelivered();
@@ -70,26 +73,37 @@ const ConfirmDelivery: React.FC = () => {
   };
 
   const confirmDelivery = async () => {
-    if (photo) {
-      try {
-        const response = await fetch(photo);
-        const blob = await response.blob();
-        const photoFile = new File([blob], "delivery_proof.jpg", { type: "image/jpeg" });
-
-        await updateToDelivered.mutateAsync({ orderId: parseInt(id), photoProof: photoFile });
-        
-        setToastMessage('Delivery confirmed successfully');
-        setShowToast(true);
-
-        history.push(`/courier/confirm-pickup/delivery/1?confirmed=${id}`);
-      } catch (error) {
-        console.error('Error confirming delivery:', error);
-        setToastMessage('Failed to confirm delivery');
-        setShowToast(true);
-      }
-    } else {
+    if (!photo) {
       setToastMessage('Please upload or take a photo before confirming delivery');
       setShowToast(true);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(photo);
+      const blob = await response.blob();
+      const photoFile = new File([blob], "delivery_proof.jpg", { type: "image/jpeg" });
+
+      await updateToDelivered.mutateAsync({ 
+        orderId: parseInt(id), 
+        photoProof: photoFile 
+      });
+      
+      updateOrderStatus(parseInt(id), 'delivered');
+      
+      setToastMessage('Delivery confirmed successfully');
+      setShowToast(true);
+      
+      setTimeout(() => {
+        history.push(`/courier/confirm-pickup/delivery/1?confirmed=${id}`);
+      }, 1000);
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      setToastMessage(error instanceof Error ? error.message : 'Failed to confirm delivery');
+      setShowToast(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,15 +140,15 @@ const ConfirmDelivery: React.FC = () => {
           </div>
           
           <div className="mt-auto pb-4">
-            <IonButton 
-              expand="block" 
-              onClick={confirmDelivery} 
-              color="medium" 
-              className="font-semibold"
-              disabled={!photo}
-            >
-              Confirm Delivery
-            </IonButton>
+          <IonButton 
+            expand="block" 
+            onClick={confirmDelivery} 
+            color="medium" 
+            className="font-semibold"
+            disabled={!photo || updateToDelivered.isPending}
+          >
+            {updateToDelivered.isPending ? 'Confirming...' : 'Confirm Delivery'}
+          </IonButton>
           </div>
         </div>
       </IonContent>

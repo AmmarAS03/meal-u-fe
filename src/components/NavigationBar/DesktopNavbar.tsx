@@ -11,11 +11,12 @@ const SHOW_ALL_CATEGORY = {
 };
 
 const DesktopNavbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, role } = useAuth();
   const history = useHistory();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { data: fetchedCategories = [], isFetching: isCategoriesFetching } = useCategoriesList();
+  const isMobile = window.innerWidth < 768;
 
   const allCategories = useMemo(() => [SHOW_ALL_CATEGORY, ...fetchedCategories], [fetchedCategories]);
 
@@ -41,6 +42,10 @@ const DesktopNavbar: React.FC = () => {
     setSearchTerm(e.target.value);
     setIsSearchFocused(true);
   };
+
+  if (role === "warehouse" && !isMobile) {
+    return;
+  }
 
   return (
     <nav className="relative flex items-center justify-between px-6 py-4 bg-white shadow-sm">

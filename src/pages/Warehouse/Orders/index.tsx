@@ -85,27 +85,53 @@ const AllOrders: React.FC = () => {
     setIsFilterUsed(false);
   };
 
-  const handleUpdateStatusToPreparing = () => {
-    if (selectedOrders.length) {
-      Promise.all(selectedOrders.map(orderId => 
-        updateToPreparing(parseInt(orderId))
-      )).then(() => {
-        queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
-        setSelectedOrders([]);
-      });
-    }
-  }
+  const canUpdateToPreparing = selectedOrders.length > 0 && selectedOrders.every(orderId => {
+    const order = processedOrders.find(o => o.id === orderId);
+    return order?.status === 'pending' || order?.status === 'paid';
+  });
 
-  const handleUpdateStatusToReadyToDeliver = () => {
+  const canUpdateToReadyToDeliver = selectedOrders.length > 0 && selectedOrders.every(orderId => {
+    const order = processedOrders.find(o => o.id === orderId);
+    return order?.status === 'preparing';
+  });
+
+  const handleUpdateStatusToPreparing = async () => {
     if (selectedOrders.length) {
-      Promise.all(selectedOrders.map(orderId =>
-        updateToReadyToDeliver(parseInt(orderId))
-        )).then(() => {
-          queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
-          setSelectedOrders([]);
+      try {
+        await Promise.all(selectedOrders.map(orderId => 
+          updateToPreparing(parseInt(orderId))
+        ));
+        await queryClient.invalidateQueries({ 
+          queryKey: ['warehouse.orders']
         });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['order.details']
+        });
+        setSelectedOrders([]);
+      } catch (error) {
+        console.error('Error updating orders to preparing:', error);
+      }
     }
-  }
+  };
+
+  const handleUpdateStatusToReadyToDeliver = async () => {
+    if (selectedOrders.length) {
+      try {
+        await Promise.all(selectedOrders.map(orderId =>
+          updateToReadyToDeliver(parseInt(orderId))
+        ));
+        await queryClient.invalidateQueries({ 
+          queryKey: ['warehouse.orders']
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['order.details']
+        });
+        setSelectedOrders([]);
+      } catch (error) {
+        console.error('Error updating orders to ready to deliver:', error);
+      }
+    }
+  };
   
   return (
     <IonPage>
@@ -118,11 +144,10 @@ const AllOrders: React.FC = () => {
             ) : (
               <>
               <div className='flex flex-row gap-10'>
-                <OrdersToolbar />
-                {isFilterUsed && (
+              <OrdersToolbar />
+              {isFilterUsed && (
                 <button 
                   onClick={handleResetFilters}
-                  // className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
                   className="bg-transparent hover:bg-purple-500 text-purple-700 font-semibold hover:text-white py-2 px-4 border border-purple-500 hover:border-transparent rounded"
                 >
                   Reset Filters
@@ -130,17 +155,27 @@ const AllOrders: React.FC = () => {
               )}
               <button
                 onClick={handleUpdateStatusToPreparing}
-                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
+                disabled={!canUpdateToPreparing}
+                className={`font-bold py-2 px-4 rounded-full ${
+                  canUpdateToPreparing 
+                    ? 'bg-purple-500 hover:bg-purple-700 text-white cursor-pointer' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 Update Status to preparing
               </button>
               <button
                 onClick={handleUpdateStatusToReadyToDeliver}
-                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
+                disabled={!canUpdateToReadyToDeliver}
+                className={`font-bold py-2 px-4 rounded-full ${
+                  canUpdateToReadyToDeliver 
+                    ? 'bg-purple-500 hover:bg-purple-700 text-white cursor-pointer' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 Update Status to ready to deliver
               </button>
-              </div>
+            </div>
               {/* <OrdersToolbar /> */}
               <table className="table-auto">
                 <thead>

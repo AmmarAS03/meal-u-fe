@@ -6,6 +6,7 @@ import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { useHistory } from 'react-router-dom';
 import { format, parseISO, addHours } from 'date-fns';
 import { useAllOrders } from '../../../api/courierApi';
+import { useCourier } from '../../../contexts/courierContext';
 
 const MAPTILER_API_KEY = import.meta.env.VITE_MAPTILER_API_KEY;
 
@@ -14,6 +15,7 @@ if (!MAPTILER_API_KEY) {
 }
 
 const CourierHome: React.FC = () => {
+  const { currentBatch, setCurrentBatch } = useCourier();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   const geolocateControl = useRef<maptilersdk.GeolocateControl | null>(null);
@@ -25,13 +27,16 @@ const CourierHome: React.FC = () => {
     if (!ordersData) return null;
 
     let earliestDelivery: any = null;
-    let earliestDate: Date | null = null;
+    let earliestDateTime: Date | null = null;
 
     Object.entries(ordersData).forEach(([date, timeSlots]) => {
       Object.entries(timeSlots).forEach(([time, orders]) => {
+        const hasUndeliveredOrders = orders.some(order => order.order_status !== 'delivered');
+        if (!hasUndeliveredOrders) return;
+
         const deliveryTime = parseISO(`${date}T${time}`);
-        if (!earliestDate || deliveryTime < earliestDate) {
-          earliestDate = deliveryTime;
+        if (!earliestDateTime || deliveryTime < earliestDateTime) {
+          earliestDateTime = deliveryTime;
           earliestDelivery = {
             date,
             time,
@@ -93,6 +98,13 @@ const CourierHome: React.FC = () => {
 
   const handleStartDelivery = () => {
     if (nextDelivery) {
+      setCurrentBatch({
+        date: nextDelivery.date,
+        time: nextDelivery.time,
+        orders: nextDelivery.orders,
+        isDelivery: false
+      });
+      
       history.push('/courier/pickup/1', {
         orders: nextDelivery.orders,
         date: nextDelivery.date,
@@ -110,43 +122,50 @@ const CourierHome: React.FC = () => {
         <div className="h-full w-full relative">
           <div ref={mapContainer} className="absolute inset-0" style={{ height: 'calc(100% + 35px)' }} />
           <div className="absolute bottom-0 left-0 right-0 pb-[330px] px-4 bg-transparent" style={{ height: '150px' }}>
-            <button 
-              className="w-full bg-[#7862FC] text-white font-semibold py-3 rounded-2xl mb-4"
-              onClick={handleStartDelivery}
-            >
-              Start Delivery
-            </button>
-            {nextDelivery && (
-              <div className="bg-white rounded-2xl shadow p-4">
-                <h3 className="font-medium text-lg mb-4">Next Delivery</h3>
-                <div className="relative">
-                  <div className="flex items-start mb-6 relative">
-                    <div className="w-8 h-8 rounded-full border border-black flex items-center justify-center z-10 mr-4">
-                      <IonIcon icon={arrowUp} className="text-sm" />
+            {nextDelivery ? (
+              <>
+                <button 
+                  className="w-full bg-[#7862FC] text-white font-semibold py-3 rounded-2xl mb-4"
+                  onClick={handleStartDelivery}
+                >
+                  Start Delivery
+                </button>
+                <div className="bg-white rounded-2xl shadow p-4">
+                  <h3 className="font-medium text-lg mb-4">Next Delivery</h3>
+                  <div className="relative">
+                    <div className="flex items-start mb-6 relative">
+                      <div className="w-8 h-8 rounded-full border border-black flex items-center justify-center z-10 mr-4">
+                        <IonIcon icon={arrowUp} className="text-sm" />
+                      </div>
+                      <div className="flex-grow">
+                        <p className="text-xs text-gray-500">Pick Up</p>
+                        <p className="font-medium">Warehouse Center</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Time</p>
+                        <p className="font-medium">{format(addHours(parseISO(`${nextDelivery.date}T${nextDelivery.time}`), -1), 'HH:mm')}</p>
+                      </div>
                     </div>
-                    <div className="flex-grow">
-                      <p className="text-xs text-gray-500">Pick Up</p>
-                      <p className="font-medium">Warehouse Center</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Time</p>
-                      <p className="font-medium">{format(addHours(parseISO(`${nextDelivery.date}T${nextDelivery.time}`), -1), 'HH:mm')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start relative">
-                    <div className="w-8 h-8 rounded-full border border-black flex items-center justify-center z-10 mr-4">
-                      <IonIcon icon={arrowDown} className="text-sm" />
-                    </div>
-                    <div className="flex-grow">
-                      <p className="text-xs text-gray-500">Delivery</p>
-                      <p className="font-medium">{`${nextDelivery.orders[0].delivery_details.delivery_location.name} ${nextDelivery.orders[0].delivery_details.delivery_location.branch}`}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Time</p>
-                      <p className="font-medium">{format(parseISO(`${nextDelivery.date}T${nextDelivery.time}`), 'HH:mm')}</p>
+                    <div className="flex items-start relative">
+                      <div className="w-8 h-8 rounded-full border border-black flex items-center justify-center z-10 mr-4">
+                        <IonIcon icon={arrowDown} className="text-sm" />
+                      </div>
+                      <div className="flex-grow">
+                        <p className="text-xs text-gray-500">Delivery</p>
+                        <p className="font-medium">{`${nextDelivery.orders[0].delivery_details.delivery_location.name} ${nextDelivery.orders[0].delivery_details.delivery_location.branch}`}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Time</p>
+                        <p className="font-medium">{format(parseISO(`${nextDelivery.date}T${nextDelivery.time}`), 'HH:mm')}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-2xl shadow p-8 mt-24 text-center">
+                <h3 className="font-medium text-xl mb-2">No Upcoming Deliveries</h3>
+                <p className="text-gray-500">All deliveries have been completed for now.</p>
               </div>
             )}
           </div>
