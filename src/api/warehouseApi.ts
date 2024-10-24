@@ -111,6 +111,7 @@ export interface OrderDetailsData {
   recipes: Recipe[];
   meal_kits: MealKit[];
   delivery_details: DeliveryDetail[];
+  passcode: string;
 }
 
 export interface WarehouseOrdersData {

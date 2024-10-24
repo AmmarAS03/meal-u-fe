@@ -69,6 +69,34 @@ const CourierDeliveries: React.FC = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
+  const NoDeliveriesMessage = () => {
+    const messages = {
+      'All Deliveries': {
+        primary: 'No deliveries available',
+        secondary: 'Check back later for new deliveries'
+      },
+      'Today': {
+        primary: 'No deliveries today',
+        secondary: 'Check tomorrow\'s schedule'
+      },
+      'Tomorrow': {
+        primary: 'No deliveries tomorrow',
+        secondary: 'Check other days'
+      },
+      'This Week': {
+        primary: 'No deliveries this week',
+        secondary: 'Check back later for new schedules'
+      }
+    };
+
+    return (
+      <div className="flex flex-col items-center justify-center p-8 mt-8 text-center">
+        <p className="text-gray-500 text-lg">{messages[selectedFilter as keyof typeof messages].primary}</p>
+        <p className="text-gray-400 text-sm mt-2">{messages[selectedFilter as keyof typeof messages].secondary}</p>
+      </div>
+    );
+  };
+
   return (
     <IonPage>
       <IonHeader collapse='fade'>
@@ -83,20 +111,24 @@ const CourierDeliveries: React.FC = () => {
             defaultValue="All Deliveries"
             onChange={setSelectedFilter}
           />
-          {filteredDeliveries.map((dateGroup, index) => (
-            <div key={index} className="mt-6">
-              <h2 className="text-xl font-bold mb-4">{dateGroup.date}</h2>
-              {dateGroup.batches.map((batch, batchIndex) => (
-                <div key={batchIndex} onClick={() => handleBatchClick(batch.batchNumber, batch.orders)}>
-                  <DeliveryBatch
-                    batchNumber={batch.batchNumber}
-                    pickUp={batch.pickUp}
-                    delivery={batch.delivery}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
+          {filteredDeliveries.length === 0 ? (
+            <NoDeliveriesMessage />
+          ) : (
+            filteredDeliveries.map((dateGroup, index) => (
+              <div key={index} className="mt-6">
+                <h2 className="text-xl font-bold mb-4">{dateGroup.date}</h2>
+                {dateGroup.batches.map((batch, batchIndex) => (
+                  <div key={batchIndex} onClick={() => handleBatchClick(batch.batchNumber, batch.orders)}>
+                    <DeliveryBatch
+                      batchNumber={batch.batchNumber}
+                      pickUp={batch.pickUp}
+                      delivery={batch.delivery}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
         </div>
       </IonContent>
     </IonPage>

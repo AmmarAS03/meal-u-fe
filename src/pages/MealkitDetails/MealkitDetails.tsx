@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   IonContent,
@@ -68,6 +68,15 @@ const MealkitDetails: React.FC = () => {
     refetch: refetchMealkitStat,
   } = useMealkitStats(mealkitId);
   const [commentCount, setCommentCount] = useState(0);
+
+  const commentsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToComments = () => {
+    commentsRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
 
   useEffect(() => {
     if (comments) {
@@ -257,7 +266,10 @@ const MealkitDetails: React.FC = () => {
                   {mealkitStats ? mealkitStats.likes_count : "N/A"}
                 </IonText>
               </div>
-              <div className="flex items-center gap-2">
+              <div 
+                className="flex items-center gap-2 cursor-pointer" 
+                onClick={scrollToComments}
+              >
                 <IonIcon icon={chatbubbleOutline} className="w-6 h-6"></IonIcon>
                 <IonText className="text-sm text-[#0A2533]">
                   {commentCount}
@@ -300,7 +312,7 @@ const MealkitDetails: React.FC = () => {
               price={recipe.total_price}
             />
           ))}
-          <div className="px-4 mt-8 mb-24">
+          <div className="px-4 mt-8 mb-24" ref={commentsRef}>
             <h2 className="text-xl font-bold mb-4">Comments</h2>
             <div className="space-y-4">
               {isLoadingComments ? (

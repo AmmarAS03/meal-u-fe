@@ -104,6 +104,7 @@ const DeliveryStatus: React.FC = () => {
   };
 
   const getStatusPoints = (status: number) => {
+    if (status === 8) return 0;
     return Math.min(status, 6);
   };
 
@@ -145,6 +146,7 @@ const DeliveryStatus: React.FC = () => {
           <p className="text-[#0A2533] font-medium">{getStatusMessage(order.order_status)}</p>
         </div>
 
+        {order.order_status !== 8 && (
         <div className="bg-white rounded-xl shadow-md p-4">
           <div className="space-y-4">
             {statusPoints >= 6 && (
@@ -198,6 +200,7 @@ const DeliveryStatus: React.FC = () => {
             )}
           </div>
         </div>
+        )}
 
         {order.order_status === 6 && (
           <div className="mt-8">

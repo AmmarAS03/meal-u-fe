@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult, useMutation } from '@tanstack/react-query';
+import { useQuery, UseQueryResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/authContext';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -44,7 +44,7 @@ interface UserInfo {
   image: string | null;
 }
 
-interface Order {
+export interface Order {
   id: number;
   order_status: string;
   delivery_details: DeliveryDetails;
@@ -107,6 +107,7 @@ interface OrdersResponse {
 
   export const useUpdateOrderStatusToDelivering = () => {
     const { getToken } = useAuth();
+    const queryClient = useQueryClient();
   
     return useMutation<UpdateOrderStatusResponse, Error, number>({
       mutationFn: async (orderId: number) => {
@@ -130,11 +131,17 @@ interface OrdersResponse {
   
         return data;
       },
+      onSuccess: () => {
+        // Invalidate relevant queries
+        queryClient.invalidateQueries({ queryKey: ['courier.orders'] });
+        queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
+      }
     });
   };
   
   export const useUpdateOrderStatusToDelivered = () => {
     const { getToken } = useAuth();
+    const queryClient = useQueryClient();
   
     return useMutation<UpdateOrderStatusResponse, Error, { orderId: number; photoProof: File }>({
       mutationFn: async ({ orderId, photoProof }) => {
@@ -162,5 +169,9 @@ interface OrdersResponse {
   
         return data;
       },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['courier.orders'] });
+        queryClient.invalidateQueries({ queryKey: ['warehouse.orders'] });
+      }
     });
   };

@@ -287,7 +287,7 @@ function OrderMobile() {
       meal_types,
     ]
   );
-
+  
   const finalData = useMemo(
     () => ({
       mealkits: applyFilters(filteredData.mealkits),
@@ -295,6 +295,13 @@ function OrderMobile() {
       products: applyFilters(filteredData.products),
     }),
     [filteredData, applyFilters]
+  );
+
+  const handleProductClick = useCallback(
+    (productId: number) => {
+      router.push(`/product-details/${productId}`);
+    },
+    [router]
   );
 
   useEffect(() => {
@@ -487,7 +494,7 @@ function OrderMobile() {
           ItemCard,
           handleRecipeClick
         )}
-
+        
         <div
           style={{
             display: "flex",
@@ -507,6 +514,7 @@ function OrderMobile() {
             finalData.products.map((product: ProductData) => {
               const cartItem = getCartItem(product.id);
               const cartQuantity = cartItem ? cartItem.quantity : 0;
+              
               return (
                 <div
                   key={product.id}
@@ -520,13 +528,16 @@ function OrderMobile() {
                     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                     padding: "10px",
                     marginBottom: "10px",
+                    cursor: "pointer",
                   }}
                 >
                   <div
+                    onClick={() => handleProductClick(product.id)}
                     style={{
                       display: "flex",
                       flexDirection: "row",
                       gap: "5px",
+                      flex: 1,
                     }}
                   >
                     <img
@@ -574,7 +585,10 @@ function OrderMobile() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "row" }}>
+                  <div 
+                    style={{ display: "flex", flexDirection: "row" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <IonIcon
                       icon={removeCircleOutline}
                       onClick={() => decrement(product.id)}
